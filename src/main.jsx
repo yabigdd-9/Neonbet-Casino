@@ -100,6 +100,37 @@ function buildSpin(game) {
   return { reels: shuffle([filler(), filler(), filler(), filler(), filler()]), multiplier: 0, label: "Try again" };
 }
 
+const providerGameSkins = [
+  { emoji: "⚡", gradient: "from-cyan-400 to-blue-700", symbols: ["⚡", "💎", "⭐", "🪙", "🔥", "7", "BONUS"] },
+  { emoji: "🍬", gradient: "from-pink-400 to-fuchsia-700", symbols: ["🍬", "🍭", "🍒", "⭐", "💎", "7", "WILD"] },
+  { emoji: "🏛️", gradient: "from-amber-300 to-orange-700", symbols: ["🏛️", "⚡", "👑", "⭐", "💎", "7", "SCAT"] },
+  { emoji: "🐺", gradient: "from-slate-300 to-slate-800", symbols: ["🐺", "🌙", "💰", "⭐", "💎", "7", "WILD"] },
+  { emoji: "🐟", gradient: "from-sky-300 to-teal-700", symbols: ["🐟", "🎣", "💰", "⭐", "💎", "7", "BONUS"] },
+  { emoji: "🚂", gradient: "from-red-400 to-stone-900", symbols: ["🚂", "💰", "🔥", "⭐", "💎", "7", "WILD"] },
+  { emoji: "🗿", gradient: "from-violet-400 to-indigo-900", symbols: ["🗿", "🔮", "👑", "⭐", "💎", "7", "SCAT"] },
+  { emoji: "💰", gradient: "from-yellow-300 to-amber-700", symbols: ["💰", "🪙", "🏆", "⭐", "💎", "7", "BONUS"] },
+];
+
+function hashText(text) {
+  return [...text].reduce((hash, char) => hash + char.charCodeAt(0), 0);
+}
+
+function buildProviderGame(provider, title, index) {
+  const skin = providerGameSkins[hashText(`${provider.name}-${title}`) % providerGameSkins.length];
+
+  return {
+    title,
+    type: provider.name,
+    tag: "Playable",
+    emoji: skin.emoji,
+    gradient: skin.gradient,
+    symbols: skin.symbols,
+    provider: provider.name,
+    providerHighlight: provider.highlight,
+    libraryIndex: index,
+  };
+}
+
 const promos = [
   { title: "Free $100 Sign-Up Bonus", detail: "New accounts can claim $100 plus a 300% welcome match after verification. Bonus funds require 10x rollover.", icon: Gift },
   { title: "Daily Rewards", detail: "Fresh drops, missions and member rewards every day", icon: Flame },
@@ -779,7 +810,11 @@ function SlotGameModal({ game, balance, setBalance, onClose }) {
               <div>
                 <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">{game.type}</div>
                 <h2 className="mt-2 text-3xl font-black">{game.title}</h2>
-                <p className="mt-2 text-sm text-slate-400">High-frequency local slot session. Balance is simulated in this browser.</p>
+                <p className="mt-2 text-sm text-slate-400">
+                  {game.provider
+                    ? `${game.provider} themed local slot session. Balance is simulated in this browser.`
+                    : "High-frequency local slot session. Balance is simulated in this browser."}
+                </p>
               </div>
               <button type="button" onClick={onClose} className="rounded-2xl bg-white/10 p-3 hover:bg-white/15">
                 <X size={20} />
@@ -850,6 +885,7 @@ function SlotGameModal({ game, balance, setBalance, onClose }) {
               </div>
               <p className="mt-4 text-xs leading-5 text-slate-500">
                 This is a simulated browser game with tuned frequent wins. It is not connected to deposits, withdrawals, or provider game servers.
+                {game.provider ? ` ${game.provider} is shown as a lobby theme only.` : ""}
               </p>
             </div>
           </div>
@@ -909,7 +945,7 @@ function PaymentMethods() {
   );
 }
 
-function SlotProviderLibrary() {
+function SlotProviderLibrary({ onPlay }) {
   const totalGames = slotProviders.reduce((sum, provider) => sum + provider.games.length, 0);
 
   return (
@@ -939,10 +975,16 @@ function SlotProviderLibrary() {
               </div>
             </div>
             <div className="mt-5 flex flex-wrap gap-2">
-              {provider.games.map((game) => (
-                <span key={game} className="rounded-full border border-white/10 bg-black/20 px-3 py-2 text-xs font-bold text-slate-200">
+              {provider.games.map((game, index) => (
+                <button
+                  key={game}
+                  type="button"
+                  onClick={() => onPlay(buildProviderGame(provider, game, index))}
+                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-2 text-left text-xs font-bold text-slate-200 transition hover:border-cyan-300/40 hover:bg-cyan-400 hover:text-slate-950"
+                >
+                  <Play size={12} />
                   {game}
-                </span>
+                </button>
               ))}
             </div>
           </article>
@@ -1575,7 +1617,7 @@ function App() {
           </div>
         </section>
 
-        <SlotProviderLibrary />
+        <SlotProviderLibrary onPlay={setActiveGame} />
         <PaymentMethods />
         <VerificationPanel
           user={user}
