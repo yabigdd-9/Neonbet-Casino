@@ -81,9 +81,9 @@ The Telegram and WhatsApp buttons are configured in `src/main.jsx`:
 
 ```js
 contactLinks: {
-  telegram: "https://t.me/YOUR_TELEGRAM_USERNAME",
-  whatsapp: "https://wa.me/YOUR_WHATSAPP_NUMBER?text=Hi%20NeonBet%2C%20I%20want%20to%20verify%20my%20account.",
+  telegram: "https://t.me/yabigdd",
+  whatsapp: "https://wa.me/642904556680?text=Hi%20NeonBet%2C%20I%20want%20to%20verify%20my%20account.",
 }
 ```
 
-Replace `YOUR_TELEGRAM_USERNAME` and `YOUR_WHATSAPP_NUMBER` before publishing. WhatsApp numbers should include the country code and no punctuation.
+WhatsApp numbers should include the country code and no punctuation.
