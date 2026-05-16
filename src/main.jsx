@@ -602,7 +602,7 @@ function ContactButtons({ compact = false }) {
   );
 }
 
-function AuthModal({ mode, setMode, onClose, onSubmit, authLoading, authError }) {
+function AuthModal({ mode, setMode, onClose, onSubmit, onResetPassword, authLoading, authError }) {
   const [username, setUsername] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -757,6 +757,17 @@ function AuthModal({ mode, setMode, onClose, onSubmit, authLoading, authError })
             >
               {authLoading ? "Please wait..." : isRegister ? "Create account" : "Login"}
             </button>
+
+            {hasSupabaseConfig && !isRegister && (
+              <button
+                type="button"
+                onClick={() => onResetPassword(email.trim())}
+                disabled={!email.trim().includes("@") || authLoading}
+                className="w-full rounded-2xl bg-white/10 px-5 py-4 font-black text-white transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Send password reset email
+              </button>
+            )}
 
             {authError && <p className="rounded-2xl border border-rose-300/20 bg-rose-400/10 p-3 text-sm text-rose-100">{authError}</p>}
 
@@ -1541,7 +1552,7 @@ function AccountStatusPanel({ user, profile, latestSubmission, backendReady }) {
   );
 }
 
-function AdminDashboard({ profile, submissions, withdrawals, onReview, onReviewWithdrawal, adminSaving }) {
+function AdminDashboard({ profile, profiles, submissions, withdrawals, onReview, onReviewWithdrawal, onUpdateProfile, adminSaving }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   if (profile?.role !== "admin") return null;
@@ -1555,6 +1566,12 @@ function AdminDashboard({ profile, submissions, withdrawals, onReview, onReviewW
   };
   const filteredSubmissions = submissions.filter(matchesAdminFilters);
   const filteredWithdrawals = withdrawals.filter(matchesAdminFilters);
+  const filteredProfiles = profiles.filter((userProfile) => {
+    const query = searchTerm.trim().toLowerCase();
+    const matchesSearch = !query || `${userProfile.username} ${userProfile.email} ${userProfile.id}`.toLowerCase().includes(query);
+    const matchesStatus = statusFilter === "all" || userProfile.verification_status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <section id="admin" className="scroll-mt-24 rounded-[2rem] border border-amber-300/20 bg-amber-300/10 p-6 md:p-8">
@@ -1589,7 +1606,57 @@ function AdminDashboard({ profile, submissions, withdrawals, onReview, onReviewW
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-lg font-black text-white">Verification submissions</h3>
+        <h3 className="text-lg font-black text-white">Users</h3>
+        {filteredProfiles.length === 0 && (
+          <div className="rounded-3xl border border-white/10 bg-black/20 p-5 text-slate-300">No users match.</div>
+        )}
+        {filteredProfiles.map((userProfile) => (
+          <div key={userProfile.id} className="rounded-3xl border border-white/10 bg-slate-950/70 p-5">
+            <div className="grid gap-4 xl:grid-cols-[1fr_auto] xl:items-start">
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={`rounded-full border px-3 py-1 text-xs font-black ${statusStyles[userProfile.verification_status] || statusStyles.not_submitted}`}>
+                    {statusLabels[userProfile.verification_status] || userProfile.verification_status}
+                  </span>
+                  <span className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-black text-slate-200">
+                    {userProfile.role}
+                  </span>
+                </div>
+                <div className="mt-3 text-lg font-black text-white">{userProfile.username || "Unnamed user"}</div>
+                <p className="mt-1 break-all text-sm text-slate-400">{userProfile.email || userProfile.id}</p>
+                <div className="mt-3 grid gap-2 text-sm md:grid-cols-3">
+                  <div className="rounded-2xl bg-white/[0.06] px-3 py-2">
+                    <span className="text-slate-400">Bonus</span>
+                    <span className="ml-2 font-black text-white">${Number(userProfile.bonus_balance || 0).toFixed(2)}</span>
+                  </div>
+                  <div className="rounded-2xl bg-white/[0.06] px-3 py-2">
+                    <span className="text-slate-400">Rollover</span>
+                    <span className="ml-2 font-black text-white">${Number(userProfile.rollover_progress || 0).toFixed(2)}</span>
+                  </div>
+                  <div className="rounded-2xl bg-white/[0.06] px-3 py-2">
+                    <span className="text-slate-400">Required</span>
+                    <span className="ml-2 font-black text-white">${Number(userProfile.rollover_required || 0).toFixed(2)}</span>
+                  </div>
+                </div>
+                {userProfile.admin_notes && <p className="mt-2 text-sm text-amber-100">Note: {userProfile.admin_notes}</p>}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  disabled={adminSaving}
+                  onClick={() => onUpdateProfile(userProfile)}
+                  className="rounded-2xl bg-cyan-400 px-4 py-3 text-sm font-black text-slate-950 disabled:opacity-50"
+                >
+                  Edit balance
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        <div className="pt-4">
+          <h3 className="text-lg font-black text-white">Verification submissions</h3>
+        </div>
         {filteredSubmissions.length === 0 && (
           <div className="rounded-3xl border border-white/10 bg-black/20 p-5 text-slate-300">No verification submissions match.</div>
         )}
@@ -1700,6 +1767,7 @@ function App() {
   const [authMode, setAuthMode] = useState("login");
   const [authOpen, setAuthOpen] = useState(false);
   const [profile, setProfile] = useState(null);
+  const [profiles, setProfiles] = useState([]);
   const [submissions, setSubmissions] = useState([]);
   const [withdrawals, setWithdrawals] = useState([]);
   const [authLoading, setAuthLoading] = useState(false);
@@ -1735,6 +1803,7 @@ function App() {
         loadAccount(nextUser);
       } else {
         setProfile(null);
+        setProfiles([]);
         setSubmissions([]);
         setWithdrawals([]);
       }
@@ -1746,6 +1815,7 @@ function App() {
   async function loadAccount(nextUser = user) {
     if (!nextUser) {
       setProfile(null);
+      setProfiles([]);
       setSubmissions([]);
       setWithdrawals([]);
       return;
@@ -1763,6 +1833,7 @@ function App() {
         rollover_required: 1000,
         rollover_progress: Number(window.localStorage.getItem("neonbetRolloverProgress") || 0),
       });
+      setProfiles([]);
       setSubmissions(JSON.parse(window.localStorage.getItem("neonbetVerificationSubmissions") || "[]"));
       setWithdrawals(JSON.parse(window.localStorage.getItem("neonbetWithdrawalRequests") || "[]"));
       return;
@@ -1780,6 +1851,18 @@ function App() {
     }
 
     setProfile(profileData);
+    if (profileData.role === "admin") {
+      const { data: profilesData, error: profilesError } = await supabase
+        .from("profiles")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (!profilesError) {
+        setProfiles(profilesData || []);
+      }
+    } else {
+      setProfiles([]);
+    }
 
     let query = supabase
       .from("verification_submissions")
@@ -1877,12 +1960,33 @@ function App() {
     }
   }
 
+  async function handleResetPassword(email) {
+    if (!hasSupabaseConfig || !email.includes("@")) return;
+
+    setAuthLoading(true);
+    setAuthError("");
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + window.location.pathname,
+      });
+
+      if (error) throw error;
+      setAuthError("Password reset email sent. Check your inbox.");
+    } catch (error) {
+      setAuthError(error.message || "Password reset failed.");
+    } finally {
+      setAuthLoading(false);
+    }
+  }
+
   async function handleLogout() {
     if (hasSupabaseConfig) {
       await supabase.auth.signOut();
     }
     setUser(null);
     setProfile(null);
+    setProfiles([]);
     setSubmissions([]);
     setWithdrawals([]);
     window.localStorage.removeItem("neonbetUser");
@@ -2022,6 +2126,43 @@ function App() {
     }
   }
 
+  async function handleUpdateProfile(userProfile) {
+    if (!hasSupabaseConfig || profile?.role !== "admin") return;
+
+    const bonusInput = window.prompt("Bonus balance USD", String(userProfile.bonus_balance ?? 100));
+    if (bonusInput === null) return;
+
+    const rolloverProgressInput = window.prompt("Rollover progress USD", String(userProfile.rollover_progress ?? 0));
+    if (rolloverProgressInput === null) return;
+
+    const rolloverRequiredInput = window.prompt("Rollover required USD", String(userProfile.rollover_required ?? 1000));
+    if (rolloverRequiredInput === null) return;
+
+    const adminNotes = window.prompt("Admin note", userProfile.admin_notes || "");
+    if (adminNotes === null) return;
+
+    setAdminSaving(true);
+
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          bonus_balance: Number(bonusInput),
+          rollover_progress: Number(rolloverProgressInput),
+          rollover_required: Number(rolloverRequiredInput),
+          admin_notes: adminNotes,
+        })
+        .eq("id", userProfile.id);
+
+      if (error) throw error;
+      await loadAccount(user);
+    } catch (error) {
+      setAuthError(error.message || "Profile update failed.");
+    } finally {
+      setAdminSaving(false);
+    }
+  }
+
   function handleOpenGame(game) {
     setLaunchGame(game);
   }
@@ -2115,10 +2256,12 @@ function App() {
         )}
         <AdminDashboard
           profile={profile}
+          profiles={profiles}
           submissions={submissions}
           withdrawals={withdrawals}
           onReview={handleReviewSubmission}
           onReviewWithdrawal={handleReviewWithdrawal}
+          onUpdateProfile={handleUpdateProfile}
           adminSaving={adminSaving}
         />
 
@@ -2209,6 +2352,7 @@ function App() {
           setMode={setAuthMode}
           onClose={() => setAuthOpen(false)}
           onSubmit={handleAuthSubmit}
+          onResetPassword={handleResetPassword}
           authLoading={authLoading}
           authError={authError}
         />
