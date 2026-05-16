@@ -48,6 +48,7 @@ const payoutRows = [
 ];
 
 const betOptions = [0.25, 0.4, 0.5, 0.75, 0.8, 1.2];
+const gameFilters = ["All", "Hot", "New", "Megaways", "Bonus Buy", "Jackpot", "Favorites"];
 
 function formatMoney(amount) {
   return `$${amount.toFixed(2)}`;
@@ -116,7 +117,15 @@ function hashText(text) {
 }
 
 function buildProviderGame(provider, title, index) {
+  const titleLower = title.toLowerCase();
   const skin = providerGameSkins[hashText(`${provider.name}-${title}`) % providerGameSkins.length];
+  const tags = [
+    titleLower.includes("mega") ? "Megaways" : "",
+    titleLower.includes("bonus") || titleLower.includes("buy") ? "Bonus Buy" : "",
+    titleLower.includes("jackpot") || titleLower.includes("millionaire") || titleLower.includes("rich") ? "Jackpot" : "",
+    index < 2 ? "Hot" : "",
+    index === 2 || index === 3 ? "New" : "",
+  ].filter(Boolean);
 
   return {
     title,
@@ -128,7 +137,20 @@ function buildProviderGame(provider, title, index) {
     provider: provider.name,
     providerHighlight: provider.highlight,
     libraryIndex: index,
+    tags: tags.length ? tags : ["Hot"],
   };
+}
+
+function getGameId(game) {
+  return `${game.provider || game.type}-${game.title}`;
+}
+
+function readStoredArray(key) {
+  try {
+    return JSON.parse(window.localStorage.getItem(key)) || [];
+  } catch {
+    return [];
+  }
 }
 
 const promos = [
@@ -945,8 +967,94 @@ function PaymentMethods() {
   );
 }
 
-function SlotProviderLibrary({ onPlay }) {
+function GameLaunchModal({ game, isFavorite, onToggleFavorite, onClose, onLaunch }) {
+  if (!game) return null;
+
+  const tags = game.tags || [game.tag].filter(Boolean);
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/75 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-4xl overflow-hidden rounded-[2rem] border border-cyan-300/20 bg-slate-950 shadow-neon">
+        <div className={`h-44 bg-gradient-to-br ${game.gradient} relative grid place-items-center`}>
+          <button type="button" onClick={onClose} className="absolute right-4 top-4 rounded-2xl bg-black/30 p-3 text-white hover:bg-black/45">
+            <X size={20} />
+          </button>
+          <div className="text-7xl drop-shadow-2xl">{game.emoji}</div>
+        </div>
+        <div className="grid gap-6 p-6 md:grid-cols-[1.2fr_0.8fr] md:p-8">
+          <div>
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">{game.provider || game.type}</div>
+            <h2 className="mt-2 text-3xl md:text-5xl font-black">{game.title}</h2>
+            <p className="mt-4 text-slate-400">
+              Launch a fast simulated slot session with NeonBet balance controls, frequent local wins, and quick bet presets.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {tags.map((tag) => (
+                <span key={tag} className="rounded-full border border-white/10 bg-white/10 px-3 py-2 text-xs font-black text-slate-200">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
+            <div className="text-sm text-slate-400">Bet presets</div>
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              {betOptions.map((amount) => (
+                <div key={amount} className="rounded-2xl border border-white/10 bg-black/20 px-3 py-3 text-center text-sm font-black">
+                  {formatMoney(amount)}
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={onLaunch}
+              className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-cyan-400 px-5 py-4 font-black text-slate-950 shadow-neon transition hover:scale-[1.02]"
+            >
+              <Play size={18} />
+              Launch Game
+            </button>
+            <button
+              type="button"
+              onClick={() => onToggleFavorite(game)}
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-white/10 px-5 py-4 font-black text-white transition hover:bg-white/15"
+            >
+              <Star size={18} className={isFavorite ? "fill-amber-300 text-amber-300" : ""} />
+              {isFavorite ? "Remove favorite" : "Add favorite"}
+            </button>
+            <p className="mt-4 text-xs leading-5 text-slate-500">
+              Simulated browser game only. Not connected to deposits, withdrawals, or provider servers.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SlotProviderLibrary({ onPlay, favorites, onToggleFavorite, recentGames }) {
   const totalGames = slotProviders.reduce((sum, provider) => sum + provider.games.length, 0);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeFilter, setActiveFilter] = useState("All");
+
+  const providerSections = slotProviders
+    .map((provider) => {
+      const gamesForProvider = provider.games
+        .map((game, index) => buildProviderGame(provider, game, index))
+        .filter((game) => {
+          const query = searchTerm.trim().toLowerCase();
+          const matchesSearch = !query || `${game.title} ${game.provider}`.toLowerCase().includes(query);
+          const matchesFilter =
+            activeFilter === "All" ||
+            (activeFilter === "Favorites" && favorites.includes(getGameId(game))) ||
+            game.tags?.includes(activeFilter);
+
+          return matchesSearch && matchesFilter;
+        });
+
+      return { ...provider, playableGames: gamesForProvider };
+    })
+    .filter((provider) => provider.playableGames.length > 0);
+  const visibleGameCount = providerSections.reduce((sum, provider) => sum + provider.playableGames.length, 0);
 
   return (
     <section id="providers" className="scroll-mt-24">
@@ -962,8 +1070,56 @@ function SlotProviderLibrary({ onPlay }) {
         </div>
       </div>
 
+      <div className="mb-5 rounded-[2rem] border border-white/10 bg-white/[0.06] p-4">
+        <label className="relative block">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <input
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            className="w-full rounded-2xl border border-white/10 bg-black/25 py-4 pl-11 pr-4 text-white outline-none focus:border-cyan-300/60"
+            placeholder="Search games or providers"
+          />
+        </label>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {gameFilters.map((filter) => (
+            <button
+              key={filter}
+              type="button"
+              onClick={() => setActiveFilter(filter)}
+              className={`rounded-full border px-4 py-2 text-sm font-black transition ${
+                activeFilter === filter
+                  ? "border-cyan-300/40 bg-cyan-400 text-slate-950 shadow-neon"
+                  : "border-white/10 bg-black/20 text-slate-300 hover:bg-white/10"
+              }`}
+            >
+              {filter}
+            </button>
+          ))}
+        </div>
+        <p className="mt-3 text-sm text-slate-400">{visibleGameCount} games showing</p>
+      </div>
+
+      {recentGames.length > 0 && (
+        <div className="mb-5 rounded-[2rem] border border-white/10 bg-white/[0.06] p-5">
+          <div className="mb-3 text-sm font-black uppercase tracking-[0.18em] text-cyan-300">Recently played</div>
+          <div className="flex flex-wrap gap-2">
+            {recentGames.map((game) => (
+              <button
+                key={getGameId(game)}
+                type="button"
+                onClick={() => onPlay(game)}
+                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-2 text-xs font-bold text-slate-200 transition hover:bg-cyan-400 hover:text-slate-950"
+              >
+                <Play size={12} />
+                {game.title}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
-        {slotProviders.map((provider) => (
+        {providerSections.map((provider) => (
           <article key={provider.name} className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -975,21 +1131,27 @@ function SlotProviderLibrary({ onPlay }) {
               </div>
             </div>
             <div className="mt-5 flex flex-wrap gap-2">
-              {provider.games.map((game, index) => (
+              {provider.playableGames.map((game) => (
                 <button
-                  key={game}
+                  key={game.title}
                   type="button"
-                  onClick={() => onPlay(buildProviderGame(provider, game, index))}
+                  onClick={() => onPlay(game)}
                   className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-2 text-left text-xs font-bold text-slate-200 transition hover:border-cyan-300/40 hover:bg-cyan-400 hover:text-slate-950"
                 >
                   <Play size={12} />
-                  {game}
+                  {favorites.includes(getGameId(game)) && <Star size={12} className="fill-amber-300 text-amber-300" />}
+                  {game.title}
                 </button>
               ))}
             </div>
           </article>
         ))}
       </div>
+      {providerSections.length === 0 && (
+        <div className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-8 text-center text-slate-300">
+          No games match that search and filter.
+        </div>
+      )}
     </section>
   );
 }
@@ -1333,6 +1495,9 @@ function App() {
   const [open, setOpen] = useState(false);
   const [balance, setBalance] = useState(100);
   const [activeGame, setActiveGame] = useState(null);
+  const [launchGame, setLaunchGame] = useState(null);
+  const [favorites, setFavorites] = useState(() => readStoredArray("neonbetFavorites"));
+  const [recentGames, setRecentGames] = useState(() => readStoredArray("neonbetRecentGames"));
   const [authMode, setAuthMode] = useState("login");
   const [authOpen, setAuthOpen] = useState(false);
   const [profile, setProfile] = useState(null);
@@ -1577,6 +1742,34 @@ function App() {
     }
   }
 
+  function handleOpenGame(game) {
+    setLaunchGame(game);
+  }
+
+  function handleToggleFavorite(game) {
+    const gameId = getGameId(game);
+    const nextFavorites = favorites.includes(gameId)
+      ? favorites.filter((favoriteId) => favoriteId !== gameId)
+      : [...favorites, gameId];
+
+    setFavorites(nextFavorites);
+    window.localStorage.setItem("neonbetFavorites", JSON.stringify(nextFavorites));
+  }
+
+  function handleLaunchGame() {
+    if (!launchGame) return;
+
+    const nextRecentGames = [
+      launchGame,
+      ...recentGames.filter((game) => getGameId(game) !== getGameId(launchGame)),
+    ].slice(0, 8);
+
+    setRecentGames(nextRecentGames);
+    window.localStorage.setItem("neonbetRecentGames", JSON.stringify(nextRecentGames));
+    setActiveGame(launchGame);
+    setLaunchGame(null);
+  }
+
   return (
     <div className="min-h-screen text-white bg-slate-950">
       <div className="fixed inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(34,211,238,0.15),transparent_35%),radial-gradient(circle_at_80%_20%,rgba(168,85,247,0.14),transparent_35%)] pointer-events-none" />
@@ -1613,11 +1806,16 @@ function App() {
             </button>
           </div>
           <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-5">
-            {games.map((game) => <GameCard key={game.title} game={game} onPlay={setActiveGame} />)}
+            {games.map((game) => <GameCard key={game.title} game={game} onPlay={handleOpenGame} />)}
           </div>
         </section>
 
-        <SlotProviderLibrary onPlay={setActiveGame} />
+        <SlotProviderLibrary
+          onPlay={handleOpenGame}
+          favorites={favorites}
+          onToggleFavorite={handleToggleFavorite}
+          recentGames={recentGames}
+        />
         <PaymentMethods />
         <VerificationPanel
           user={user}
@@ -1675,6 +1873,15 @@ function App() {
         </footer>
       </main>
 
+      {launchGame && (
+        <GameLaunchModal
+          game={launchGame}
+          isFavorite={favorites.includes(getGameId(launchGame))}
+          onToggleFavorite={handleToggleFavorite}
+          onClose={() => setLaunchGame(null)}
+          onLaunch={handleLaunchGame}
+        />
+      )}
       {activeGame && (
         <SlotGameModal
           game={activeGame}
