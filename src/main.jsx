@@ -38,7 +38,7 @@ const games = [
 ];
 
 const promos = [
-  { title: "Free $100 Sign-Up Bonus", detail: "New accounts can claim $100 plus a 300% welcome match after verification", icon: Gift },
+  { title: "Free $100 Sign-Up Bonus", detail: "New accounts can claim $100 plus a 300% welcome match after verification. Bonus funds require 10x rollover.", icon: Gift },
   { title: "Daily Rewards", detail: "Fresh drops, missions and member rewards every day", icon: Flame },
   { title: "VIP Club", detail: "Level up with missions, rewards and exclusive account perks", icon: Trophy },
 ];
@@ -216,7 +216,7 @@ const verificationConfig = {
 
 const lobbyStats = [
   ["$100", "Sign-up bonus"],
-  ["300%", "Welcome match"],
+  ["10x", "Bonus rollover"],
   ["24+", "Slot providers"],
   ["$75", "Verification"],
 ];
@@ -249,7 +249,7 @@ function Sidebar({ open, setOpen }) {
         <div className="rounded-3xl bg-gradient-to-br from-cyan-500/15 to-purple-500/15 border border-cyan-300/20 p-4 mb-5">
           <p className="text-sm text-slate-300">Sign-Up Bonus</p>
           <p className="text-3xl font-black text-white mt-1">$100</p>
-          <p className="text-xs text-slate-400 mt-1">Plus 300% welcome match</p>
+          <p className="text-xs text-slate-400 mt-1">Plus 300% match, 10x rollover</p>
         </div>
 
         <nav className="space-y-2">
@@ -311,7 +311,7 @@ function Hero() {
             Play the <span className="text-cyan-300">neon lobby</span>.
           </h1>
           <p className="text-slate-300 mt-5 max-w-xl">
-            Claim a free $100 sign-up bonus, unlock a 300% welcome match and browse a loaded slot-provider lobby.
+            Claim a free $100 sign-up bonus, unlock a 300% welcome match and clear a 10x rollover requirement.
           </p>
           <div className="flex flex-wrap gap-3 mt-7">
             <button className="flex items-center gap-2 px-6 py-4 rounded-2xl bg-cyan-400 text-slate-950 font-black shadow-neon"><Play size={18}/> Claim $100</button>
