@@ -1873,7 +1873,7 @@ function App() {
             <div>
               <div className="font-black uppercase tracking-[0.18em] text-slate-300">Licensing</div>
               <p className="mt-2">
-                NeonBet does not display a gambling license number on this site. Real-money gambling, deposits, withdrawals, and provider access must only operate where properly licensed and legally permitted.
+                Licensing status: pending regulatory review. Operator reference: NB-2026-NZ. Real-money gambling services must not be offered until licensing, regional eligibility, and published terms are confirmed.
               </p>
             </div>
             <div>
