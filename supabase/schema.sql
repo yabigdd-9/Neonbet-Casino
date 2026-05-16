@@ -28,10 +28,24 @@ create table if not exists public.verification_submissions (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.withdrawal_requests (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  amount_usd numeric(12,2) not null check (amount_usd > 0),
+  payout_method text not null default '',
+  payout_address text not null default '',
+  status text not null default 'pending' check (status in ('pending', 'approved', 'paid', 'rejected')),
+  admin_notes text not null default '',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create index if not exists profiles_role_idx on public.profiles(role);
 create index if not exists profiles_verification_status_idx on public.profiles(verification_status);
 create index if not exists verification_submissions_user_id_idx on public.verification_submissions(user_id);
 create index if not exists verification_submissions_status_idx on public.verification_submissions(status);
+create index if not exists withdrawal_requests_user_id_idx on public.withdrawal_requests(user_id);
+create index if not exists withdrawal_requests_status_idx on public.withdrawal_requests(status);
 create unique index if not exists verification_submissions_user_pending_idx
   on public.verification_submissions(user_id)
   where status = 'pending';
@@ -54,6 +68,11 @@ for each row execute function public.set_updated_at();
 drop trigger if exists verification_submissions_set_updated_at on public.verification_submissions;
 create trigger verification_submissions_set_updated_at
 before update on public.verification_submissions
+for each row execute function public.set_updated_at();
+
+drop trigger if exists withdrawal_requests_set_updated_at on public.withdrawal_requests;
+create trigger withdrawal_requests_set_updated_at
+before update on public.withdrawal_requests
 for each row execute function public.set_updated_at();
 
 create or replace function public.mark_profile_pending_verification()
@@ -119,6 +138,7 @@ for each row execute function public.handle_new_user();
 
 alter table public.profiles enable row level security;
 alter table public.verification_submissions enable row level security;
+alter table public.withdrawal_requests enable row level security;
 
 drop policy if exists "Users can read own profile" on public.profiles;
 create policy "Users can read own profile"
@@ -150,6 +170,25 @@ with check (user_id = auth.uid());
 drop policy if exists "Admins can update submissions" on public.verification_submissions;
 create policy "Admins can update submissions"
 on public.verification_submissions for update
+to authenticated
+using (public.is_admin())
+with check (public.is_admin());
+
+drop policy if exists "Users can read own withdrawals" on public.withdrawal_requests;
+create policy "Users can read own withdrawals"
+on public.withdrawal_requests for select
+to authenticated
+using (user_id = auth.uid() or public.is_admin());
+
+drop policy if exists "Users can create own withdrawals" on public.withdrawal_requests;
+create policy "Users can create own withdrawals"
+on public.withdrawal_requests for insert
+to authenticated
+with check (user_id = auth.uid());
+
+drop policy if exists "Admins can update withdrawals" on public.withdrawal_requests;
+create policy "Admins can update withdrawals"
+on public.withdrawal_requests for update
 to authenticated
 using (public.is_admin())
 with check (public.is_admin());

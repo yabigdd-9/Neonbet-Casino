@@ -376,6 +376,8 @@ const statusStyles = {
   not_submitted: "border-slate-300/20 bg-slate-400/10 text-slate-200",
   pending: "border-amber-300/20 bg-amber-300/10 text-amber-200",
   verified: "border-emerald-300/20 bg-emerald-400/10 text-emerald-200",
+  approved: "border-emerald-300/20 bg-emerald-400/10 text-emerald-200",
+  paid: "border-cyan-300/20 bg-cyan-400/10 text-cyan-200",
   rejected: "border-rose-300/20 bg-rose-400/10 text-rose-200",
 };
 
@@ -383,6 +385,8 @@ const statusLabels = {
   not_submitted: "Not submitted",
   pending: "Pending review",
   verified: "Verified",
+  approved: "Approved",
+  paid: "Paid",
   rejected: "Rejected",
 };
 
@@ -397,6 +401,7 @@ function Sidebar({ open, setOpen }) {
     ["Live Tables", CircleDollarSign, "featured-games"],
     ["Promotions", Gift, "promotions"],
     ["Verification", ShieldCheck, "verification"],
+    ["Withdrawals", Wallet, "withdrawals"],
     ["VIP Club", Trophy, "vip"],
     ["Responsible Play", ShieldCheck, "terms"],
   ];
@@ -1380,6 +1385,116 @@ function TermsSection() {
   );
 }
 
+function WithdrawalRequestPanel({ user, profile, latestWithdrawal, withdrawalSaving, onSubmitWithdrawal }) {
+  const [amountUsd, setAmountUsd] = useState("");
+  const [payoutMethod, setPayoutMethod] = useState("USDT / BSC");
+  const [payoutAddress, setPayoutAddress] = useState("");
+  const verified = profile?.verification_status === "verified";
+  const rolloverComplete = Number(profile?.rollover_progress || 0) >= Number(profile?.rollover_required || 1000);
+  const canSubmit = user && amountUsd && Number(amountUsd) > 0 && payoutAddress.trim().length >= 10;
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    if (!canSubmit) return;
+    onSubmitWithdrawal({
+      amount_usd: Number(amountUsd),
+      payout_method: payoutMethod,
+      payout_address: payoutAddress.trim(),
+    });
+    setAmountUsd("");
+    setPayoutAddress("");
+  }
+
+  return (
+    <section id="withdrawals" className="scroll-mt-24 rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 md:p-8">
+      <div className="mb-5 flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
+        <div>
+          <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">Manual withdrawals</div>
+          <h2 className="mt-2 text-2xl md:text-3xl font-black">Withdrawal Request</h2>
+          <p className="mt-2 max-w-3xl text-slate-400">
+            Submit a manual request after verification and rollover review. Admin approval is required before any payout.
+          </p>
+        </div>
+        {latestWithdrawal && (
+          <div className={`rounded-2xl border px-4 py-3 text-sm font-black ${statusStyles[latestWithdrawal.status] || statusStyles.pending}`}>
+            Latest: {statusLabels[latestWithdrawal.status] || latestWithdrawal.status}
+          </div>
+        )}
+      </div>
+
+      <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
+        <div className="rounded-3xl border border-white/10 bg-black/20 p-5">
+          <div className="flex items-center gap-2 font-black text-white"><Wallet size={18} /> Eligibility</div>
+          <div className="mt-4 space-y-3 text-sm">
+            <div className="flex items-center justify-between rounded-2xl bg-white/[0.06] px-4 py-3">
+              <span className="text-slate-300">Account verification</span>
+              <span className={verified ? "font-black text-emerald-200" : "font-black text-amber-200"}>{verified ? "Verified" : "Required"}</span>
+            </div>
+            <div className="flex items-center justify-between rounded-2xl bg-white/[0.06] px-4 py-3">
+              <span className="text-slate-300">10x rollover</span>
+              <span className={rolloverComplete ? "font-black text-emerald-200" : "font-black text-amber-200"}>{rolloverComplete ? "Complete" : "Review needed"}</span>
+            </div>
+          </div>
+          <p className="mt-4 text-xs leading-5 text-slate-500">
+            Requests can be submitted before final approval, but admin may reject requests that do not meet verification, rollover, or account review rules.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="rounded-3xl border border-white/10 bg-black/20 p-5">
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="block">
+              <span className="text-sm font-bold text-slate-300">Amount USD</span>
+              <input
+                type="number"
+                min="1"
+                step="0.01"
+                value={amountUsd}
+                onChange={(event) => setAmountUsd(event.target.value)}
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none focus:border-cyan-300/60"
+                placeholder="100.00"
+              />
+            </label>
+            <label className="block">
+              <span className="text-sm font-bold text-slate-300">Payout method</span>
+              <select
+                value={payoutMethod}
+                onChange={(event) => setPayoutMethod(event.target.value)}
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-cyan-300/60"
+              >
+                <option>USDT / BSC</option>
+                <option>BTC / BTC</option>
+                <option>ETH / ETH</option>
+                <option>BNB / BSC</option>
+              </select>
+            </label>
+          </div>
+          <label className="mt-4 block">
+            <span className="text-sm font-bold text-slate-300">Payout wallet/address</span>
+            <input
+              value={payoutAddress}
+              onChange={(event) => setPayoutAddress(event.target.value)}
+              className="mt-2 w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 font-mono text-sm text-white outline-none focus:border-cyan-300/60"
+              placeholder="Paste payout address"
+            />
+          </label>
+          <button
+            type="submit"
+            disabled={!canSubmit || withdrawalSaving}
+            className="mt-4 w-full rounded-2xl bg-cyan-400 px-5 py-4 font-black text-slate-950 shadow-neon transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {withdrawalSaving ? "Submitting..." : "Submit withdrawal request"}
+          </button>
+          {latestWithdrawal && (
+            <p className="mt-3 break-all text-xs leading-5 text-slate-400">
+              Latest request: ${Number(latestWithdrawal.amount_usd).toFixed(2)} to {latestWithdrawal.payout_method}. {latestWithdrawal.admin_notes && `Admin note: ${latestWithdrawal.admin_notes}`}
+            </p>
+          )}
+        </form>
+      </div>
+    </section>
+  );
+}
+
 function AccountStatusPanel({ user, profile, latestSubmission, backendReady }) {
   if (!user) return null;
 
@@ -1426,22 +1541,59 @@ function AccountStatusPanel({ user, profile, latestSubmission, backendReady }) {
   );
 }
 
-function AdminDashboard({ profile, submissions, onReview, adminSaving }) {
+function AdminDashboard({ profile, submissions, withdrawals, onReview, onReviewWithdrawal, adminSaving }) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   if (profile?.role !== "admin") return null;
+
+  const matchesAdminFilters = (item) => {
+    const query = searchTerm.trim().toLowerCase();
+    const userText = `${item.profiles?.username || ""} ${item.profiles?.email || ""} ${item.user_id || ""}`.toLowerCase();
+    const matchesSearch = !query || userText.includes(query) || JSON.stringify(item).toLowerCase().includes(query);
+    const matchesStatus = statusFilter === "all" || item.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  };
+  const filteredSubmissions = submissions.filter(matchesAdminFilters);
+  const filteredWithdrawals = withdrawals.filter(matchesAdminFilters);
 
   return (
     <section id="admin" className="scroll-mt-24 rounded-[2rem] border border-amber-300/20 bg-amber-300/10 p-6 md:p-8">
       <div className="mb-5">
         <div className="text-xs font-bold uppercase tracking-[0.18em] text-amber-200">Admin dashboard</div>
-        <h2 className="mt-2 text-2xl md:text-3xl font-black">Verification Review</h2>
-        <p className="mt-2 text-slate-300">Review submitted transaction hashes, add notes, and set account status.</p>
+        <h2 className="mt-2 text-2xl md:text-3xl font-black">Admin Review</h2>
+        <p className="mt-2 text-slate-300">Search users, review transaction hashes, and manage withdrawal requests.</p>
+      </div>
+
+      <div className="mb-5 grid gap-3 md:grid-cols-[1fr_auto]">
+        <label className="relative block">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <input
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            className="w-full rounded-2xl border border-white/10 bg-slate-950/70 py-4 pl-11 pr-4 text-white outline-none focus:border-amber-300/60"
+            placeholder="Search username, email, hash, wallet, or user id"
+          />
+        </label>
+        <select
+          value={statusFilter}
+          onChange={(event) => setStatusFilter(event.target.value)}
+          className="rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-4 text-white outline-none focus:border-amber-300/60"
+        >
+          <option value="all">All statuses</option>
+          <option value="pending">Pending</option>
+          <option value="verified">Verified</option>
+          <option value="approved">Approved</option>
+          <option value="paid">Paid</option>
+          <option value="rejected">Rejected</option>
+        </select>
       </div>
 
       <div className="space-y-4">
-        {submissions.length === 0 && (
-          <div className="rounded-3xl border border-white/10 bg-black/20 p-5 text-slate-300">No verification submissions yet.</div>
+        <h3 className="text-lg font-black text-white">Verification submissions</h3>
+        {filteredSubmissions.length === 0 && (
+          <div className="rounded-3xl border border-white/10 bg-black/20 p-5 text-slate-300">No verification submissions match.</div>
         )}
-        {submissions.map((submission) => (
+        {filteredSubmissions.map((submission) => (
           <div key={submission.id} className="rounded-3xl border border-white/10 bg-slate-950/70 p-5">
             <div className="grid gap-4 xl:grid-cols-[1fr_auto] xl:items-start">
               <div>
@@ -1487,6 +1639,53 @@ function AdminDashboard({ profile, submissions, onReview, adminSaving }) {
           </div>
         ))}
       </div>
+
+      <div className="mt-8 space-y-4">
+        <h3 className="text-lg font-black text-white">Withdrawal requests</h3>
+        {filteredWithdrawals.length === 0 && (
+          <div className="rounded-3xl border border-white/10 bg-black/20 p-5 text-slate-300">No withdrawal requests match.</div>
+        )}
+        {filteredWithdrawals.map((withdrawal) => (
+          <div key={withdrawal.id} className="rounded-3xl border border-white/10 bg-slate-950/70 p-5">
+            <div className="grid gap-4 xl:grid-cols-[1fr_auto] xl:items-start">
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={`rounded-full border px-3 py-1 text-xs font-black ${statusStyles[withdrawal.status] || statusStyles.pending}`}>
+                    {statusLabels[withdrawal.status] || withdrawal.status}
+                  </span>
+                  <span className="text-sm text-slate-400">${Number(withdrawal.amount_usd).toFixed(2)} / {withdrawal.payout_method}</span>
+                </div>
+                <div className="mt-3 break-all font-mono text-sm text-white">{withdrawal.payout_address}</div>
+                <p className="mt-2 text-sm text-slate-400">
+                  User: {withdrawal.profiles?.username || withdrawal.profiles?.email || withdrawal.user_id}
+                </p>
+                {withdrawal.admin_notes && <p className="mt-2 text-sm text-amber-100">Note: {withdrawal.admin_notes}</p>}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {["approved", "paid", "rejected", "pending"].map((status) => (
+                  <button
+                    key={status}
+                    type="button"
+                    disabled={adminSaving}
+                    onClick={() => onReviewWithdrawal(withdrawal, status)}
+                    className={`rounded-2xl px-4 py-3 text-sm font-black disabled:opacity-50 ${
+                      status === "rejected"
+                        ? "bg-rose-400 text-white"
+                        : status === "paid"
+                          ? "bg-cyan-400 text-slate-950"
+                          : status === "approved"
+                            ? "bg-emerald-400 text-slate-950"
+                            : "bg-white/10 text-white"
+                    }`}
+                  >
+                    {statusLabels[status] || status}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </section>
   );
 }
@@ -1502,9 +1701,11 @@ function App() {
   const [authOpen, setAuthOpen] = useState(false);
   const [profile, setProfile] = useState(null);
   const [submissions, setSubmissions] = useState([]);
+  const [withdrawals, setWithdrawals] = useState([]);
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
   const [verificationSaving, setVerificationSaving] = useState(false);
+  const [withdrawalSaving, setWithdrawalSaving] = useState(false);
   const [adminSaving, setAdminSaving] = useState(false);
   const [user, setUser] = useState(() => {
     if (hasSupabaseConfig) return null;
@@ -1515,6 +1716,7 @@ function App() {
     }
   });
   const latestSubmission = submissions[0] || null;
+  const latestWithdrawal = withdrawals[0] || null;
 
   useEffect(() => {
     if (!hasSupabaseConfig) return undefined;
@@ -1534,6 +1736,7 @@ function App() {
       } else {
         setProfile(null);
         setSubmissions([]);
+        setWithdrawals([]);
       }
     });
 
@@ -1544,6 +1747,7 @@ function App() {
     if (!nextUser) {
       setProfile(null);
       setSubmissions([]);
+      setWithdrawals([]);
       return;
     }
 
@@ -1560,6 +1764,7 @@ function App() {
         rollover_progress: Number(window.localStorage.getItem("neonbetRolloverProgress") || 0),
       });
       setSubmissions(JSON.parse(window.localStorage.getItem("neonbetVerificationSubmissions") || "[]"));
+      setWithdrawals(JSON.parse(window.localStorage.getItem("neonbetWithdrawalRequests") || "[]"));
       return;
     }
 
@@ -1588,6 +1793,20 @@ function App() {
     const { data: submissionData, error: submissionError } = await query;
     if (!submissionError) {
       setSubmissions(submissionData || []);
+    }
+
+    let withdrawalQuery = supabase
+      .from("withdrawal_requests")
+      .select("*, profiles(username,email)")
+      .order("created_at", { ascending: false });
+
+    if (profileData.role !== "admin") {
+      withdrawalQuery = withdrawalQuery.eq("user_id", nextUser.id);
+    }
+
+    const { data: withdrawalData, error: withdrawalError } = await withdrawalQuery;
+    if (!withdrawalError) {
+      setWithdrawals(withdrawalData || []);
     }
   }
 
@@ -1665,6 +1884,7 @@ function App() {
     setUser(null);
     setProfile(null);
     setSubmissions([]);
+    setWithdrawals([]);
     window.localStorage.removeItem("neonbetUser");
   }
 
@@ -1712,6 +1932,43 @@ function App() {
     }
   }
 
+  async function handleSubmitWithdrawal(request) {
+    if (!user) {
+      openAuth("login");
+      return;
+    }
+
+    setWithdrawalSaving(true);
+
+    try {
+      if (!hasSupabaseConfig) {
+        const localWithdrawal = {
+          id: `local-withdrawal-${Date.now()}`,
+          user_id: user.id,
+          ...request,
+          status: "pending",
+          created_at: new Date().toISOString(),
+        };
+        const nextWithdrawals = [localWithdrawal, ...withdrawals];
+        setWithdrawals(nextWithdrawals);
+        window.localStorage.setItem("neonbetWithdrawalRequests", JSON.stringify(nextWithdrawals));
+        return;
+      }
+
+      const { error } = await supabase.from("withdrawal_requests").insert({
+        user_id: user.id,
+        ...request,
+      });
+
+      if (error) throw error;
+      await loadAccount(user);
+    } catch (error) {
+      setAuthError(error.message || "Withdrawal request failed.");
+    } finally {
+      setWithdrawalSaving(false);
+    }
+  }
+
   async function handleReviewSubmission(submission, status) {
     if (!hasSupabaseConfig || profile?.role !== "admin") return;
 
@@ -1737,6 +1994,29 @@ function App() {
       await loadAccount(user);
     } catch (error) {
       setAuthError(error.message || "Admin review failed.");
+    } finally {
+      setAdminSaving(false);
+    }
+  }
+
+  async function handleReviewWithdrawal(withdrawal, status) {
+    if (!hasSupabaseConfig || profile?.role !== "admin") return;
+
+    const adminNotes = window.prompt("Admin note", withdrawal.admin_notes || "");
+    if (adminNotes === null) return;
+
+    setAdminSaving(true);
+
+    try {
+      const { error } = await supabase
+        .from("withdrawal_requests")
+        .update({ status, admin_notes: adminNotes })
+        .eq("id", withdrawal.id);
+
+      if (error) throw error;
+      await loadAccount(user);
+    } catch (error) {
+      setAuthError(error.message || "Withdrawal review failed.");
     } finally {
       setAdminSaving(false);
     }
@@ -1824,10 +2104,21 @@ function App() {
           verificationSaving={verificationSaving}
           onNeedAuth={() => openAuth("register")}
         />
+        {user && (
+          <WithdrawalRequestPanel
+            user={user}
+            profile={profile}
+            latestWithdrawal={latestWithdrawal}
+            withdrawalSaving={withdrawalSaving}
+            onSubmitWithdrawal={handleSubmitWithdrawal}
+          />
+        )}
         <AdminDashboard
           profile={profile}
           submissions={submissions}
+          withdrawals={withdrawals}
           onReview={handleReviewSubmission}
+          onReviewWithdrawal={handleReviewWithdrawal}
           adminSaving={adminSaving}
         />
 
