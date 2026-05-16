@@ -263,15 +263,19 @@ const lobbyStats = [
   ["$75", "Verification"],
 ];
 
+function scrollToSection(sectionId) {
+  document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 function Sidebar({ open, setOpen }) {
   const links = [
-    ["Lobby", Gamepad2],
-    ["Slots", Dice5],
-    ["Live Tables", CircleDollarSign],
-    ["Promotions", Gift],
-    ["Verification", ShieldCheck],
-    ["VIP Club", Trophy],
-    ["Responsible Play", ShieldCheck],
+    ["Lobby", Gamepad2, "lobby"],
+    ["Slots", Dice5, "featured-games"],
+    ["Live Tables", CircleDollarSign, "featured-games"],
+    ["Promotions", Gift, "promotions"],
+    ["Verification", ShieldCheck, "verification"],
+    ["VIP Club", Trophy, "vip"],
+    ["Responsible Play", ShieldCheck, "footer"],
   ];
 
   return (
@@ -295,11 +299,19 @@ function Sidebar({ open, setOpen }) {
         </div>
 
         <nav className="space-y-2">
-          {links.map(([label, Icon]) => (
-            <a key={label} href="#" className="flex items-center gap-3 px-4 py-3 rounded-2xl text-slate-300 hover:bg-white/10 hover:text-white transition">
+          {links.map(([label, Icon, sectionId]) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => {
+                scrollToSection(sectionId);
+                setOpen(false);
+              }}
+              className="flex w-full items-center gap-3 px-4 py-3 rounded-2xl text-left text-slate-300 hover:bg-white/10 hover:text-white transition"
+            >
               <Icon size={19} />
               <span>{label}</span>
-            </a>
+            </button>
           ))}
         </nav>
 
@@ -325,21 +337,37 @@ function Header({ setOpen, balance }) {
         </div>
 
         <div className="ml-auto flex items-center gap-2">
-          <button className="hidden sm:flex items-center gap-2 px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/15">
+          <button
+            type="button"
+            onClick={() => scrollToSection("featured-games")}
+            className="hidden sm:flex items-center gap-2 px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/15"
+          >
             <Wallet size={18} /> ${balance.toFixed(2)}
           </button>
           <button className="p-3 rounded-2xl bg-white/10 hover:bg-white/15"><Bell size={18} /></button>
-          <button className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/15">Login</button>
-          <button className="px-4 py-3 rounded-2xl bg-cyan-400 text-slate-950 font-black shadow-neon hover:scale-[1.02] transition">Register</button>
+          <button
+            type="button"
+            onClick={() => scrollToSection("verification")}
+            className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/15"
+          >
+            Login
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollToSection("verification")}
+            className="px-4 py-3 rounded-2xl bg-cyan-400 text-slate-950 font-black shadow-neon hover:scale-[1.02] transition"
+          >
+            Register
+          </button>
         </div>
       </div>
     </header>
   );
 }
 
-function Hero() {
+function Hero({ onClaim }) {
   return (
-    <section className="relative overflow-hidden rounded-[2rem] border border-cyan-300/20 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 p-6 md:p-10 shadow-neon">
+    <section id="lobby" className="relative scroll-mt-24 overflow-hidden rounded-[2rem] border border-cyan-300/20 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 p-6 md:p-10 shadow-neon">
       <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-cyan-400/20 blur-3xl" />
       <div className="absolute right-24 bottom-0 h-52 w-52 rounded-full bg-fuchsia-500/20 blur-3xl" />
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/70 to-transparent" />
@@ -356,8 +384,20 @@ function Hero() {
             Claim a free $100 sign-up bonus, unlock a 300% welcome match and clear a 10x rollover requirement.
           </p>
           <div className="flex flex-wrap gap-3 mt-7">
-            <button className="flex items-center gap-2 px-6 py-4 rounded-2xl bg-cyan-400 text-slate-950 font-black shadow-neon"><Play size={18}/> Claim $100</button>
-            <button className="px-6 py-4 rounded-2xl bg-white/10 border border-white/10 font-bold">View Promotions</button>
+            <button
+              type="button"
+              onClick={onClaim}
+              className="flex items-center gap-2 px-6 py-4 rounded-2xl bg-cyan-400 text-slate-950 font-black shadow-neon"
+            >
+              <Play size={18}/> Claim $100
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollToSection("promotions")}
+              className="px-6 py-4 rounded-2xl bg-white/10 border border-white/10 font-bold"
+            >
+              View Promotions
+            </button>
           </div>
           <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {lobbyStats.map(([value, label]) => (
@@ -581,7 +621,7 @@ function CopyButton({ value, label, copiedKey, setCopiedKey, id }) {
 
 function PaymentMethods() {
   return (
-    <section>
+    <section id="payment-methods" className="scroll-mt-24">
       <div className="mb-5">
         <h2 className="text-2xl md:text-3xl font-black">Crypto Payment Methods</h2>
         <p className="text-slate-400">
@@ -608,7 +648,7 @@ function SlotProviderLibrary() {
   const totalGames = slotProviders.reduce((sum, provider) => sum + provider.games.length, 0);
 
   return (
-    <section id="providers">
+    <section id="providers" className="scroll-mt-24">
       <div className="mb-5 flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <h2 className="text-2xl md:text-3xl font-black">Slot Providers & Games</h2>
@@ -654,7 +694,7 @@ function VerificationPanel() {
   const referenceExample = "@yourname + 0x/txid...";
 
   return (
-    <section className="grid xl:grid-cols-[1.2fr_0.8fr] gap-5" id="verification">
+    <section className="grid scroll-mt-24 xl:grid-cols-[1.2fr_0.8fr] gap-5" id="verification">
       <div className="relative overflow-hidden rounded-[2rem] border border-cyan-300/20 bg-gradient-to-br from-slate-900 via-slate-950 to-cyan-950/70 p-6 md:p-8">
         <div className="absolute -right-24 top-10 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
         <div className="relative">
@@ -808,15 +848,21 @@ function App() {
       <Header setOpen={setOpen} balance={balance} />
 
       <main className="relative lg:ml-72 px-4 md:px-8 py-8 space-y-8">
-        <Hero />
+        <Hero onClaim={() => scrollToSection("verification")} />
 
-        <section>
+        <section id="featured-games" className="scroll-mt-24">
           <div className="flex items-end justify-between gap-4 mb-5">
             <div>
               <h2 className="text-2xl md:text-3xl font-black">Featured Games</h2>
               <p className="text-slate-400">Fast picks styled for a crypto casino lobby.</p>
             </div>
-            <button className="hidden sm:block rounded-2xl px-4 py-3 bg-white/10 border border-white/10">View all</button>
+            <button
+              type="button"
+              onClick={() => scrollToSection("providers")}
+              className="hidden sm:block rounded-2xl px-4 py-3 bg-white/10 border border-white/10"
+            >
+              View all
+            </button>
           </div>
           <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-5">
             {games.map((game) => <GameCard key={game.title} game={game} onPlay={setActiveGame} />)}
@@ -827,7 +873,7 @@ function App() {
         <PaymentMethods />
         <VerificationPanel />
 
-        <section className="grid lg:grid-cols-3 gap-5">
+        <section id="promotions" className="grid scroll-mt-24 lg:grid-cols-3 gap-5">
           {promos.map(({ title, detail, icon: Icon }) => (
             <div key={title} className="rounded-3xl bg-white/[0.06] border border-white/10 p-6">
               <div className="h-12 w-12 rounded-2xl bg-amber-300 text-slate-950 grid place-items-center mb-5 shadow-gold">
@@ -839,7 +885,7 @@ function App() {
           ))}
         </section>
 
-        <section className="grid xl:grid-cols-3 gap-5">
+        <section id="vip" className="grid scroll-mt-24 xl:grid-cols-3 gap-5">
           <div className="xl:col-span-2 rounded-3xl bg-white/[0.06] border border-white/10 p-6">
             <h2 className="text-2xl font-black mb-5">Leaderboard</h2>
             {["LuckyDion", "NeonWolf", "KiwiJackpot", "SpinQueen"].map((name, i) => (
@@ -862,7 +908,7 @@ function App() {
           </div>
         </section>
 
-        <footer className="text-center text-xs text-slate-500 py-8">
+        <footer id="footer" className="scroll-mt-24 text-center text-xs text-slate-500 py-8">
           NeonBet bonuses, provider availability and verification are subject to account approval, local rules and published terms. The $75 crypto verification fee is reviewed manually and is not an instant deposit or automated payment confirmation.
         </footer>
       </main>
