@@ -4,7 +4,7 @@ This is a React + Vite + Tailwind casino-style landing page and lobby.
 
 ## Important
 
-This project is a static frontend. It does not include a gambling backend, account database, wallet connection, payment processor, automated verification, deposits, withdrawals, or game-provider integrations.
+This project can run as a static frontend, or connect to Supabase for real user accounts, admin review, verification submissions, transaction hash storage, statuses, admin notes, and bonus/rollover tracking. It does not include a wallet connection, payment processor, automated verification, deposits, withdrawals, or real game-provider integrations.
 
 The site includes browser-only simulated slot gameplay, a static manual crypto verification panel for a 75 USD account verification fee, plus marketing copy for a free 100 USD sign-up bonus, 300% welcome match, and 10x bonus rollover requirement. Bonus eligibility, provider availability, verification, and regional access should be governed by your published terms.
 
@@ -14,9 +14,37 @@ The featured game cards open a local simulated slot modal. The slot engine is tu
 
 ## Login and registration
 
-The Login and Register buttons open an in-app account modal. Login stores a browser-only local account in `localStorage`. Register collects a username and mobile number, requires acknowledgement of the bonus rollover terms, and can open a prefilled Telegram or WhatsApp signup message.
+The Login and Register buttons open an in-app account modal. With Supabase configured, users sign up or log in with email/password, then the app shows their verification status, latest transaction submission, bonus balance, and 10x rollover progress.
 
-This is not a backend account system. For real accounts, add a server, database, identity checks, and admin tooling.
+Without Supabase environment variables, the app falls back to browser-only local account storage for previewing the UI.
+
+## Supabase backend setup
+
+1. Create a free Supabase project.
+2. In Supabase SQL Editor, run `supabase/schema.sql`.
+3. Copy `.env.example` to `.env.local`.
+4. Fill in:
+
+```bash
+VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+```
+
+5. Sign up once through the site, then make your account admin in Supabase SQL Editor:
+
+```sql
+update public.profiles
+set role = 'admin'
+where email = 'your-email@example.com';
+```
+
+The admin dashboard appears inside the site only for accounts with `role = 'admin'`.
+
+## Verification workflow
+
+Users choose a crypto asset/network, send the $75 USD verification payment manually, paste the transaction hash into the verification form, and submit it for review. The app stores the hash in `verification_submissions` with `pending`, `verified`, or `rejected` status.
+
+Admins log in, review the transaction externally, add an admin note, then mark the submission pending, verified, or rejected. The user account status updates in their account panel.
 
 ## Terms summary
 
@@ -47,6 +75,17 @@ Open the local URL Vite gives you.
 ```bash
 npm run build
 ```
+
+## GitHub Pages environment
+
+For the deployed GitHub Pages build, add these repository secrets in GitHub:
+
+```text
+VITE_SUPABASE_URL
+VITE_SUPABASE_ANON_KEY
+```
+
+Go to Settings -> Secrets and variables -> Actions -> New repository secret. The workflow reads those secrets during `npm run build`.
 
 The production build is written to `dist/`.
 

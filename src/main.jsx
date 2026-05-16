@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   Menu,
@@ -24,6 +24,7 @@ import {
   MessageCircle,
   Send,
 } from "lucide-react";
+import { hasSupabaseConfig, supabase } from "./supabaseClient";
 import "./styles.css";
 
 const games = [
@@ -318,6 +319,20 @@ const lobbyStats = [
   ["$75", "Verification"],
 ];
 
+const statusStyles = {
+  not_submitted: "border-slate-300/20 bg-slate-400/10 text-slate-200",
+  pending: "border-amber-300/20 bg-amber-300/10 text-amber-200",
+  verified: "border-emerald-300/20 bg-emerald-400/10 text-emerald-200",
+  rejected: "border-rose-300/20 bg-rose-400/10 text-rose-200",
+};
+
+const statusLabels = {
+  not_submitted: "Not submitted",
+  pending: "Pending review",
+  verified: "Verified",
+  rejected: "Rejected",
+};
+
 function scrollToSection(sectionId) {
   document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -529,26 +544,31 @@ function ContactButtons({ compact = false }) {
   );
 }
 
-function AuthModal({ mode, setMode, onClose, onLogin }) {
+function AuthModal({ mode, setMode, onClose, onSubmit, authLoading, authError }) {
   const [username, setUsername] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [contactMethod, setContactMethod] = useState("telegram");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const isRegister = mode === "register";
-  const canSubmit = username.trim().length >= 3 && (!isRegister || acceptedTerms);
+  const canSubmit = hasSupabaseConfig
+    ? email.trim().includes("@") && password.length >= 6 && (!isRegister || (username.trim().length >= 3 && acceptedTerms))
+    : username.trim().length >= 3 && (!isRegister || acceptedTerms);
   const selectedContactUrl = buildContactUrl(contactMethod, username, phone);
 
-  function handleLocalLogin(event) {
+  function handleAuth(event) {
     event.preventDefault();
     if (!canSubmit) return;
 
-    onLogin({
+    onSubmit({
+      mode,
+      email: email.trim(),
+      password,
       username: username.trim(),
       phone: phone.trim(),
       contactMethod,
-      registeredAt: new Date().toISOString(),
     });
-    onClose();
   }
 
   return (
@@ -590,14 +610,39 @@ function AuthModal({ mode, setMode, onClose, onLogin }) {
             </div>
           </div>
 
-          <form onSubmit={handleLocalLogin} className="space-y-4">
+          <form onSubmit={handleAuth} className="space-y-4">
+            {hasSupabaseConfig && (
+              <>
+                <label className="block">
+                  <span className="text-sm font-bold text-slate-300">Email</span>
+                  <input
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    className="mt-2 w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none focus:border-cyan-300/60"
+                    placeholder="you@example.com"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="text-sm font-bold text-slate-300">Password</span>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    className="mt-2 w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none focus:border-cyan-300/60"
+                    placeholder="Minimum 6 characters"
+                  />
+                </label>
+              </>
+            )}
+
             <label className="block">
               <span className="text-sm font-bold text-slate-300">Username</span>
               <input
                 value={username}
                 onChange={(event) => setUsername(event.target.value)}
                 className="mt-2 w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none focus:border-cyan-300/60"
-                placeholder="Choose a username"
+                placeholder={hasSupabaseConfig && !isRegister ? "Optional after login" : "Choose a username"}
               />
             </label>
 
@@ -649,11 +694,13 @@ function AuthModal({ mode, setMode, onClose, onLogin }) {
 
             <button
               type="submit"
-              disabled={!canSubmit}
+              disabled={!canSubmit || authLoading}
               className="w-full rounded-2xl bg-cyan-400 px-5 py-4 font-black text-slate-950 shadow-neon transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isRegister ? "Create local account" : "Login"}
+              {authLoading ? "Please wait..." : isRegister ? "Create account" : "Login"}
             </button>
+
+            {authError && <p className="rounded-2xl border border-rose-300/20 bg-rose-400/10 p-3 text-sm text-rose-100">{authError}</p>}
 
             {isRegister && (
               <a
@@ -905,11 +952,24 @@ function SlotProviderLibrary() {
   );
 }
 
-function VerificationPanel() {
+function VerificationPanel({ user, latestSubmission, onSubmitVerification, verificationSaving, onNeedAuth }) {
   const [copiedKey, setCopiedKey] = useState("");
   const [selectedMethodIndex, setSelectedMethodIndex] = useState(0);
+  const [txHash, setTxHash] = useState("");
   const selectedMethod = verificationConfig.acceptedCrypto[selectedMethodIndex];
   const referenceExample = "@yourname + 0x/txid...";
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    if (!user) {
+      onNeedAuth();
+      return;
+    }
+
+    if (!txHash.trim()) return;
+    onSubmitVerification(selectedMethod, txHash.trim());
+    setTxHash("");
+  }
 
   return (
     <section className="grid scroll-mt-24 xl:grid-cols-[1.2fr_0.8fr] gap-5" id="verification">
@@ -1044,6 +1104,28 @@ function VerificationPanel() {
               />
             </div>
           </div>
+
+          <form onSubmit={handleSubmit} className="rounded-3xl border border-cyan-300/20 bg-cyan-400/10 p-4">
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-200">Submit transaction hash</div>
+            <input
+              value={txHash}
+              onChange={(event) => setTxHash(event.target.value)}
+              className="mt-3 w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 font-mono text-sm text-white outline-none focus:border-cyan-300/60"
+              placeholder="Paste transaction hash"
+            />
+            <button
+              type="submit"
+              disabled={verificationSaving || (user && !txHash.trim())}
+              className="mt-3 w-full rounded-2xl bg-cyan-400 px-5 py-4 font-black text-slate-950 shadow-neon transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {!user ? "Login or register first" : verificationSaving ? "Submitting..." : "Submit for manual review"}
+            </button>
+            {latestSubmission && (
+              <p className="mt-3 text-xs leading-5 text-cyan-100">
+                Latest submission: {latestSubmission.asset} / {latestSubmission.network} is {statusLabels[latestSubmission.status] || latestSubmission.status}.
+              </p>
+            )}
+          </form>
         </div>
 
         <p className="mt-5 text-xs leading-5 text-slate-500">
@@ -1094,33 +1176,363 @@ function TermsSection() {
   );
 }
 
+function AccountStatusPanel({ user, profile, latestSubmission, backendReady }) {
+  if (!user) return null;
+
+  const status = profile?.verification_status || "not_submitted";
+  const progress = Number(profile?.rollover_progress || 0);
+  const required = Number(profile?.rollover_required || 1000);
+  const percent = Math.min(100, Math.round((progress / required) * 100));
+
+  return (
+    <section id="account-status" className="scroll-mt-24 rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 md:p-8">
+      <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+        <div>
+          <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">Account status</div>
+          <h2 className="mt-2 text-2xl md:text-3xl font-black">{profile?.username || user.username || user.email}</h2>
+          <p className="mt-2 text-slate-400">
+            {backendReady ? "Synced with Supabase accounts and verification records." : "Local browser account. Add Supabase env vars for real backend accounts."}
+          </p>
+        </div>
+        <div className={`rounded-2xl border px-4 py-3 text-sm font-black ${statusStyles[status] || statusStyles.not_submitted}`}>
+          {statusLabels[status] || status}
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-4 md:grid-cols-3">
+        <div className="rounded-3xl border border-white/10 bg-black/20 p-5">
+          <div className="text-sm text-slate-400">Bonus balance</div>
+          <div className="mt-1 text-3xl font-black">${Number(profile?.bonus_balance ?? 100).toFixed(2)}</div>
+        </div>
+        <div className="rounded-3xl border border-white/10 bg-black/20 p-5">
+          <div className="text-sm text-slate-400">Rollover progress</div>
+          <div className="mt-1 text-3xl font-black">{percent}%</div>
+          <div className="mt-3 h-3 overflow-hidden rounded-full bg-white/10">
+            <div className="h-full bg-cyan-400" style={{ width: `${percent}%` }} />
+          </div>
+          <p className="mt-2 text-xs text-slate-500">${progress.toFixed(2)} / ${required.toFixed(2)}</p>
+        </div>
+        <div className="rounded-3xl border border-white/10 bg-black/20 p-5">
+          <div className="text-sm text-slate-400">Latest submission</div>
+          <div className="mt-1 text-xl font-black">{latestSubmission?.asset || "None"}</div>
+          <p className="mt-2 break-all text-xs text-slate-500">{latestSubmission?.tx_hash || "Submit a transaction hash in verification."}</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function AdminDashboard({ profile, submissions, onReview, adminSaving }) {
+  if (profile?.role !== "admin") return null;
+
+  return (
+    <section id="admin" className="scroll-mt-24 rounded-[2rem] border border-amber-300/20 bg-amber-300/10 p-6 md:p-8">
+      <div className="mb-5">
+        <div className="text-xs font-bold uppercase tracking-[0.18em] text-amber-200">Admin dashboard</div>
+        <h2 className="mt-2 text-2xl md:text-3xl font-black">Verification Review</h2>
+        <p className="mt-2 text-slate-300">Review submitted transaction hashes, add notes, and set account status.</p>
+      </div>
+
+      <div className="space-y-4">
+        {submissions.length === 0 && (
+          <div className="rounded-3xl border border-white/10 bg-black/20 p-5 text-slate-300">No verification submissions yet.</div>
+        )}
+        {submissions.map((submission) => (
+          <div key={submission.id} className="rounded-3xl border border-white/10 bg-slate-950/70 p-5">
+            <div className="grid gap-4 xl:grid-cols-[1fr_auto] xl:items-start">
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={`rounded-full border px-3 py-1 text-xs font-black ${statusStyles[submission.status] || statusStyles.pending}`}>
+                    {statusLabels[submission.status] || submission.status}
+                  </span>
+                  <span className="text-sm text-slate-400">{submission.asset} / {submission.network}</span>
+                </div>
+                <div className="mt-3 break-all font-mono text-sm text-white">{submission.tx_hash}</div>
+                <p className="mt-2 text-sm text-slate-400">
+                  User: {submission.profiles?.username || submission.profiles?.email || submission.user_id}
+                </p>
+                {submission.admin_notes && <p className="mt-2 text-sm text-amber-100">Note: {submission.admin_notes}</p>}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  disabled={adminSaving}
+                  onClick={() => onReview(submission, "verified")}
+                  className="rounded-2xl bg-emerald-400 px-4 py-3 text-sm font-black text-slate-950 disabled:opacity-50"
+                >
+                  Verify
+                </button>
+                <button
+                  type="button"
+                  disabled={adminSaving}
+                  onClick={() => onReview(submission, "rejected")}
+                  className="rounded-2xl bg-rose-400 px-4 py-3 text-sm font-black text-white disabled:opacity-50"
+                >
+                  Reject
+                </button>
+                <button
+                  type="button"
+                  disabled={adminSaving}
+                  onClick={() => onReview(submission, "pending")}
+                  className="rounded-2xl bg-white/10 px-4 py-3 text-sm font-black text-white disabled:opacity-50"
+                >
+                  Pending
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function App() {
   const [open, setOpen] = useState(false);
   const [balance, setBalance] = useState(100);
   const [activeGame, setActiveGame] = useState(null);
   const [authMode, setAuthMode] = useState("login");
   const [authOpen, setAuthOpen] = useState(false);
+  const [profile, setProfile] = useState(null);
+  const [submissions, setSubmissions] = useState([]);
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState("");
+  const [verificationSaving, setVerificationSaving] = useState(false);
+  const [adminSaving, setAdminSaving] = useState(false);
   const [user, setUser] = useState(() => {
+    if (hasSupabaseConfig) return null;
     try {
       return JSON.parse(window.localStorage.getItem("neonbetUser")) || null;
     } catch {
       return null;
     }
   });
+  const latestSubmission = submissions[0] || null;
+
+  useEffect(() => {
+    if (!hasSupabaseConfig) return undefined;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session?.user) {
+        setUser(data.session.user);
+        loadAccount(data.session.user);
+      }
+    });
+
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      const nextUser = session?.user || null;
+      setUser(nextUser);
+      if (nextUser) {
+        loadAccount(nextUser);
+      } else {
+        setProfile(null);
+        setSubmissions([]);
+      }
+    });
+
+    return () => data.subscription.unsubscribe();
+  }, []);
+
+  async function loadAccount(nextUser = user) {
+    if (!nextUser) {
+      setProfile(null);
+      setSubmissions([]);
+      return;
+    }
+
+    if (!hasSupabaseConfig) {
+      setProfile({
+        id: nextUser.id || "local",
+        username: nextUser.username,
+        email: nextUser.email,
+        phone: nextUser.phone || "",
+        role: "user",
+        verification_status: nextUser.verification_status || "not_submitted",
+        bonus_balance: 100,
+        rollover_required: 1000,
+        rollover_progress: Number(window.localStorage.getItem("neonbetRolloverProgress") || 0),
+      });
+      setSubmissions(JSON.parse(window.localStorage.getItem("neonbetVerificationSubmissions") || "[]"));
+      return;
+    }
+
+    const { data: profileData, error: profileError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", nextUser.id)
+      .single();
+
+    if (profileError) {
+      setAuthError(profileError.message);
+      return;
+    }
+
+    setProfile(profileData);
+
+    let query = supabase
+      .from("verification_submissions")
+      .select("*, profiles(username,email)")
+      .order("created_at", { ascending: false });
+
+    if (profileData.role !== "admin") {
+      query = query.eq("user_id", nextUser.id);
+    }
+
+    const { data: submissionData, error: submissionError } = await query;
+    if (!submissionError) {
+      setSubmissions(submissionData || []);
+    }
+  }
 
   function openAuth(mode) {
+    setAuthError("");
     setAuthMode(mode);
     setAuthOpen(true);
   }
 
-  function handleLogin(nextUser) {
-    setUser(nextUser);
-    window.localStorage.setItem("neonbetUser", JSON.stringify(nextUser));
+  async function handleAuthSubmit(payload) {
+    setAuthLoading(true);
+    setAuthError("");
+
+    try {
+      if (!hasSupabaseConfig) {
+        const localUser = {
+          id: `local-${Date.now()}`,
+          username: payload.username,
+          phone: payload.phone,
+          contactMethod: payload.contactMethod,
+          verification_status: "not_submitted",
+        };
+        setUser(localUser);
+        window.localStorage.setItem("neonbetUser", JSON.stringify(localUser));
+        await loadAccount(localUser);
+        setAuthOpen(false);
+        return;
+      }
+
+      if (payload.mode === "register") {
+        const { data, error } = await supabase.auth.signUp({
+          email: payload.email,
+          password: payload.password,
+          options: {
+            data: {
+              username: payload.username,
+              phone: payload.phone,
+              contact_method: payload.contactMethod,
+            },
+          },
+        });
+
+        if (error) throw error;
+        if (!data.session) {
+          setAuthError("Account created. Check your email if Supabase email confirmation is enabled, then log in.");
+          return;
+        }
+
+        setUser(data.user);
+        await loadAccount(data.user);
+        setAuthOpen(false);
+        return;
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: payload.email,
+        password: payload.password,
+      });
+
+      if (error) throw error;
+      setUser(data.user);
+      await loadAccount(data.user);
+      setAuthOpen(false);
+    } catch (error) {
+      setAuthError(error.message || "Account action failed.");
+    } finally {
+      setAuthLoading(false);
+    }
   }
 
-  function handleLogout() {
+  async function handleLogout() {
+    if (hasSupabaseConfig) {
+      await supabase.auth.signOut();
+    }
     setUser(null);
+    setProfile(null);
+    setSubmissions([]);
     window.localStorage.removeItem("neonbetUser");
+  }
+
+  async function handleSubmitVerification(method, txHash) {
+    if (!user) {
+      openAuth("register");
+      return;
+    }
+
+    setVerificationSaving(true);
+
+    try {
+      if (!hasSupabaseConfig) {
+        const localSubmission = {
+          id: `local-submission-${Date.now()}`,
+          user_id: user.id,
+          asset: method.name,
+          network: method.network,
+          tx_hash: txHash,
+          amount_usd: verificationConfig.feeUsd,
+          status: "pending",
+          created_at: new Date().toISOString(),
+        };
+        const nextSubmissions = [localSubmission, ...submissions];
+        setSubmissions(nextSubmissions);
+        window.localStorage.setItem("neonbetVerificationSubmissions", JSON.stringify(nextSubmissions));
+        setProfile((current) => ({ ...current, verification_status: "pending" }));
+        return;
+      }
+
+      const { error } = await supabase.from("verification_submissions").insert({
+        user_id: user.id,
+        asset: method.name,
+        network: method.network,
+        tx_hash: txHash,
+        amount_usd: verificationConfig.feeUsd,
+      });
+
+      if (error) throw error;
+      await loadAccount(user);
+    } catch (error) {
+      setAuthError(error.message || "Verification submission failed.");
+    } finally {
+      setVerificationSaving(false);
+    }
+  }
+
+  async function handleReviewSubmission(submission, status) {
+    if (!hasSupabaseConfig || profile?.role !== "admin") return;
+
+    const adminNotes = window.prompt("Admin note", submission.admin_notes || "");
+    if (adminNotes === null) return;
+
+    setAdminSaving(true);
+
+    try {
+      const { error: submissionError } = await supabase
+        .from("verification_submissions")
+        .update({ status, admin_notes: adminNotes })
+        .eq("id", submission.id);
+
+      if (submissionError) throw submissionError;
+
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ verification_status: status, admin_notes: adminNotes })
+        .eq("id", submission.user_id);
+
+      if (profileError) throw profileError;
+      await loadAccount(user);
+    } catch (error) {
+      setAuthError(error.message || "Admin review failed.");
+    } finally {
+      setAdminSaving(false);
+    }
   }
 
   return (
@@ -1137,6 +1549,12 @@ function App() {
 
       <main className="relative lg:ml-72 px-4 md:px-8 py-8 space-y-8">
         <Hero onClaim={() => scrollToSection("verification")} />
+        <AccountStatusPanel
+          user={user}
+          profile={profile}
+          latestSubmission={latestSubmission}
+          backendReady={hasSupabaseConfig}
+        />
 
         <section id="featured-games" className="scroll-mt-24">
           <div className="flex items-end justify-between gap-4 mb-5">
@@ -1159,7 +1577,19 @@ function App() {
 
         <SlotProviderLibrary />
         <PaymentMethods />
-        <VerificationPanel />
+        <VerificationPanel
+          user={user}
+          latestSubmission={latestSubmission}
+          onSubmitVerification={handleSubmitVerification}
+          verificationSaving={verificationSaving}
+          onNeedAuth={() => openAuth("register")}
+        />
+        <AdminDashboard
+          profile={profile}
+          submissions={submissions}
+          onReview={handleReviewSubmission}
+          adminSaving={adminSaving}
+        />
 
         <section id="promotions" className="grid scroll-mt-24 lg:grid-cols-3 gap-5">
           {promos.map(({ title, detail, icon: Icon }) => (
@@ -1216,7 +1646,9 @@ function App() {
           mode={authMode}
           setMode={setAuthMode}
           onClose={() => setAuthOpen(false)}
-          onLogin={handleLogin}
+          onSubmit={handleAuthSubmit}
+          authLoading={authLoading}
+          authError={authError}
         />
       )}
     </div>
