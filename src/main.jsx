@@ -46,6 +46,12 @@ const payoutRows = [
   ["Bonus mix", "2x"],
 ];
 
+const betOptions = [0.25, 0.4, 0.5, 0.75, 0.8, 1.2];
+
+function formatMoney(amount) {
+  return `$${amount.toFixed(2)}`;
+}
+
 function pickWeightedOutcome() {
   const roll = Math.random();
 
@@ -480,7 +486,7 @@ function GameCard({ game, onPlay }) {
 }
 
 function SlotGameModal({ game, balance, setBalance, onClose }) {
-  const [bet, setBet] = useState(5);
+  const [bet, setBet] = useState(0.5);
   const [reels, setReels] = useState(game?.symbols?.slice(0, 5) || ["🍒", "⭐", "💎", "7", "🍋"]);
   const [result, setResult] = useState({ label: "Ready", win: 0, multiplier: 0 });
   const [spinning, setSpinning] = useState(false);
@@ -548,7 +554,7 @@ function SlotGameModal({ game, balance, setBalance, onClose }) {
               <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Balance</div>
               <div className="mt-1 text-4xl font-black text-white">${balance.toFixed(2)}</div>
               <div className="mt-4 grid grid-cols-3 gap-2">
-                {[1, 5, 10].map((amount) => (
+                {betOptions.map((amount) => (
                   <button
                     key={amount}
                     type="button"
@@ -557,7 +563,7 @@ function SlotGameModal({ game, balance, setBalance, onClose }) {
                       bet === amount ? "border-cyan-300/40 bg-cyan-400 text-slate-950" : "border-white/10 bg-black/20 text-slate-300 hover:bg-white/10"
                     }`}
                   >
-                    ${amount}
+                    {formatMoney(amount)}
                   </button>
                 ))}
               </div>
@@ -568,7 +574,7 @@ function SlotGameModal({ game, balance, setBalance, onClose }) {
                 className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-cyan-400 px-5 py-4 font-black text-slate-950 shadow-neon transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Play size={18} />
-                {spinning ? "Spinning..." : `Spin $${bet}`}
+                {spinning ? "Spinning..." : `Spin ${formatMoney(bet)}`}
               </button>
               {balance < bet && <p className="mt-3 text-sm text-amber-200">Balance is too low for this bet.</p>}
             </div>
