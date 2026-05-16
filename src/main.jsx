@@ -52,6 +52,20 @@ function formatMoney(amount) {
   return `$${amount.toFixed(2)}`;
 }
 
+function buildContactUrl(channel, username, phone) {
+  const handle = username.trim() || "new player";
+  const mobile = phone.trim() || "not provided";
+  const message = encodeURIComponent(
+    `Hi NeonBet, I want to register.\nUsername: ${handle}\nMobile: ${mobile}\nBonus: $100 sign-up + 300% match with 10x rollover`
+  );
+
+  if (channel === "whatsapp") {
+    return `https://wa.me/642904556680?text=${message}`;
+  }
+
+  return `https://t.me/yabigdd?text=${message}`;
+}
+
 function pickWeightedOutcome() {
   const roll = Math.random();
 
@@ -331,7 +345,7 @@ function Sidebar({ open, setOpen }) {
   );
 }
 
-function Header({ setOpen, balance }) {
+function Header({ setOpen, balance, user, onOpenAuth, onLogout }) {
   return (
     <header className="sticky top-0 z-20 bg-slate-950/70 backdrop-blur-xl border-b border-white/10">
       <div className="lg:ml-72 px-4 md:px-8 py-4 flex items-center gap-4">
@@ -351,20 +365,37 @@ function Header({ setOpen, balance }) {
             <Wallet size={18} /> ${balance.toFixed(2)}
           </button>
           <button className="p-3 rounded-2xl bg-white/10 hover:bg-white/15"><Bell size={18} /></button>
-          <button
-            type="button"
-            onClick={() => scrollToSection("verification")}
-            className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/15"
-          >
-            Login
-          </button>
-          <button
-            type="button"
-            onClick={() => scrollToSection("verification")}
-            className="px-4 py-3 rounded-2xl bg-cyan-400 text-slate-950 font-black shadow-neon hover:scale-[1.02] transition"
-          >
-            Register
-          </button>
+          {user ? (
+            <>
+              <button className="hidden md:block px-4 py-3 rounded-2xl bg-white/10 font-bold">
+                {user.username}
+              </button>
+              <button
+                type="button"
+                onClick={onLogout}
+                className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/15"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => onOpenAuth("login")}
+                className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/15"
+              >
+                Login
+              </button>
+              <button
+                type="button"
+                onClick={() => onOpenAuth("register")}
+                className="px-4 py-3 rounded-2xl bg-cyan-400 text-slate-950 font-black shadow-neon hover:scale-[1.02] transition"
+              >
+                Register
+              </button>
+            </>
+          )}
         </div>
       </div>
     </header>
@@ -459,6 +490,152 @@ function ContactButtons({ compact = false }) {
         <MessageCircle size={18} />
         WhatsApp
       </a>
+    </div>
+  );
+}
+
+function AuthModal({ mode, setMode, onClose, onLogin }) {
+  const [username, setUsername] = useState("");
+  const [phone, setPhone] = useState("");
+  const [contactMethod, setContactMethod] = useState("telegram");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const isRegister = mode === "register";
+  const canSubmit = username.trim().length >= 3 && (!isRegister || acceptedTerms);
+  const selectedContactUrl = buildContactUrl(contactMethod, username, phone);
+
+  function handleLocalLogin(event) {
+    event.preventDefault();
+    if (!canSubmit) return;
+
+    onLogin({
+      username: username.trim(),
+      phone: phone.trim(),
+      contactMethod,
+      registeredAt: new Date().toISOString(),
+    });
+    onClose();
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/75 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-3xl overflow-hidden rounded-[2rem] border border-cyan-300/20 bg-slate-950 shadow-neon">
+        <div className="flex items-center justify-between border-b border-white/10 p-5">
+          <div>
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">NeonBet account</div>
+            <h2 className="mt-1 text-2xl font-black">{isRegister ? "Create account" : "Login"}</h2>
+          </div>
+          <button type="button" onClick={onClose} className="rounded-2xl bg-white/10 p-3 hover:bg-white/15">
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="grid gap-6 p-5 md:grid-cols-[0.9fr_1.1fr] md:p-7">
+          <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
+            <div className="grid grid-cols-2 gap-2">
+              {["login", "register"].map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setMode(tab)}
+                  className={`rounded-2xl px-4 py-3 text-sm font-black capitalize transition ${
+                    mode === tab ? "bg-cyan-400 text-slate-950 shadow-neon" : "bg-black/25 text-slate-300 hover:bg-white/10"
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-5 rounded-3xl bg-black/25 p-5">
+              <div className="text-4xl font-black text-cyan-300">$100</div>
+              <div className="mt-1 font-bold">Sign-up bonus</div>
+              <p className="mt-3 text-sm leading-6 text-slate-400">
+                Register through Telegram or WhatsApp, complete account verification, and clear the 10x rollover requirement.
+              </p>
+            </div>
+          </div>
+
+          <form onSubmit={handleLocalLogin} className="space-y-4">
+            <label className="block">
+              <span className="text-sm font-bold text-slate-300">Username</span>
+              <input
+                value={username}
+                onChange={(event) => setUsername(event.target.value)}
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none focus:border-cyan-300/60"
+                placeholder="Choose a username"
+              />
+            </label>
+
+            <label className="block">
+              <span className="text-sm font-bold text-slate-300">Mobile number</span>
+              <input
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none focus:border-cyan-300/60"
+                placeholder="+64..."
+              />
+            </label>
+
+            {isRegister && (
+              <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-4">
+                <div className="text-sm font-bold text-slate-300">Sign up from</div>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  {[
+                    ["telegram", "Telegram", Send],
+                    ["whatsapp", "WhatsApp", MessageCircle],
+                  ].map(([value, label, Icon]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setContactMethod(value)}
+                      className={`flex items-center justify-center gap-2 rounded-2xl px-3 py-3 text-sm font-black transition ${
+                        contactMethod === value ? "bg-cyan-400 text-slate-950" : "bg-black/25 text-slate-300 hover:bg-white/10"
+                      }`}
+                    >
+                      <Icon size={17} />
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {isRegister && (
+              <label className="flex gap-3 rounded-3xl border border-white/10 bg-black/25 p-4 text-sm text-slate-300">
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(event) => setAcceptedTerms(event.target.checked)}
+                  className="mt-1 h-4 w-4 accent-cyan-400"
+                />
+                I understand the $100 bonus and 300% match require account verification and 10x rollover.
+              </label>
+            )}
+
+            <button
+              type="submit"
+              disabled={!canSubmit}
+              className="w-full rounded-2xl bg-cyan-400 px-5 py-4 font-black text-slate-950 shadow-neon transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isRegister ? "Create local account" : "Login"}
+            </button>
+
+            {isRegister && (
+              <a
+                href={selectedContactUrl}
+                target="_blank"
+                rel="noreferrer"
+                className={`flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-4 font-black transition ${
+                  canSubmit ? "bg-white/10 text-white hover:bg-white/15" : "pointer-events-none bg-white/5 text-slate-500"
+                }`}
+              >
+                <ExternalLink size={18} />
+                Continue in {contactMethod === "telegram" ? "Telegram" : "WhatsApp"}
+              </a>
+            )}
+          </form>
+        </div>
+      </div>
     </div>
   );
 }
@@ -756,7 +933,7 @@ function VerificationPanel() {
             </div>
             <ContactButtons compact />
             <p className="mt-3 text-xs leading-5 text-slate-500">
-              Replace the Telegram username and WhatsApp number in the contact config before publishing.
+              Send your username and transaction hash so account verification can be reviewed.
             </p>
           </div>
         </div>
@@ -846,12 +1023,42 @@ function App() {
   const [open, setOpen] = useState(false);
   const [balance, setBalance] = useState(100);
   const [activeGame, setActiveGame] = useState(null);
+  const [authMode, setAuthMode] = useState("login");
+  const [authOpen, setAuthOpen] = useState(false);
+  const [user, setUser] = useState(() => {
+    try {
+      return JSON.parse(window.localStorage.getItem("neonbetUser")) || null;
+    } catch {
+      return null;
+    }
+  });
+
+  function openAuth(mode) {
+    setAuthMode(mode);
+    setAuthOpen(true);
+  }
+
+  function handleLogin(nextUser) {
+    setUser(nextUser);
+    window.localStorage.setItem("neonbetUser", JSON.stringify(nextUser));
+  }
+
+  function handleLogout() {
+    setUser(null);
+    window.localStorage.removeItem("neonbetUser");
+  }
 
   return (
     <div className="min-h-screen text-white bg-slate-950">
       <div className="fixed inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(34,211,238,0.15),transparent_35%),radial-gradient(circle_at_80%_20%,rgba(168,85,247,0.14),transparent_35%)] pointer-events-none" />
       <Sidebar open={open} setOpen={setOpen} />
-      <Header setOpen={setOpen} balance={balance} />
+      <Header
+        setOpen={setOpen}
+        balance={balance}
+        user={user}
+        onOpenAuth={openAuth}
+        onLogout={handleLogout}
+      />
 
       <main className="relative lg:ml-72 px-4 md:px-8 py-8 space-y-8">
         <Hero onClaim={() => scrollToSection("verification")} />
@@ -925,6 +1132,14 @@ function App() {
           balance={balance}
           setBalance={setBalance}
           onClose={() => setActiveGame(null)}
+        />
+      )}
+      {authOpen && (
+        <AuthModal
+          mode={authMode}
+          setMode={setAuthMode}
+          onClose={() => setAuthOpen(false)}
+          onLogin={handleLogin}
         />
       )}
     </div>

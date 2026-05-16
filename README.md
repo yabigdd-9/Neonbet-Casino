@@ -12,6 +12,12 @@ The site includes browser-only simulated slot gameplay, a static manual crypto v
 
 The featured game cards open a local simulated slot modal. The slot engine is tuned for frequent small wins and updates a browser-only balance. It is not connected to deposits, withdrawals, real provider servers, or a backend ledger.
 
+## Login and registration
+
+The Login and Register buttons open an in-app account modal. Login stores a browser-only local account in `localStorage`. Register collects a username and mobile number, requires acknowledgement of the bonus rollover terms, and can open a prefilled Telegram or WhatsApp signup message.
+
+This is not a backend account system. For real accounts, add a server, database, identity checks, and admin tooling.
+
 The verification panel currently includes these deposit options:
 
 ```text
