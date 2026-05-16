@@ -50,6 +50,39 @@ const payoutRows = [
 const betOptions = [0.25, 0.4, 0.5, 0.75, 0.8, 1.2];
 const gameFilters = ["All", "Hot", "New", "Megaways", "Bonus Buy", "Jackpot", "Favorites"];
 
+const policyPages = {
+  terms: {
+    title: "Terms",
+    eyebrow: "Account terms",
+    sections: [
+      ["Bonuses", "The $100 sign-up bonus and 300% match are subject to account approval, verification, rollover review, and published limits."],
+      ["Verification", "The $75 verification fee is reviewed manually and does not create an instant deposit, casino credit, withdrawal approval, or automated payment confirmation."],
+      ["Withdrawals", "Withdrawal requests require admin review, completed verification, matching account details, and completion of any applicable rollover requirement."],
+      ["Game Access", "Game access, provider availability, bonus eligibility, and account access can be limited, delayed, or rejected after review."],
+    ],
+  },
+  privacy: {
+    title: "Privacy",
+    eyebrow: "Data notice",
+    sections: [
+      ["Account Data", "The site may store email, username, phone, verification status, transaction hashes, withdrawal requests, admin notes, and bonus/rollover records."],
+      ["Manual Review", "Transaction hashes, wallet addresses, and account notes are used for manual verification, withdrawal review, and account support."],
+      ["Contact", "Telegram and WhatsApp contact links may open external services with their own privacy practices."],
+      ["Retention", "Admin records should be kept only as long as needed for account review, compliance, support, and dispute handling."],
+    ],
+  },
+  responsible: {
+    title: "Responsible Play",
+    eyebrow: "Player safety",
+    sections: [
+      ["Adults Only", "This site is intended for adults only. Do not use it where online gambling is prohibited."],
+      ["Limits", "Only play within limits you can afford. Take breaks and do not treat gambling-style gameplay as income."],
+      ["Support", "If gambling stops being recreational, pause play and seek professional or local support resources."],
+      ["Access", "Admins may restrict account access, bonuses, withdrawals, or game access where review flags, regional rules, or safety concerns apply."],
+    ],
+  },
+};
+
 function formatMoney(amount) {
   return `$${amount.toFixed(2)}`;
 }
@@ -598,6 +631,34 @@ function ContactButtons({ compact = false }) {
         <MessageCircle size={18} />
         WhatsApp
       </a>
+    </div>
+  );
+}
+
+function PolicyModal({ page, onClose }) {
+  if (!page) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/75 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-4xl overflow-hidden rounded-[2rem] border border-cyan-300/20 bg-slate-950 shadow-neon">
+        <div className="flex items-center justify-between border-b border-white/10 p-5">
+          <div>
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">{page.eyebrow}</div>
+            <h2 className="mt-1 text-3xl font-black">{page.title}</h2>
+          </div>
+          <button type="button" onClick={onClose} className="rounded-2xl bg-white/10 p-3 hover:bg-white/15">
+            <X size={20} />
+          </button>
+        </div>
+        <div className="grid gap-4 p-5 md:grid-cols-2 md:p-7">
+          {page.sections.map(([title, detail]) => (
+            <article key={title} className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
+              <h3 className="font-black text-white">{title}</h3>
+              <p className="mt-3 text-sm leading-6 text-slate-400">{detail}</p>
+            </article>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -1572,6 +1633,12 @@ function AdminDashboard({ profile, profiles, submissions, withdrawals, onReview,
     const matchesStatus = statusFilter === "all" || userProfile.verification_status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+  const stats = [
+    ["Users", profiles.length],
+    ["Pending verifications", submissions.filter((submission) => submission.status === "pending").length],
+    ["Verified users", profiles.filter((userProfile) => userProfile.verification_status === "verified").length],
+    ["Pending withdrawals", withdrawals.filter((withdrawal) => withdrawal.status === "pending").length],
+  ];
 
   return (
     <section id="admin" className="scroll-mt-24 rounded-[2rem] border border-amber-300/20 bg-amber-300/10 p-6 md:p-8">
@@ -1579,6 +1646,15 @@ function AdminDashboard({ profile, profiles, submissions, withdrawals, onReview,
         <div className="text-xs font-bold uppercase tracking-[0.18em] text-amber-200">Admin dashboard</div>
         <h2 className="mt-2 text-2xl md:text-3xl font-black">Admin Review</h2>
         <p className="mt-2 text-slate-300">Search users, review transaction hashes, and manage withdrawal requests.</p>
+      </div>
+
+      <div className="mb-5 grid gap-3 md:grid-cols-4">
+        {stats.map(([label, value]) => (
+          <div key={label} className="rounded-3xl border border-white/10 bg-slate-950/70 p-4">
+            <div className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">{label}</div>
+            <div className="mt-2 text-3xl font-black text-white">{value}</div>
+          </div>
+        ))}
       </div>
 
       <div className="mb-5 grid gap-3 md:grid-cols-[1fr_auto]">
@@ -1757,6 +1833,130 @@ function AdminDashboard({ profile, profiles, submissions, withdrawals, onReview,
   );
 }
 
+function AdminReviewModal({ item, type, status, onClose, onSubmit, saving }) {
+  const [adminNotes, setAdminNotes] = useState(item?.admin_notes || "");
+  if (!item) return null;
+
+  const title = type === "withdrawal" ? "Review Withdrawal" : "Review Verification";
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/75 p-4 backdrop-blur-sm">
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          onSubmit(item, status, adminNotes);
+        }}
+        className="w-full max-w-2xl rounded-[2rem] border border-amber-300/20 bg-slate-950 p-6 shadow-neon"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-amber-200">Admin action</div>
+            <h2 className="mt-2 text-3xl font-black">{title}</h2>
+            <p className="mt-2 text-sm text-slate-400">Set status to {statusLabels[status] || status} and save an admin note.</p>
+          </div>
+          <button type="button" onClick={onClose} className="rounded-2xl bg-white/10 p-3 hover:bg-white/15">
+            <X size={20} />
+          </button>
+        </div>
+        <div className="mt-5 rounded-3xl border border-white/10 bg-black/20 p-4">
+          <div className="text-sm text-slate-400">{type === "withdrawal" ? "Request" : "Transaction"}</div>
+          <div className="mt-2 break-all font-mono text-sm text-white">
+            {type === "withdrawal" ? `${formatMoney(Number(item.amount_usd))} ${item.payout_method} ${item.payout_address}` : item.tx_hash}
+          </div>
+        </div>
+        <label className="mt-4 block">
+          <span className="text-sm font-bold text-slate-300">Admin note</span>
+          <textarea
+            value={adminNotes}
+            onChange={(event) => setAdminNotes(event.target.value)}
+            rows={4}
+            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none focus:border-amber-300/60"
+            placeholder="Add review notes"
+          />
+        </label>
+        <button
+          type="submit"
+          disabled={saving}
+          className="mt-4 w-full rounded-2xl bg-amber-300 px-5 py-4 font-black text-slate-950 transition hover:scale-[1.02] disabled:opacity-50"
+        >
+          {saving ? "Saving..." : "Save review"}
+        </button>
+      </form>
+    </div>
+  );
+}
+
+function AdminProfileModal({ userProfile, onClose, onSubmit, saving }) {
+  const [bonusBalance, setBonusBalance] = useState(String(userProfile?.bonus_balance ?? 100));
+  const [rolloverProgress, setRolloverProgress] = useState(String(userProfile?.rollover_progress ?? 0));
+  const [rolloverRequired, setRolloverRequired] = useState(String(userProfile?.rollover_required ?? 1000));
+  const [adminNotes, setAdminNotes] = useState(userProfile?.admin_notes || "");
+  if (!userProfile) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/75 p-4 backdrop-blur-sm">
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          onSubmit(userProfile, {
+            bonus_balance: Number(bonusBalance),
+            rollover_progress: Number(rolloverProgress),
+            rollover_required: Number(rolloverRequired),
+            admin_notes: adminNotes,
+          });
+        }}
+        className="w-full max-w-2xl rounded-[2rem] border border-cyan-300/20 bg-slate-950 p-6 shadow-neon"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">User controls</div>
+            <h2 className="mt-2 text-3xl font-black">{userProfile.username || userProfile.email}</h2>
+            <p className="mt-2 text-sm text-slate-400">Edit bonus balance, rollover progress, and admin notes.</p>
+          </div>
+          <button type="button" onClick={onClose} className="rounded-2xl bg-white/10 p-3 hover:bg-white/15">
+            <X size={20} />
+          </button>
+        </div>
+        <div className="mt-5 grid gap-4 md:grid-cols-3">
+          {[
+            ["Bonus balance", bonusBalance, setBonusBalance],
+            ["Rollover progress", rolloverProgress, setRolloverProgress],
+            ["Rollover required", rolloverRequired, setRolloverRequired],
+          ].map(([label, value, setter]) => (
+            <label key={label} className="block">
+              <span className="text-sm font-bold text-slate-300">{label}</span>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={value}
+                onChange={(event) => setter(event.target.value)}
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none focus:border-cyan-300/60"
+              />
+            </label>
+          ))}
+        </div>
+        <label className="mt-4 block">
+          <span className="text-sm font-bold text-slate-300">Admin note</span>
+          <textarea
+            value={adminNotes}
+            onChange={(event) => setAdminNotes(event.target.value)}
+            rows={4}
+            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none focus:border-cyan-300/60"
+          />
+        </label>
+        <button
+          type="submit"
+          disabled={saving}
+          className="mt-4 w-full rounded-2xl bg-cyan-400 px-5 py-4 font-black text-slate-950 shadow-neon transition hover:scale-[1.02] disabled:opacity-50"
+        >
+          {saving ? "Saving..." : "Save user controls"}
+        </button>
+      </form>
+    </div>
+  );
+}
+
 function App() {
   const [open, setOpen] = useState(false);
   const [balance, setBalance] = useState(100);
@@ -1775,6 +1975,9 @@ function App() {
   const [verificationSaving, setVerificationSaving] = useState(false);
   const [withdrawalSaving, setWithdrawalSaving] = useState(false);
   const [adminSaving, setAdminSaving] = useState(false);
+  const [policyPage, setPolicyPage] = useState(null);
+  const [reviewModal, setReviewModal] = useState(null);
+  const [profileModal, setProfileModal] = useState(null);
   const [user, setUser] = useState(() => {
     if (hasSupabaseConfig) return null;
     try {
@@ -2073,11 +2276,8 @@ function App() {
     }
   }
 
-  async function handleReviewSubmission(submission, status) {
+  async function handleReviewSubmission(submission, status, adminNotes = submission.admin_notes || "") {
     if (!hasSupabaseConfig || profile?.role !== "admin") return;
-
-    const adminNotes = window.prompt("Admin note", submission.admin_notes || "");
-    if (adminNotes === null) return;
 
     setAdminSaving(true);
 
@@ -2096,6 +2296,7 @@ function App() {
 
       if (profileError) throw profileError;
       await loadAccount(user);
+      setReviewModal(null);
     } catch (error) {
       setAuthError(error.message || "Admin review failed.");
     } finally {
@@ -2103,11 +2304,8 @@ function App() {
     }
   }
 
-  async function handleReviewWithdrawal(withdrawal, status) {
+  async function handleReviewWithdrawal(withdrawal, status, adminNotes = withdrawal.admin_notes || "") {
     if (!hasSupabaseConfig || profile?.role !== "admin") return;
-
-    const adminNotes = window.prompt("Admin note", withdrawal.admin_notes || "");
-    if (adminNotes === null) return;
 
     setAdminSaving(true);
 
@@ -2119,6 +2317,7 @@ function App() {
 
       if (error) throw error;
       await loadAccount(user);
+      setReviewModal(null);
     } catch (error) {
       setAuthError(error.message || "Withdrawal review failed.");
     } finally {
@@ -2126,36 +2325,20 @@ function App() {
     }
   }
 
-  async function handleUpdateProfile(userProfile) {
+  async function handleUpdateProfile(userProfile, updates) {
     if (!hasSupabaseConfig || profile?.role !== "admin") return;
-
-    const bonusInput = window.prompt("Bonus balance USD", String(userProfile.bonus_balance ?? 100));
-    if (bonusInput === null) return;
-
-    const rolloverProgressInput = window.prompt("Rollover progress USD", String(userProfile.rollover_progress ?? 0));
-    if (rolloverProgressInput === null) return;
-
-    const rolloverRequiredInput = window.prompt("Rollover required USD", String(userProfile.rollover_required ?? 1000));
-    if (rolloverRequiredInput === null) return;
-
-    const adminNotes = window.prompt("Admin note", userProfile.admin_notes || "");
-    if (adminNotes === null) return;
 
     setAdminSaving(true);
 
     try {
       const { error } = await supabase
         .from("profiles")
-        .update({
-          bonus_balance: Number(bonusInput),
-          rollover_progress: Number(rolloverProgressInput),
-          rollover_required: Number(rolloverRequiredInput),
-          admin_notes: adminNotes,
-        })
+        .update(updates)
         .eq("id", userProfile.id);
 
       if (error) throw error;
       await loadAccount(user);
+      setProfileModal(null);
     } catch (error) {
       setAuthError(error.message || "Profile update failed.");
     } finally {
@@ -2259,9 +2442,9 @@ function App() {
           profiles={profiles}
           submissions={submissions}
           withdrawals={withdrawals}
-          onReview={handleReviewSubmission}
-          onReviewWithdrawal={handleReviewWithdrawal}
-          onUpdateProfile={handleUpdateProfile}
+          onReview={(item, status) => setReviewModal({ item, status, type: "verification" })}
+          onReviewWithdrawal={(item, status) => setReviewModal({ item, status, type: "withdrawal" })}
+          onUpdateProfile={setProfileModal}
           adminSaving={adminSaving}
         />
 
@@ -2326,9 +2509,40 @@ function App() {
           <div className="mt-5 border-t border-white/10 pt-5 text-center">
             NeonBet bonuses, provider availability, verification, account access, and game access are subject to account approval, local rules, and published terms.
           </div>
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            {Object.entries(policyPages).map(([key, page]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setPolicyPage(page)}
+                className="rounded-full border border-white/10 bg-white/[0.06] px-4 py-2 font-bold text-slate-300 transition hover:bg-white/10 hover:text-white"
+              >
+                {page.title}
+              </button>
+            ))}
+          </div>
         </footer>
       </main>
 
+      {policyPage && <PolicyModal page={policyPage} onClose={() => setPolicyPage(null)} />}
+      {reviewModal && (
+        <AdminReviewModal
+          item={reviewModal.item}
+          type={reviewModal.type}
+          status={reviewModal.status}
+          onClose={() => setReviewModal(null)}
+          onSubmit={reviewModal.type === "withdrawal" ? handleReviewWithdrawal : handleReviewSubmission}
+          saving={adminSaving}
+        />
+      )}
+      {profileModal && (
+        <AdminProfileModal
+          userProfile={profileModal}
+          onClose={() => setProfileModal(null)}
+          onSubmit={handleUpdateProfile}
+          saving={adminSaving}
+        />
+      )}
       {launchGame && (
         <GameLaunchModal
           game={launchGame}
