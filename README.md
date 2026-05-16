@@ -18,6 +18,10 @@ The Login and Register buttons open an in-app account modal. Login stores a brow
 
 This is not a backend account system. For real accounts, add a server, database, identity checks, and admin tooling.
 
+## Terms summary
+
+The site includes an on-page `Bonus & Verification Rules` section covering the $100 sign-up bonus, 300% welcome match, 10x rollover, $75 verification fee, crypto network warnings, proof instructions, account approval, withdrawal review, and feature availability. Replace this practical summary with final legal terms before operating with real users.
+
 The verification panel currently includes these deposit options:
 
 ```text

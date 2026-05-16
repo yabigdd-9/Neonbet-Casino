@@ -105,6 +105,41 @@ const promos = [
   { title: "VIP Club", detail: "Level up with missions, rewards and exclusive account perks", icon: Trophy },
 ];
 
+const terms = [
+  {
+    title: "Bonus Offer",
+    detail: "Eligible new accounts may receive a $100 sign-up bonus and a 300% welcome match after account review and verification approval.",
+  },
+  {
+    title: "10x Rollover",
+    detail: "Bonus funds and bonus-linked winnings must be wagered 10 times before they are treated as eligible for withdrawal review.",
+  },
+  {
+    title: "Verification Fee",
+    detail: "The $75 verification payment is reviewed manually. It does not create an instant deposit, automatic approval, casino credit, or guaranteed withdrawal.",
+  },
+  {
+    title: "Crypto Networks",
+    detail: "Only send the selected asset on the displayed network. Wrong-network, wrong-asset, NFT, or unsupported smart-contract transfers may be unrecoverable.",
+  },
+  {
+    title: "Proof Required",
+    detail: "After payment, send your Telegram or WhatsApp username plus the transaction hash so verification can be checked against the selected wallet and network.",
+  },
+  {
+    title: "Account Approval",
+    detail: "Accounts, bonuses, provider access, game access, and verification status may be approved, delayed, limited, or rejected after review.",
+  },
+  {
+    title: "Withdrawals",
+    detail: "Any withdrawal review requires completed verification, completed rollover, matching account details, and compliance with the published account rules.",
+  },
+  {
+    title: "Availability",
+    detail: "Games, providers, bonuses, payment methods, and account features can vary by region, account status, technical availability, and admin review.",
+  },
+];
+
 const slotProviders = [
   {
     name: "Pragmatic Play",
@@ -295,7 +330,7 @@ function Sidebar({ open, setOpen }) {
     ["Promotions", Gift, "promotions"],
     ["Verification", ShieldCheck, "verification"],
     ["VIP Club", Trophy, "vip"],
-    ["Responsible Play", ShieldCheck, "footer"],
+    ["Responsible Play", ShieldCheck, "terms"],
   ];
 
   return (
@@ -1019,6 +1054,46 @@ function VerificationPanel() {
   );
 }
 
+function TermsSection() {
+  return (
+    <section id="terms" className="scroll-mt-24 rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 md:p-8">
+      <div className="mb-6 flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
+        <div>
+          <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">Account terms</div>
+          <h2 className="mt-2 text-2xl md:text-3xl font-black">Bonus & Verification Rules</h2>
+          <p className="mt-2 max-w-3xl text-slate-400">
+            These rules explain the offer shown on this site. They are a practical summary for players and should be replaced with final legal terms before operating with real users.
+          </p>
+        </div>
+        <div className="rounded-2xl border border-amber-300/20 bg-amber-300/10 px-4 py-3 text-sm font-bold text-amber-100">
+          $100 bonus + 300% match + 10x rollover
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {terms.map((term) => (
+          <article key={term.title} className="rounded-3xl border border-white/10 bg-black/20 p-5">
+            <h3 className="font-black text-white">{term.title}</h3>
+            <p className="mt-3 text-sm leading-6 text-slate-400">{term.detail}</p>
+          </article>
+        ))}
+      </div>
+
+      <div className="mt-6 rounded-3xl border border-cyan-300/20 bg-cyan-400/10 p-5">
+        <div className="flex items-center gap-2 font-black text-cyan-100">
+          <MessageCircle size={18} /> Questions or verification proof
+        </div>
+        <p className="mt-2 text-sm leading-6 text-slate-300">
+          Use Telegram or WhatsApp to send your username, selected asset/network, and transaction hash. Keep screenshots and hashes until verification is complete.
+        </p>
+        <div className="mt-4">
+          <ContactButtons compact />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function App() {
   const [open, setOpen] = useState(false);
   const [balance, setBalance] = useState(100);
@@ -1120,6 +1195,8 @@ function App() {
             <p className="text-sm text-slate-400 mt-3">62% to Gold III</p>
           </div>
         </section>
+
+        <TermsSection />
 
         <footer id="footer" className="scroll-mt-24 text-center text-xs text-slate-500 py-8">
           NeonBet bonuses, provider availability and verification are subject to account approval, local rules and published terms. The $75 crypto verification fee is reviewed manually and is not an instant deposit or automated payment confirmation.
