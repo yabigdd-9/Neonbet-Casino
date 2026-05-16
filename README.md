@@ -6,7 +6,11 @@ This is a React + Vite + Tailwind casino-style landing page and lobby.
 
 This project is a static frontend. It does not include a gambling backend, account database, wallet connection, payment processor, automated verification, deposits, withdrawals, or game-provider integrations.
 
-The site includes a static manual crypto verification panel for a 75 USD account verification fee, plus marketing copy for a free 100 USD sign-up bonus, 300% welcome match, and 10x bonus rollover requirement. Bonus eligibility, provider availability, verification, and regional access should be governed by your published terms.
+The site includes browser-only simulated slot gameplay, a static manual crypto verification panel for a 75 USD account verification fee, plus marketing copy for a free 100 USD sign-up bonus, 300% welcome match, and 10x bonus rollover requirement. Bonus eligibility, provider availability, verification, and regional access should be governed by your published terms.
+
+## Gameplay
+
+The featured game cards open a local simulated slot modal. The slot engine is tuned for frequent small wins and updates a browser-only balance. It is not connected to deposits, withdrawals, real provider servers, or a backend ledger.
 
 The verification panel currently includes these deposit options:
 

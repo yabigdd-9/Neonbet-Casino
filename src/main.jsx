@@ -27,15 +27,57 @@ import {
 import "./styles.css";
 
 const games = [
-  { title: "Neon Fruits", type: "Slots", tag: "Hot", emoji: "🍒", gradient: "from-pink-500 to-orange-400" },
-  { title: "Crypto Mines", type: "Instant", tag: "New", emoji: "💣", gradient: "from-cyan-400 to-blue-600" },
-  { title: "Royal Blackjack", type: "Cards", tag: "Live", emoji: "🃏", gradient: "from-emerald-400 to-green-700" },
-  { title: "Lightning Roulette", type: "Table", tag: "Top", emoji: "🎡", gradient: "from-purple-500 to-indigo-700" },
-  { title: "Dragon Jackpot", type: "Slots", tag: "Mega", emoji: "🐉", gradient: "from-yellow-400 to-red-500" },
-  { title: "Crash Rocket", type: "Instant", tag: "Fast", emoji: "🚀", gradient: "from-sky-400 to-violet-600" },
-  { title: "Baccarat Club", type: "Cards", tag: "VIP", emoji: "♣️", gradient: "from-neutral-300 to-neutral-700" },
-  { title: "Gold Rush", type: "Slots", tag: "Gold", emoji: "💰", gradient: "from-amber-300 to-yellow-700" },
+  { title: "Neon Fruits", type: "Slots", tag: "Hot", emoji: "🍒", gradient: "from-pink-500 to-orange-400", symbols: ["🍒", "🍋", "🍇", "🍉", "⭐", "💎", "7"] },
+  { title: "Crypto Mines", type: "Instant", tag: "New", emoji: "💣", gradient: "from-cyan-400 to-blue-600", symbols: ["💣", "💎", "₿", "⚡", "🪙", "⭐", "7"] },
+  { title: "Royal Blackjack", type: "Cards", tag: "Live", emoji: "🃏", gradient: "from-emerald-400 to-green-700", symbols: ["A", "K", "Q", "J", "♠️", "♥️", "7"] },
+  { title: "Lightning Roulette", type: "Table", tag: "Top", emoji: "🎡", gradient: "from-purple-500 to-indigo-700", symbols: ["🎡", "⚡", "🔴", "⚫", "💎", "⭐", "7"] },
+  { title: "Dragon Jackpot", type: "Slots", tag: "Mega", emoji: "🐉", gradient: "from-yellow-400 to-red-500", symbols: ["🐉", "🔥", "💰", "🏮", "⭐", "💎", "7"] },
+  { title: "Crash Rocket", type: "Instant", tag: "Fast", emoji: "🚀", gradient: "from-sky-400 to-violet-600", symbols: ["🚀", "🌕", "⚡", "💎", "🔥", "⭐", "7"] },
+  { title: "Baccarat Club", type: "Cards", tag: "VIP", emoji: "♣️", gradient: "from-neutral-300 to-neutral-700", symbols: ["♣️", "♦️", "♥️", "♠️", "A", "⭐", "7"] },
+  { title: "Gold Rush", type: "Slots", tag: "Gold", emoji: "💰", gradient: "from-amber-300 to-yellow-700", symbols: ["💰", "⛏️", "🏆", "🪙", "⭐", "💎", "7"] },
 ];
+
+const payoutRows = [
+  ["Five 7s", "50x"],
+  ["Five matching", "20x"],
+  ["Four matching", "8x"],
+  ["Three matching", "3x"],
+  ["Two matching", "1.5x"],
+  ["Bonus mix", "2x"],
+];
+
+function pickWeightedOutcome() {
+  const roll = Math.random();
+
+  if (roll < 0.12) return "five";
+  if (roll < 0.28) return "four";
+  if (roll < 0.55) return "three";
+  if (roll < 0.8) return "two";
+  if (roll < 0.9) return "bonus";
+  return "miss";
+}
+
+function shuffle(items) {
+  return [...items].sort(() => Math.random() - 0.5);
+}
+
+function buildSpin(game) {
+  const symbols = game.symbols || ["🍒", "🍋", "💎", "⭐", "7"];
+  const seven = symbols.includes("7") ? "7" : symbols[0];
+  const premium = symbols.includes("💎") ? "💎" : symbols[1] || symbols[0];
+  const star = symbols.includes("⭐") ? "⭐" : symbols[2] || symbols[0];
+  const matchSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+  const filler = () => symbols[Math.floor(Math.random() * symbols.length)];
+  const outcome = pickWeightedOutcome();
+
+  if (outcome === "five") return { reels: Array(5).fill(seven), multiplier: 50, label: "Jackpot hit" };
+  if (outcome === "four") return { reels: shuffle([matchSymbol, matchSymbol, matchSymbol, matchSymbol, filler()]), multiplier: 8, label: "Four of a kind" };
+  if (outcome === "three") return { reels: shuffle([matchSymbol, matchSymbol, matchSymbol, filler(), filler()]), multiplier: 3, label: "Three match" };
+  if (outcome === "two") return { reels: shuffle([matchSymbol, matchSymbol, filler(), filler(), filler()]), multiplier: 1.5, label: "Small win" };
+  if (outcome === "bonus") return { reels: shuffle([premium, star, seven, filler(), filler()]), multiplier: 2, label: "Bonus mix" };
+
+  return { reels: shuffle([filler(), filler(), filler(), filler(), filler()]), multiplier: 0, label: "Try again" };
+}
 
 const promos = [
   { title: "Free $100 Sign-Up Bonus", detail: "New accounts can claim $100 plus a 300% welcome match after verification. Bonus funds require 10x rollover.", icon: Gift },
@@ -271,7 +313,7 @@ function Sidebar({ open, setOpen }) {
   );
 }
 
-function Header({ setOpen }) {
+function Header({ setOpen, balance }) {
   return (
     <header className="sticky top-0 z-20 bg-slate-950/70 backdrop-blur-xl border-b border-white/10">
       <div className="lg:ml-72 px-4 md:px-8 py-4 flex items-center gap-4">
@@ -284,7 +326,7 @@ function Header({ setOpen }) {
 
         <div className="ml-auto flex items-center gap-2">
           <button className="hidden sm:flex items-center gap-2 px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/15">
-            <Wallet size={18} /> $100 Bonus
+            <Wallet size={18} /> ${balance.toFixed(2)}
           </button>
           <button className="p-3 rounded-2xl bg-white/10 hover:bg-white/15"><Bell size={18} /></button>
           <button className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/15">Login</button>
@@ -375,7 +417,7 @@ function ContactButtons({ compact = false }) {
   );
 }
 
-function GameCard({ game }) {
+function GameCard({ game, onPlay }) {
   return (
     <div className="group rounded-3xl bg-white/[0.06] border border-white/10 overflow-hidden hover:-translate-y-1 hover:shadow-neon transition">
       <div className={`h-36 bg-gradient-to-br ${game.gradient} grid place-items-center relative`}>
@@ -385,9 +427,128 @@ function GameCard({ game }) {
       <div className="p-4">
         <div className="text-xs text-cyan-300">{game.type}</div>
         <div className="font-black text-lg">{game.title}</div>
-        <button className="mt-4 w-full rounded-2xl bg-white/10 hover:bg-cyan-400 hover:text-slate-950 py-3 font-black transition">
+        <button
+          type="button"
+          onClick={() => onPlay(game)}
+          className="mt-4 w-full rounded-2xl bg-white/10 hover:bg-cyan-400 hover:text-slate-950 py-3 font-black transition"
+        >
           Play
         </button>
+      </div>
+    </div>
+  );
+}
+
+function SlotGameModal({ game, balance, setBalance, onClose }) {
+  const [bet, setBet] = useState(5);
+  const [reels, setReels] = useState(game?.symbols?.slice(0, 5) || ["🍒", "⭐", "💎", "7", "🍋"]);
+  const [result, setResult] = useState({ label: "Ready", win: 0, multiplier: 0 });
+  const [spinning, setSpinning] = useState(false);
+
+  if (!game) return null;
+
+  function spin() {
+    if (spinning || balance < bet) return;
+
+    setSpinning(true);
+    setBalance((current) => Number((current - bet).toFixed(2)));
+
+    window.setTimeout(() => {
+      const spinResult = buildSpin(game);
+      const win = Number((bet * spinResult.multiplier).toFixed(2));
+
+      setReels(spinResult.reels);
+      setResult({ label: spinResult.label, win, multiplier: spinResult.multiplier });
+      setBalance((current) => Number((current + win).toFixed(2)));
+      setSpinning(false);
+    }, 650);
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/75 p-4 backdrop-blur-sm">
+      <div className="relative w-full max-w-4xl overflow-hidden rounded-[2rem] border border-cyan-300/20 bg-slate-950 shadow-neon">
+        <div className={`h-2 bg-gradient-to-r ${game.gradient}`} />
+        <div className="grid gap-6 p-5 md:grid-cols-[1.2fr_0.8fr] md:p-7">
+          <div>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">{game.type}</div>
+                <h2 className="mt-2 text-3xl font-black">{game.title}</h2>
+                <p className="mt-2 text-sm text-slate-400">High-frequency local slot session. Balance is simulated in this browser.</p>
+              </div>
+              <button type="button" onClick={onClose} className="rounded-2xl bg-white/10 p-3 hover:bg-white/15">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="mt-6 rounded-[2rem] border border-white/10 bg-black/30 p-4">
+              <div className="grid grid-cols-5 gap-2">
+                {reels.map((symbol, index) => (
+                  <div
+                    key={`${symbol}-${index}`}
+                    className={`grid aspect-square place-items-center rounded-3xl border border-white/10 bg-white/10 text-4xl font-black transition ${
+                      spinning ? "scale-95 animate-pulse text-cyan-200" : "text-white"
+                    }`}
+                  >
+                    {spinning ? game.symbols[(index + Math.floor(Math.random() * game.symbols.length)) % game.symbols.length] : symbol}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 rounded-2xl border border-white/10 bg-slate-950/80 p-4 text-center">
+                <div className="text-sm font-bold uppercase tracking-[0.18em] text-slate-400">{result.label}</div>
+                <div className={result.win > 0 ? "mt-1 text-3xl font-black text-cyan-300" : "mt-1 text-3xl font-black text-slate-300"}>
+                  {result.win > 0 ? `+$${result.win.toFixed(2)}` : "$0.00"}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
+              <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Balance</div>
+              <div className="mt-1 text-4xl font-black text-white">${balance.toFixed(2)}</div>
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                {[1, 5, 10].map((amount) => (
+                  <button
+                    key={amount}
+                    type="button"
+                    onClick={() => setBet(amount)}
+                    className={`rounded-2xl border px-3 py-3 text-sm font-black transition ${
+                      bet === amount ? "border-cyan-300/40 bg-cyan-400 text-slate-950" : "border-white/10 bg-black/20 text-slate-300 hover:bg-white/10"
+                    }`}
+                  >
+                    ${amount}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={spin}
+                disabled={spinning || balance < bet}
+                className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-cyan-400 px-5 py-4 font-black text-slate-950 shadow-neon transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Play size={18} />
+                {spinning ? "Spinning..." : `Spin $${bet}`}
+              </button>
+              {balance < bet && <p className="mt-3 text-sm text-amber-200">Balance is too low for this bet.</p>}
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
+              <h3 className="font-black">Payout Table</h3>
+              <div className="mt-3 space-y-2">
+                {payoutRows.map(([label, payout]) => (
+                  <div key={label} className="flex items-center justify-between rounded-2xl bg-black/20 px-3 py-2 text-sm">
+                    <span className="text-slate-300">{label}</span>
+                    <span className="font-black text-cyan-300">{payout}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-4 text-xs leading-5 text-slate-500">
+                This is a simulated browser game with tuned frequent wins. It is not connected to deposits, withdrawals, or provider game servers.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -637,12 +798,14 @@ function VerificationPanel() {
 
 function App() {
   const [open, setOpen] = useState(false);
+  const [balance, setBalance] = useState(100);
+  const [activeGame, setActiveGame] = useState(null);
 
   return (
     <div className="min-h-screen text-white bg-slate-950">
       <div className="fixed inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(34,211,238,0.15),transparent_35%),radial-gradient(circle_at_80%_20%,rgba(168,85,247,0.14),transparent_35%)] pointer-events-none" />
       <Sidebar open={open} setOpen={setOpen} />
-      <Header setOpen={setOpen} />
+      <Header setOpen={setOpen} balance={balance} />
 
       <main className="relative lg:ml-72 px-4 md:px-8 py-8 space-y-8">
         <Hero />
@@ -656,7 +819,7 @@ function App() {
             <button className="hidden sm:block rounded-2xl px-4 py-3 bg-white/10 border border-white/10">View all</button>
           </div>
           <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-5">
-            {games.map((game) => <GameCard key={game.title} game={game} />)}
+            {games.map((game) => <GameCard key={game.title} game={game} onPlay={setActiveGame} />)}
           </div>
         </section>
 
@@ -703,6 +866,15 @@ function App() {
           NeonBet bonuses, provider availability and verification are subject to account approval, local rules and published terms. The $75 crypto verification fee is reviewed manually and is not an instant deposit or automated payment confirmation.
         </footer>
       </main>
+
+      {activeGame && (
+        <SlotGameModal
+          game={activeGame}
+          balance={balance}
+          setBalance={setBalance}
+          onClose={() => setActiveGame(null)}
+        />
+      )}
     </div>
   );
 }
