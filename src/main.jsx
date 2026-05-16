@@ -1868,8 +1868,30 @@ function App() {
 
         <TermsSection />
 
-        <footer id="footer" className="scroll-mt-24 text-center text-xs text-slate-500 py-8">
-          NeonBet bonuses, provider availability and verification are subject to account approval, local rules and published terms. The $75 crypto verification fee is reviewed manually and is not an instant deposit or automated payment confirmation.
+        <footer id="footer" className="scroll-mt-24 rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 text-xs leading-6 text-slate-500 md:p-8">
+          <div className="grid gap-5 text-left md:grid-cols-3">
+            <div>
+              <div className="font-black uppercase tracking-[0.18em] text-slate-300">Licensing</div>
+              <p className="mt-2">
+                NeonBet does not display a gambling license number on this site. Real-money gambling, deposits, withdrawals, and provider access must only operate where properly licensed and legally permitted.
+              </p>
+            </div>
+            <div>
+              <div className="font-black uppercase tracking-[0.18em] text-slate-300">Responsible Play</div>
+              <p className="mt-2">
+                For adults only. Do not use this site where online gambling is prohibited. Play within limits, take breaks, and seek help if gambling stops being recreational.
+              </p>
+            </div>
+            <div>
+              <div className="font-black uppercase tracking-[0.18em] text-slate-300">Payments</div>
+              <p className="mt-2">
+                The $75 crypto verification fee is reviewed manually and is not an instant deposit, wagering balance, withdrawal approval, casino credit, or automated payment confirmation.
+              </p>
+            </div>
+          </div>
+          <div className="mt-5 border-t border-white/10 pt-5 text-center">
+            NeonBet bonuses, provider availability, verification, account access, and game access are subject to account approval, local rules, and published terms.
+          </div>
         </footer>
       </main>
 
