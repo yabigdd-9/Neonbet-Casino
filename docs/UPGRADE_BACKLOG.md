@@ -11,11 +11,11 @@ Legend: `[ ]` todo · `[x]` done. Phase priority: P0 (safety/freeze) → P6 (lau
 - [x] Capture feature matrix (12 features, status)
 - [x] Create upgrade log + backlog
 - [x] Confirm `pre-commercial-v2` tag + `upgrade/neonbet-commercial-v2` branch
-- [ ] Run full `git log -p` secret sweep as release gate
+- [x] Run full `git log -p` secret sweep as release gate — **history purged** (orphan-root rewrite, `5ded8ea` unreachable, no local refs carry secrets; see UPGRADE_LOG)
 - [x] Confirm live Supabase RLS actually applied (verify enable + policies on prod) — schema.sql present; *live-project application still owner-verified step, see note*
-- [x] Freeze owner-specific secrets inventory (wallet + TG/WA) before any sale — current source externalized (config/verification.js empty, contact via VITE_* env); **history still contains baseline secrets (open P0 item above)**
+- [x] Freeze owner-specific secrets inventory (wallet + TG/WA) before any sale — current source externalized (config/verification.js empty, contact via VITE_* env); **history purged, local clone clean**
 - [x] Add repo-level `.env.example` (already referenced; ensure it exists and is complete) — `.env.example` present and complete
-- [ ] Add CI guard preventing hard-coded wallet/contact strings (lint rule / secret scan)
+- [x] Add CI guard preventing hard-coded wallet/contact strings (lint rule / secret scan) — `scripts/secret-scan.mjs` + `npm run secret-scan` + `secret-scan` job gating deploy in `.github/workflows/deploy.yml`
 - [x] Document "demo vs Supabase" mode contract for buyers — README + docs/ARCHITECTURE.md cover mode contract
 
 ## P1 — Modularization (break the monolith)
@@ -91,18 +91,18 @@ Legend: `[ ]` todo · `[x]` done. Phase priority: P0 (safety/freeze) → P6 (lau
 - [ ] Ensure RLS + RPC coverage for every new feature
 
 ## P5 — Buyer Packaging & Docs
-- [ ] Write buyer-facing README (what it is / isn't)
-- [ ] Write deployment guide (GitHub Pages + Vercel + self-host)
-- [ ] Write Supabase setup guide (schema apply + admin)
-- [ ] Write white-label customization guide
-- [ ] Write env/secret reference (all `VITE_*` vars)
-- [ ] Add LICENSE (commercial/white-label terms)
-- [ ] Add CHANGELOG
-- [ ] Add contribution/code-of-conduct (if open)
-- [ ] Produce marketing/screenshot assets
+- [x] Write buyer-facing README (what it is / isn't) — README rewritten
+- [x] Write deployment guide (GitHub Pages + Vercel + self-host) — `docs/DEPLOYMENT.md`
+- [x] Write Supabase setup guide (schema apply + admin) — `docs/DATABASE.md`
+- [x] Write white-label customization guide — `docs/WHITE_LABEL.md`
+- [x] Write env/secret reference (all `VITE_*` vars) — `.env.example` + `docs/SECURITY.md`
+- [x] Add LICENSE (commercial/white-label terms) — `LICENSE` (proprietary 3-tier) + `docs/LICENSING.md`
+- [ ] Add CHANGELOG — `CHANGELOG.md` exists at root (lightweight; expand per release)
+- [ ] Add contribution/code-of-conduct (if open) — not applicable (commercial, closed)
+- [ ] Produce marketing/screenshot assets — `docs/screenshots/` not yet created (placeholder refs in README)
 - [ ] Add demo video / walkthrough
 - [ ] Add sample `.env.example` per deployment target
-- [ ] Document limitations & non-real-money disclaimer prominently
+- [x] Document limitations & non-real-money disclaimer prominently — README + `docs/COMMERCIAL_READINESS.md`
 
 ## P6 — Polish, Launch & Hardening
 - [ ] Responsive design system audit (mobile/tablet/desktop)

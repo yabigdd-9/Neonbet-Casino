@@ -1,0 +1,47 @@
+NeonBet — Commercial Source License
+=====================================
+
+Copyright (c) 2026 Dion (owner). All rights reserved.
+
+This software is provided as **commercial source code for licence**, not as
+open-source software. It is NOT licensed under the MIT, Apache, GPL, or any
+other public open-source licence.
+
+By obtaining, viewing, installing, or using this software you agree to the
+terms below. If you do not agree, do not use the software.
+
+1. GRANT
+   The owner grants the licencee a non-exclusive, non-transferable licence to
+   use the source code strictly within the tier purchased (see docs/LICENSING.md).
+   Tiers:
+     - Tier 1 — Source Code: use, study, and modify the code for your own
+       projects. You may NOT redistribute or resell the source.
+     - Tier 2 — Commercial / Extended: use the code in unlimited end products
+       you operate or deliver to clients. You may NOT resell, sublicense, or
+       redistribute the source itself.
+     - Tier 3 — White Label + Setup: Tier 2 rights plus rebrand assistance
+       and deployment support as contracted.
+
+2. RESTRICTIONS
+   You may NOT:
+     - Publish, sell, sublicense, or redistribute the source code or any
+       substantial portion of it.
+     - Remove or obscure copyright, licence, or attribution notices.
+     - Present the unmodified software as your own product without the
+       white-label tier.
+
+3. NOT A GAMBLING OPERATOR
+   This is a frontend/starter platform. It is not a regulated gambling
+   operator, payment processor, wallet custodian, KYC provider, or live
+   game-provider. Any production deployment is the licencee's responsibility,
+   including licensing, jurisdiction compliance, payment, KYC, and provider
+   contracts.
+
+4. NO WARRANTY
+   The software is provided "AS IS", without warranty of any kind, express or
+   implied. The owner is not liable for any damages arising from use.
+
+5. TERMINATION
+   Breach of these terms terminates the licence immediately.
+
+Contact the owner (Dion) for licensing and commercial terms.
