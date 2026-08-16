@@ -1,5 +1,5 @@
 // Authentication + account session service.
-import { supabase, hasSupabaseConfig } from "./supabaseClient";
+import { supabase, hasSupabaseConfig } from "./dataStore";
 
 export { hasSupabaseConfig };
 

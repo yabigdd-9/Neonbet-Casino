@@ -1,5 +1,5 @@
 // Admin service (server-validated actions only).
-import { supabase, hasSupabaseConfig } from "./supabaseClient";
+import { supabase, hasSupabaseConfig } from "./dataStore";
 
 export async function getAdminSummary({ profiles = [], submissions = [], withdrawals = [] }) {
   return {

@@ -5,7 +5,7 @@ import { Send, MessageCircle, ExternalLink } from "lucide-react";
 import Modal from "../../components/ui/Modal";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
-import { hasSupabaseConfig } from "../../services/supabaseClient";
+import { hasSupabaseConfig } from "../../services/dataStore";
 import { buildContactUrl } from "../../config/contact";
 
 interface AuthModalProps {
