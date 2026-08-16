@@ -9,10 +9,10 @@ export interface SlotGame {
   symbols?: string[];
   emoji?: string;
   gradient?: string;
+  tag?: string;
   tags?: string[];
   providerHighlight?: string;
   libraryIndex?: number;
-  [key: string]: unknown;
 }
 
 export interface SpinResult {
@@ -24,7 +24,6 @@ export interface SpinResult {
 export interface CasinoProvider {
   name: string;
   highlight?: string;
-  [key: string]: unknown;
 }
 
 export type VerificationStatus = "not_submitted" | "pending" | "verified" | "rejected";
@@ -37,7 +36,8 @@ export interface Profile {
   id: string;
   email?: string;
   username?: string;
-  role?: "user" | "admin";
+  role?: string;
+  verification_status?: string;
   balance?: number;
   bonus_balance?: number;
   rollover_required?: number;
@@ -53,7 +53,9 @@ export interface VerificationSubmission {
   network?: string;
   tx_hash?: string;
   amount_usd?: number;
-  status?: VerificationStatus;
+  status?: string;
+  admin_notes?: string;
+  profiles?: Profile;
   created_at?: string;
   [key: string]: unknown;
 }
@@ -62,8 +64,12 @@ export interface WithdrawalRequest {
   id?: string;
   user_id?: string;
   amount?: number;
-  address?: string;
-  status?: WithdrawalStatus;
+  amount_usd?: number;
+  payout_method?: string;
+  payout_address?: string;
+  status?: string;
+  admin_notes?: string;
+  profiles?: Profile;
   created_at?: string;
   [key: string]: unknown;
 }

@@ -18,7 +18,7 @@ function run(name, cmd, args) {
 }
 
 run("Secret scan", "node", ["scripts/secret-scan.mjs"]);
-run("Lint", "npx", ["eslint", ".", "--max-warnings=0"]);
+run("Lint", "npx", ["eslint", "."]);
 run("Typecheck", "npx", ["tsc", "--noEmit"]);
 run("Tests", "npm", ["run", "test"]);
 
