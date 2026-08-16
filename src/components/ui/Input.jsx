@@ -14,7 +14,10 @@ export default function Input({ label, error, id, className = "", ...props }) {
         {...props}
       />
       {error && (
-        <p id={`${inputId}-error`} className="mt-2 rounded-xl border border-rose-300/20 bg-rose-400/10 p-2 text-sm text-rose-100">
+        <p
+          id={`${inputId}-error`}
+          className="mt-2 rounded-xl border border-rose-300/20 bg-rose-400/10 p-2 text-sm text-rose-100"
+        >
           {error}
         </p>
       )}

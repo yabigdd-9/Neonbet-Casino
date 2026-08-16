@@ -48,7 +48,9 @@ export async function submitWithdrawal({ userId, request }) {
     return { local };
   }
 
-  const { error } = await supabase.from("withdrawal_requests").insert({ user_id: userId, ...cleanRequest });
+  const { error } = await supabase
+    .from("withdrawal_requests")
+    .insert({ user_id: userId, ...cleanRequest });
   if (error) throw error;
   return { error: null };
 }

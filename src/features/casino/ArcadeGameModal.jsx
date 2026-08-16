@@ -65,7 +65,10 @@ export default function ArcadeGameModal({ game, balance, setBalance, onClose }) 
     const multiplier = crashPoint >= target ? target : 0;
     finishRound({
       title: multiplier > 0 ? "Cashed out" : "Rocket crashed",
-      detail: multiplier > 0 ? `You cashed at ${target.toFixed(2)}x before ${crashPoint.toFixed(2)}x.` : `Crash hit at ${crashPoint.toFixed(2)}x before your ${target.toFixed(2)}x target.`,
+      detail:
+        multiplier > 0
+          ? `You cashed at ${target.toFixed(2)}x before ${crashPoint.toFixed(2)}x.`
+          : `Crash hit at ${crashPoint.toFixed(2)}x before your ${target.toFixed(2)}x target.`,
       multiplier,
       visual: [crashPoint, target],
     });
@@ -75,7 +78,12 @@ export default function ArcadeGameModal({ game, balance, setBalance, onClose }) 
     if (busy || balance < bet) return;
     setBusy(true);
     setBalance((current) => Number((current - bet).toFixed(2)));
-    setRound((current) => ({ ...current, title: "Running", detail: "Neon math is moving...", win: 0 }));
+    setRound((current) => ({
+      ...current,
+      title: "Running",
+      detail: "Neon math is moving...",
+      win: 0,
+    }));
     window.setTimeout(() => {
       if (game.id === "dice-duel") playDice();
       if (game.id === "plinko-drop") playPlinko();
@@ -90,11 +98,20 @@ export default function ArcadeGameModal({ game, balance, setBalance, onClose }) 
         <div>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">{game.type}</div>
+              <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">
+                {game.type}
+              </div>
               <h2 className="mt-2 text-3xl font-black">{game.title}</h2>
-              <p className="mt-2 text-sm text-slate-400">{game.rule} Balance is simulated in this browser.</p>
+              <p className="mt-2 text-sm text-slate-400">
+                {game.rule} Balance is simulated in this browser.
+              </p>
             </div>
-            <button type="button" onClick={onClose} className="rounded-2xl bg-white/10 p-3 text-white hover:bg-white/15" aria-label="Close">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-2xl bg-white/10 p-3 text-white hover:bg-white/15"
+              aria-label="Close"
+            >
               ✕
             </button>
           </div>
@@ -103,11 +120,17 @@ export default function ArcadeGameModal({ game, balance, setBalance, onClose }) 
             {game.id === "dice-duel" && (
               <div className="grid gap-4 sm:grid-cols-2">
                 {["Your dice", "House dice"].map((label, groupIndex) => (
-                  <div key={label} className="rounded-3xl border border-white/10 bg-white/[0.06] p-4">
+                  <div
+                    key={label}
+                    className="rounded-3xl border border-white/10 bg-white/[0.06] p-4"
+                  >
                     <div className="mb-3 text-sm font-black text-slate-300">{label}</div>
                     <div className="grid grid-cols-2 gap-3">
                       {[0, 1].map((offset) => (
-                        <div key={offset} className="grid aspect-square place-items-center rounded-3xl bg-white/10 text-5xl font-black">
+                        <div
+                          key={offset}
+                          className="grid aspect-square place-items-center rounded-3xl bg-white/10 text-5xl font-black"
+                        >
                           {busy ? "?" : round.visual[groupIndex * 2 + offset] || "•"}
                         </div>
                       ))}
@@ -130,11 +153,16 @@ export default function ArcadeGameModal({ game, balance, setBalance, onClose }) 
                   ))}
                 </div>
                 <div className="mt-4 grid grid-cols-9 gap-2 text-center text-xs font-black">
-                  {["0x", ".4x", ".8x", "1.5x", "9x", "1.5x", ".8x", ".4x", "0x"].map((label, index) => (
-                    <div key={`${label}-${index}`} className="rounded-xl bg-white/10 py-2 text-cyan-200">
-                      {label}
-                    </div>
-                  ))}
+                  {["0x", ".4x", ".8x", "1.5x", "9x", "1.5x", ".8x", ".4x", "0x"].map(
+                    (label, index) => (
+                      <div
+                        key={`${label}-${index}`}
+                        className="rounded-xl bg-white/10 py-2 text-cyan-200"
+                      >
+                        {label}
+                      </div>
+                    ),
+                  )}
                 </div>
               </div>
             )}
@@ -145,9 +173,15 @@ export default function ArcadeGameModal({ game, balance, setBalance, onClose }) 
                 <div className="flex min-h-52 items-end justify-between">
                   <div>
                     <div className="text-sm font-black text-slate-400">Cash-out target</div>
-                    <div className="mt-2 text-5xl font-black text-cyan-300">{Number(cashOutTarget).toFixed(2)}x</div>
+                    <div className="mt-2 text-5xl font-black text-cyan-300">
+                      {Number(cashOutTarget).toFixed(2)}x
+                    </div>
                   </div>
-                  <div className={`text-7xl transition ${busy ? "translate-x-3 -translate-y-8 rotate-12" : ""}`}>🚀</div>
+                  <div
+                    className={`text-7xl transition ${busy ? "translate-x-3 -translate-y-8 rotate-12" : ""}`}
+                  >
+                    🚀
+                  </div>
                 </div>
                 <label className="mt-6 block">
                   <span className="text-sm font-bold text-slate-300">Target multiplier</span>
@@ -165,8 +199,16 @@ export default function ArcadeGameModal({ game, balance, setBalance, onClose }) 
             )}
 
             <div className="mt-4 rounded-2xl border border-white/10 bg-slate-950/80 p-4 text-center">
-              <div className="text-sm font-bold uppercase tracking-[0.18em] text-slate-400">{round.title}</div>
-              <div className={round.win > 0 ? "mt-1 text-3xl font-black text-cyan-300" : "mt-1 text-3xl font-black text-slate-300"}>
+              <div className="text-sm font-bold uppercase tracking-[0.18em] text-slate-400">
+                {round.title}
+              </div>
+              <div
+                className={
+                  round.win > 0
+                    ? "mt-1 text-3xl font-black text-cyan-300"
+                    : "mt-1 text-3xl font-black text-slate-300"
+                }
+              >
                 {round.win > 0 ? `+${formatMoney(round.win)}` : formatMoney(0)}
               </div>
               <p className="mt-2 text-sm text-slate-400">{round.detail}</p>
@@ -176,7 +218,9 @@ export default function ArcadeGameModal({ game, balance, setBalance, onClose }) 
 
         <div className="space-y-4">
           <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
-            <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Balance</div>
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+              Balance
+            </div>
             <div className="mt-1 text-4xl font-black text-white">{formatMoney(balance)}</div>
             <div className="mt-4 grid grid-cols-3 gap-2">
               {betOptions.map((amount) => (
@@ -185,7 +229,9 @@ export default function ArcadeGameModal({ game, balance, setBalance, onClose }) 
                   type="button"
                   onClick={() => setBet(amount)}
                   className={`rounded-2xl border px-3 py-3 text-sm font-black transition ${
-                    bet === amount ? "border-cyan-300/40 bg-cyan-400 text-slate-950" : "border-white/10 bg-black/20 text-slate-300 hover:bg-white/10"
+                    bet === amount
+                      ? "border-cyan-300/40 bg-cyan-400 text-slate-950"
+                      : "border-white/10 bg-black/20 text-slate-300 hover:bg-white/10"
                   }`}
                 >
                   {formatMoney(amount)}
@@ -201,7 +247,9 @@ export default function ArcadeGameModal({ game, balance, setBalance, onClose }) 
               <Play size={18} />
               {busy ? "Playing..." : `Play ${formatMoney(bet)}`}
             </button>
-            {balance < bet && <p className="mt-3 text-sm text-amber-200">Balance is too low for this bet.</p>}
+            {balance < bet && (
+              <p className="mt-3 text-sm text-amber-200">Balance is too low for this bet.</p>
+            )}
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
@@ -209,25 +257,32 @@ export default function ArcadeGameModal({ game, balance, setBalance, onClose }) 
             <div className="mt-3 space-y-2 text-sm text-slate-300">
               {game.id === "dice-duel" && (
                 <>
-                  <p className="rounded-2xl bg-black/20 px-3 py-2">Beat the house total to win 2x.</p>
+                  <p className="rounded-2xl bg-black/20 px-3 py-2">
+                    Beat the house total to win 2x.
+                  </p>
                   <p className="rounded-2xl bg-black/20 px-3 py-2">Tie returns 1x.</p>
                 </>
               )}
               {game.id === "plinko-drop" && (
                 <>
                   <p className="rounded-2xl bg-black/20 px-3 py-2">The center lane pays 9x.</p>
-                  <p className="rounded-2xl bg-black/20 px-3 py-2">Outer lanes are riskier and may miss.</p>
+                  <p className="rounded-2xl bg-black/20 px-3 py-2">
+                    Outer lanes are riskier and may miss.
+                  </p>
                 </>
               )}
               {game.id === "neon-crash" && (
                 <>
                   <p className="rounded-2xl bg-black/20 px-3 py-2">Lower targets hit more often.</p>
-                  <p className="rounded-2xl bg-black/20 px-3 py-2">If the crash point is below target, the round loses.</p>
+                  <p className="rounded-2xl bg-black/20 px-3 py-2">
+                    If the crash point is below target, the round loses.
+                  </p>
                 </>
               )}
             </div>
             <p className="mt-4 text-xs leading-5 text-slate-500">
-              This is simulated browser gameplay only. It is not connected to deposits, withdrawals, or real-money wagering.
+              This is simulated browser gameplay only. It is not connected to deposits, withdrawals,
+              or real-money wagering.
             </p>
           </div>
         </div>

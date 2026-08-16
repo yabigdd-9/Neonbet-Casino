@@ -6,7 +6,7 @@ import type { AppMode } from "../types";
 
 const configuredMode = import.meta.env.VITE_APP_MODE;
 const hasSupabaseConfig = Boolean(
-  import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY
+  import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY,
 );
 
 let resolvedMode: AppMode = "demo";

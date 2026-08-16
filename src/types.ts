@@ -1,12 +1,6 @@
 // Shared domain types for NeonBet Commercial V2.
 
-export type GameOutcome =
-  | "five"
-  | "four"
-  | "three"
-  | "two"
-  | "bonus"
-  | "miss";
+export type GameOutcome = "five" | "four" | "three" | "two" | "bonus" | "miss";
 
 export interface SlotGame {
   title: string;
@@ -33,19 +27,11 @@ export interface CasinoProvider {
   [key: string]: unknown;
 }
 
-export type VerificationStatus =
-  | "not_submitted"
-  | "pending"
-  | "verified"
-  | "rejected";
+export type VerificationStatus = "not_submitted" | "pending" | "verified" | "rejected";
 export type SubmissionStatus = "pending" | "verified" | "rejected";
 export type WithdrawalStatus = "pending" | "approved" | "paid" | "rejected";
 export type AccountStatus = "active" | "restricted" | "suspended";
-export type StatusLike =
-  | VerificationStatus
-  | SubmissionStatus
-  | WithdrawalStatus
-  | AccountStatus;
+export type StatusLike = VerificationStatus | SubmissionStatus | WithdrawalStatus | AccountStatus;
 
 export interface Profile {
   id: string;
@@ -83,4 +69,15 @@ export interface WithdrawalRequest {
 }
 
 export type AppMode = "demo" | "supabase";
-export type FeatureKey = "demoGames" | "promotions" | "verification" | "favourites" | "recentlyPlayed" | "admin" | "casinoProviders" | "payments" | "liveWallet" | "withdrawals" | "account";
+export type FeatureKey =
+  | "demoGames"
+  | "promotions"
+  | "verification"
+  | "favourites"
+  | "recentlyPlayed"
+  | "admin"
+  | "casinoProviders"
+  | "payments"
+  | "liveWallet"
+  | "withdrawals"
+  | "account";

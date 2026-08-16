@@ -19,7 +19,7 @@ export function ToastProvider({ children }) {
       window.setTimeout(() => dismiss(id), ttl);
       return id;
     },
-    [dismiss]
+    [dismiss],
   );
 
   const api = {
@@ -33,7 +33,11 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={api}>
       {children}
-      <div className="fixed bottom-4 right-4 z-[60] flex w-72 flex-col gap-2" aria-live="polite" aria-atomic="true">
+      <div
+        className="fixed bottom-4 right-4 z-[60] flex w-72 flex-col gap-2"
+        aria-live="polite"
+        aria-atomic="true"
+      >
         {toasts.map((toast) => (
           <div
             key={toast.id}
@@ -42,10 +46,10 @@ export function ToastProvider({ children }) {
               toast.type === "success"
                 ? "border-emerald-300/30 bg-emerald-400/15 text-emerald-100"
                 : toast.type === "error"
-                ? "border-rose-300/30 bg-rose-400/15 text-rose-100"
-                : toast.type === "warning"
-                ? "border-amber-300/30 bg-amber-400/15 text-amber-100"
-                : "border-cyan-300/30 bg-cyan-400/15 text-cyan-100"
+                  ? "border-rose-300/30 bg-rose-400/15 text-rose-100"
+                  : toast.type === "warning"
+                    ? "border-amber-300/30 bg-amber-400/15 text-amber-100"
+                    : "border-cyan-300/30 bg-cyan-400/15 text-cyan-100"
             }`}
           >
             {toast.message}

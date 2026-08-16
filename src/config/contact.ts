@@ -19,7 +19,7 @@ export function buildContactUrl(channel: string, username = "", phone = ""): str
   const handle = username.trim() || "new player";
   const mobile = phone.trim() || "not provided";
   const message = encodeURIComponent(
-    `Hi ${brandName()}, I want to register.\nUsername: ${handle}\nMobile: ${mobile}\nBonus: $100 sign-up + 300% match with 10x rollover`
+    `Hi ${brandName()}, I want to register.\nUsername: ${handle}\nMobile: ${mobile}\nBonus: $100 sign-up + 300% match with 10x rollover`,
   );
 
   if (channel === "whatsapp" && contact.whatsappUrl) {

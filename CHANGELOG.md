@@ -5,6 +5,7 @@ All notable changes to NeonBet are documented here. Format follows Keep a Change
 ## [Unreleased] — Commercial V2
 
 ### Added
+
 - Strangler-style decomposition of the ~2973-line `src/main.jsx` into modular `app/`,
   `components/`, `config/`, `data/`, `features/`, `hooks/`, `lib/`, `providers/`, `services/`.
 - Centralised white-label configuration (`src/config/brand.js`, `contact.js`, `verification.js`,
@@ -20,6 +21,7 @@ All notable changes to NeonBet are documented here. Format follows Keep a Change
 - `.env.example` and expanded README.
 
 ### Changed
+
 - Verification wallet addresses and personal Telegram/WhatsApp links externalised to config
   with safe empty placeholders (no longer buried in components).
 - Supabase data access isolated into a service layer; admin actions route through
@@ -27,17 +29,21 @@ All notable changes to NeonBet are documented here. Format follows Keep a Change
 - Favourites / recently-played moved to a `useGameHistory` hook backed by `localStorage`.
 
 ### Improved
+
 - Responsive shell: desktop sidebar + mobile bottom navigation.
 - Account status, verification, withdrawal, and admin UIs separated into feature modules.
 - Consistent status display via centralised `lib/status.js`.
 
 ### Fixed
+
 - Build no longer depends on a single monolithic file; `npm run build` produces a clean bundle.
 
 ### Security
+
 - Admin permission enforced server-side via `private.is_admin()`; anon key only on client.
 - Secret scan guidance added to `docs/SECURITY.md`.
 
 ### Developer Experience
+
 - Vitest unit tests for pure logic, services validators, providers, config, and data integrity.
 - `npm run test` script; `vitest.config.js` with jsdom environment.

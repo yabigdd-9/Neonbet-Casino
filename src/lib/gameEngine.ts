@@ -25,13 +25,38 @@ export function buildSpin(game: SlotGame): SpinResult {
   const filler = (): string => symbols[Math.floor(Math.random() * symbols.length)];
   const outcome = pickWeightedOutcome();
 
-  if (outcome === "five") return { reels: Array(5).fill(seven), multiplier: 50, label: "Jackpot hit" };
-  if (outcome === "four") return { reels: shuffle([matchSymbol, matchSymbol, matchSymbol, matchSymbol, filler()]), multiplier: 8, label: "Four of a kind" };
-  if (outcome === "three") return { reels: shuffle([matchSymbol, matchSymbol, matchSymbol, filler(), filler()]), multiplier: 3, label: "Three match" };
-  if (outcome === "two") return { reels: shuffle([matchSymbol, matchSymbol, filler(), filler(), filler()]), multiplier: 1.5, label: "Small win" };
-  if (outcome === "bonus") return { reels: shuffle([premium, star, seven, filler(), filler()]), multiplier: 2, label: "Bonus mix" };
+  if (outcome === "five")
+    return { reels: Array(5).fill(seven), multiplier: 50, label: "Jackpot hit" };
+  if (outcome === "four")
+    return {
+      reels: shuffle([matchSymbol, matchSymbol, matchSymbol, matchSymbol, filler()]),
+      multiplier: 8,
+      label: "Four of a kind",
+    };
+  if (outcome === "three")
+    return {
+      reels: shuffle([matchSymbol, matchSymbol, matchSymbol, filler(), filler()]),
+      multiplier: 3,
+      label: "Three match",
+    };
+  if (outcome === "two")
+    return {
+      reels: shuffle([matchSymbol, matchSymbol, filler(), filler(), filler()]),
+      multiplier: 1.5,
+      label: "Small win",
+    };
+  if (outcome === "bonus")
+    return {
+      reels: shuffle([premium, star, seven, filler(), filler()]),
+      multiplier: 2,
+      label: "Bonus mix",
+    };
 
-  return { reels: shuffle([filler(), filler(), filler(), filler(), filler()]), multiplier: 0, label: "Try again" };
+  return {
+    reels: shuffle([filler(), filler(), filler(), filler(), filler()]),
+    multiplier: 0,
+    label: "Try again",
+  };
 }
 
 // Deterministic-ish skin picker for provider themed games (stable per provider/title).
@@ -46,23 +71,63 @@ interface ProviderGameSkin {
 }
 
 const providerGameSkins: ProviderGameSkin[] = [
-  { emoji: "⚡", gradient: "from-cyan-400 to-blue-700", symbols: ["⚡", "💎", "⭐", "🪙", "🔥", "7", "BONUS"] },
-  { emoji: "🍬", gradient: "from-pink-400 to-fuchsia-700", symbols: ["🍬", "🍭", "🍒", "⭐", "💎", "7", "WILD"] },
-  { emoji: "🏛️", gradient: "from-amber-300 to-orange-700", symbols: ["🏛️", "⚡", "👑", "⭐", "💎", "7", "SCAT"] },
-  { emoji: "🐺", gradient: "from-slate-300 to-slate-800", symbols: ["🐺", "🌙", "💰", "⭐", "💎", "7", "WILD"] },
-  { emoji: "🐟", gradient: "from-sky-300 to-teal-700", symbols: ["🐟", "🎣", "💰", "⭐", "💎", "7", "BONUS"] },
-  { emoji: "🚂", gradient: "from-red-400 to-stone-900", symbols: ["🚂", "💰", "🔥", "⭐", "💎", "7", "WILD"] },
-  { emoji: "🗿", gradient: "from-violet-400 to-indigo-900", symbols: ["🗿", "🔮", "👑", "⭐", "💎", "7", "SCAT"] },
-  { emoji: "💰", gradient: "from-yellow-300 to-amber-700", symbols: ["💰", "🪙", "🏆", "⭐", "💎", "7", "BONUS"] },
+  {
+    emoji: "⚡",
+    gradient: "from-cyan-400 to-blue-700",
+    symbols: ["⚡", "💎", "⭐", "🪙", "🔥", "7", "BONUS"],
+  },
+  {
+    emoji: "🍬",
+    gradient: "from-pink-400 to-fuchsia-700",
+    symbols: ["🍬", "🍭", "🍒", "⭐", "💎", "7", "WILD"],
+  },
+  {
+    emoji: "🏛️",
+    gradient: "from-amber-300 to-orange-700",
+    symbols: ["🏛️", "⚡", "👑", "⭐", "💎", "7", "SCAT"],
+  },
+  {
+    emoji: "🐺",
+    gradient: "from-slate-300 to-slate-800",
+    symbols: ["🐺", "🌙", "💰", "⭐", "💎", "7", "WILD"],
+  },
+  {
+    emoji: "🐟",
+    gradient: "from-sky-300 to-teal-700",
+    symbols: ["🐟", "🎣", "💰", "⭐", "💎", "7", "BONUS"],
+  },
+  {
+    emoji: "🚂",
+    gradient: "from-red-400 to-stone-900",
+    symbols: ["🚂", "💰", "🔥", "⭐", "💎", "7", "WILD"],
+  },
+  {
+    emoji: "🗿",
+    gradient: "from-violet-400 to-indigo-900",
+    symbols: ["🗿", "🔮", "👑", "⭐", "💎", "7", "SCAT"],
+  },
+  {
+    emoji: "💰",
+    gradient: "from-yellow-300 to-amber-700",
+    symbols: ["💰", "🪙", "🏆", "⭐", "💎", "7", "BONUS"],
+  },
 ];
 
-export function buildProviderGame(provider: CasinoProvider, title: string, index: number): SlotGame {
+export function buildProviderGame(
+  provider: CasinoProvider,
+  title: string,
+  index: number,
+): SlotGame {
   const titleLower = title.toLowerCase();
   const skin = providerGameSkins[hashText(`${provider.name}-${title}`) % providerGameSkins.length];
   const tags: string[] = [
     titleLower.includes("mega") ? "Megaways" : "",
     titleLower.includes("bonus") || titleLower.includes("buy") ? "Bonus Buy" : "",
-    titleLower.includes("jackpot") || titleLower.includes("millionaire") || titleLower.includes("rich") ? "Jackpot" : "",
+    titleLower.includes("jackpot") ||
+    titleLower.includes("millionaire") ||
+    titleLower.includes("rich")
+      ? "Jackpot"
+      : "",
     index < 2 ? "Hot" : "",
     index === 2 || index === 3 ? "New" : "",
   ].filter(Boolean);
@@ -94,6 +159,23 @@ export const payoutRows: [string, string][] = [
   ["Two matching", "1.5x"],
   ["Bonus mix", "2x"],
 ];
-export const gameFilters: string[] = ["All", "Hot", "New", "Megaways", "Bonus Buy", "Jackpot", "Favorites"];
+export const gameFilters: string[] = [
+  "All",
+  "Hot",
+  "New",
+  "Megaways",
+  "Bonus Buy",
+  "Jackpot",
+  "Favorites",
+];
 
-export default { buildSpin, buildProviderGame, getGameId, pickWeightedOutcome, shuffle, betOptions, payoutRows, gameFilters };
+export default {
+  buildSpin,
+  buildProviderGame,
+  getGameId,
+  pickWeightedOutcome,
+  shuffle,
+  betOptions,
+  payoutRows,
+  gameFilters,
+};

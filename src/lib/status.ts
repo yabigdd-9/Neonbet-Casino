@@ -1,6 +1,6 @@
 // Status state-machine values + display styles/labels.
 // Avoid free-form status strings scattered through UI.
-import type { StatusLike, VerificationStatus } from "../types";
+import type { StatusLike } from "../types";
 
 export const VERIFICATION_STATUS = {
   NOT_SUBMITTED: "not_submitted",
@@ -54,4 +54,13 @@ export function statusLabel(status: StatusLike | string): string {
   return statusLabels[status] || (status as string) || "Unknown";
 }
 
-export default { VERIFICATION_STATUS, SUBMISSION_STATUS, WITHDRAWAL_STATUS, ACCOUNT_STATUS, statusStyles, statusLabels, statusStyle, statusLabel };
+export default {
+  VERIFICATION_STATUS,
+  SUBMISSION_STATUS,
+  WITHDRAWAL_STATUS,
+  ACCOUNT_STATUS,
+  statusStyles,
+  statusLabels,
+  statusStyle,
+  statusLabel,
+};

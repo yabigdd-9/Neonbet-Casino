@@ -1,5 +1,5 @@
 // Favourites + recently played persistence hook (localStorage; Supabase-ready).
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { getGameId } from "../lib/gameEngine";
 import { readStoredArray, writeStoredArray } from "../lib/storage";
 
@@ -31,7 +31,10 @@ export function useRecentGames() {
 
   const recordGame = useCallback((game) => {
     setRecentGames((current) => {
-      const next = [game, ...current.filter((g) => getGameId(g) !== getGameId(game))].slice(0, RECENT_LIMIT);
+      const next = [game, ...current.filter((g) => getGameId(g) !== getGameId(game))].slice(
+        0,
+        RECENT_LIMIT,
+      );
       writeStoredArray(RECENT_KEY, next);
       return next;
     });

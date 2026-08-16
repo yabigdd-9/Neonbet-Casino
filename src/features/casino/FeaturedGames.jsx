@@ -3,7 +3,7 @@ import React from "react";
 import GameCard from "./GameCard";
 import { games } from "../../data/games";
 
-export default function FeaturedGames({ onPlay, favorites, isFavorite, onToggleFavorite }) {
+export default function FeaturedGames({ onPlay, _favorites, isFavorite, onToggleFavorite }) {
   return (
     <section id="featured-games" className="scroll-mt-24">
       <div className="mb-5 flex items-end justify-between gap-4">
@@ -13,7 +13,11 @@ export default function FeaturedGames({ onPlay, favorites, isFavorite, onToggleF
         </div>
         <button
           type="button"
-          onClick={() => document.getElementById("providers")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+          onClick={() =>
+            document
+              .getElementById("providers")
+              ?.scrollIntoView({ behavior: "smooth", block: "start" })
+          }
           className="hidden rounded-2xl border border-white/10 bg-white/10 px-4 py-3 font-bold sm:block"
         >
           View all

@@ -7,7 +7,9 @@ export default function GameCard({ game, onPlay, isFavorite, onToggleFavorite })
   return (
     <Card className="group overflow-hidden transition hover:-translate-y-1 hover:shadow-neon">
       <div className={`relative grid h-36 place-items-center bg-gradient-to-br ${game.gradient}`}>
-        <div className="absolute right-3 top-3 rounded-full bg-black/35 px-3 py-1 text-xs font-black">{game.tag}</div>
+        <div className="absolute right-3 top-3 rounded-full bg-black/35 px-3 py-1 text-xs font-black">
+          {game.tag}
+        </div>
         <div className="text-6xl transition group-hover:scale-110">{game.emoji}</div>
         {onToggleFavorite && (
           <button

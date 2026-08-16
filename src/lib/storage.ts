@@ -39,4 +39,10 @@ export function writeStoredValue(key: string, value: unknown): void {
   }
 }
 
-export default { formatMoney, readStoredArray, writeStoredArray, readStoredValue, writeStoredValue };
+export default {
+  formatMoney,
+  readStoredArray,
+  writeStoredArray,
+  readStoredValue,
+  writeStoredValue,
+};

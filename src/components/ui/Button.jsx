@@ -16,11 +16,20 @@ const SIZES = {
   lg: "px-6 py-4 text-base font-black",
 };
 
-export default function Button({ variant = "primary", size = "md", className = "", children, ...props }) {
+export default function Button({
+  variant = "primary",
+  size = "md",
+  className = "",
+  children,
+  ...props
+}) {
   const base =
     "inline-flex items-center justify-center gap-2 rounded-2xl font-black transition disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-cyan-300/60";
   return (
-    <button className={`${base} ${VARIANTS[variant] || VARIANTS.primary} ${SIZES[size] || SIZES.md} ${className}`} {...props}>
+    <button
+      className={`${base} ${VARIANTS[variant] || VARIANTS.primary} ${SIZES[size] || SIZES.md} ${className}`}
+      {...props}
+    >
       {children}
     </button>
   );

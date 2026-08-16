@@ -23,17 +23,33 @@ import AdminReviewModal from "../features/admin/AdminReviewModal";
 import AdminProfileModal from "../features/admin/AdminProfileModal";
 import { PromotionsSection, TermsSection, PolicyModalContent } from "../features/promotions";
 
-import { hasSupabaseConfig, getSession, onAuthChange, signIn, signUp, signOut, resetPassword } from "../services/auth.service";
-import { getProfile, getAdminProfiles, buildDemoProfile, saveDemoProfile } from "../services/profiles.service";
-import { getSubmissions, submitSubmission, reviewSubmission, validateTxHash } from "../services/verification.service";
-import { getWithdrawals, submitWithdrawal, reviewWithdrawal, validateWithdrawal } from "../services/transactions.service";
+import {
+  hasSupabaseConfig,
+  getSession,
+  onAuthChange,
+  signIn,
+  signUp,
+  signOut,
+  resetPassword,
+} from "../services/auth.service";
+import { getProfile, getAdminProfiles, buildDemoProfile } from "../services/profiles.service";
+import {
+  getSubmissions,
+  submitSubmission,
+  reviewSubmission,
+  validateTxHash,
+} from "../services/verification.service";
+import {
+  getWithdrawals,
+  submitWithdrawal,
+  reviewWithdrawal,
+  validateWithdrawal,
+} from "../services/transactions.service";
 import { updateProfileAdmin } from "../services/admin.service";
 
 import { useFavorites, useRecentGames } from "../hooks/useGameHistory";
-import { getGameId } from "../lib/gameEngine";
 import { readStoredValue, writeStoredValue } from "../lib/storage";
 import { features } from "../config/features";
-import { IS_SUPABASE } from "../config/appMode";
 
 function scrollToSection(id) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -105,7 +121,7 @@ function AppContent() {
         setAuthError(error.message || "Account data failed to load.");
       }
     },
-    [user]
+    [user],
   );
 
   useEffect(() => {
@@ -144,7 +160,13 @@ function AppContent() {
     setAuthError("");
     try {
       if (!hasSupabaseConfig) {
-        const localUser = { id: `local-${Date.now()}`, username: payload.username, phone: payload.phone, contactMethod: payload.contactMethod, verification_status: "not_submitted" };
+        const localUser = {
+          id: `local-${Date.now()}`,
+          username: payload.username,
+          phone: payload.phone,
+          contactMethod: payload.contactMethod,
+          verification_status: "not_submitted",
+        };
         setUser(localUser);
         writeStoredValue("neonbetUser", localUser);
         await loadAccount(localUser);
@@ -153,10 +175,18 @@ function AppContent() {
         return;
       }
       if (payload.mode === "register") {
-        const { data, error } = await signUp({ email: payload.email, password: payload.password, username: payload.username, phone: payload.phone, contactMethod: payload.contactMethod });
+        const { data, error } = await signUp({
+          email: payload.email,
+          password: payload.password,
+          username: payload.username,
+          phone: payload.phone,
+          contactMethod: payload.contactMethod,
+        });
         if (error) throw error;
         if (!data.session) {
-          setAuthError("Account created. Check your email if Supabase email confirmation is enabled, then log in.");
+          setAuthError(
+            "Account created. Check your email if Supabase email confirmation is enabled, then log in.",
+          );
           return;
         }
         setUser(data.user);
@@ -205,8 +235,14 @@ function AppContent() {
   }
 
   async function handleSubmitVerification(method, txHash) {
-    if (!user) { openAuth("register"); return; }
-    if (!validateTxHash(txHash)) { setAuthError("Enter a valid transaction hash before submitting."); return; }
+    if (!user) {
+      openAuth("register");
+      return;
+    }
+    if (!validateTxHash(txHash)) {
+      setAuthError("Enter a valid transaction hash before submitting.");
+      return;
+    }
     setVerificationSaving(true);
     try {
       const result = await submitSubmission({ userId: user.id, method, txHash });
@@ -219,11 +255,13 @@ function AppContent() {
         toast.success("Verification submitted");
       }
     } catch (error) {
-      const hasPending = error.code === "23505" || (error.message || "").includes("verification_submissions_user_pending_idx");
+      const hasPending =
+        error.code === "23505" ||
+        (error.message || "").includes("verification_submissions_user_pending_idx");
       setAuthError(
         hasPending
           ? "You already have a pending verification submission."
-          : error.message || "Verification submission failed."
+          : error.message || "Verification submission failed.",
       );
     } finally {
       setVerificationSaving(false);
@@ -231,8 +269,14 @@ function AppContent() {
   }
 
   async function handleSubmitWithdrawal(request) {
-    if (!user) { openAuth("login"); return; }
-    if (!validateWithdrawal(request)) { setAuthError("Enter a valid withdrawal amount and payout address."); return; }
+    if (!user) {
+      openAuth("login");
+      return;
+    }
+    if (!validateWithdrawal(request)) {
+      setAuthError("Enter a valid withdrawal amount and payout address.");
+      return;
+    }
     setWithdrawalSaving(true);
     try {
       const result = await submitWithdrawal({ userId: user.id, request });
@@ -250,7 +294,11 @@ function AppContent() {
     }
   }
 
-  async function handleReviewSubmission(submission, status, adminNotes = submission.admin_notes || "") {
+  async function handleReviewSubmission(
+    submission,
+    status,
+    adminNotes = submission.admin_notes || "",
+  ) {
     if (!hasSupabaseConfig || profile?.role !== "admin") return;
     setAdminSaving(true);
     try {
@@ -265,7 +313,11 @@ function AppContent() {
     }
   }
 
-  async function handleReviewWithdrawal(withdrawal, status, adminNotes = withdrawal.admin_notes || "") {
+  async function handleReviewWithdrawal(
+    withdrawal,
+    status,
+    adminNotes = withdrawal.admin_notes || "",
+  ) {
     if (!hasSupabaseConfig || profile?.role !== "admin") return;
     setAdminSaving(true);
     try {
@@ -316,7 +368,13 @@ function AppContent() {
       </a>
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(34,211,238,0.15),transparent_35%),radial-gradient(circle_at_80%_20%,rgba(168,85,247,0.14),transparent_35%)]" />
       <Sidebar open={open} setOpen={setOpen} />
-      <Header setOpen={setOpen} balance={balance} user={user} onOpenAuth={openAuth} onLogout={handleLogout} />
+      <Header
+        setOpen={setOpen}
+        balance={balance}
+        user={user}
+        onOpenAuth={openAuth}
+        onLogout={handleLogout}
+      />
 
       <main id="main-content" className="relative space-y-8 px-4 py-8 md:px-8 lg:ml-72">
         <Hero onClaim={() => scrollToSection("verification")} onOpenGame={setActiveArcadeGame} />
@@ -325,7 +383,12 @@ function AppContent() {
           <AccountStatusPanel user={user} profile={profile} latestSubmission={latestSubmission} />
         )}
 
-        <FeaturedGames onPlay={handleOpenGame} favorites={favorites} isFavorite={isFavorite} onToggleFavorite={toggleFavorite} />
+        <FeaturedGames
+          onPlay={handleOpenGame}
+          favorites={favorites}
+          isFavorite={isFavorite}
+          onToggleFavorite={toggleFavorite}
+        />
 
         <ArcadeGamesSection onPlay={setActiveArcadeGame} />
 
@@ -364,7 +427,9 @@ function AppContent() {
             submissions={submissions}
             withdrawals={withdrawals}
             onReview={(item, status) => setReviewModal({ item, status, type: "verification" })}
-            onReviewWithdrawal={(item, status) => setReviewModal({ item, status, type: "withdrawal" })}
+            onReviewWithdrawal={(item, status) =>
+              setReviewModal({ item, status, type: "withdrawal" })
+            }
             onUpdateProfile={setProfileModal}
             adminSaving={adminSaving}
           />
@@ -382,7 +447,11 @@ function AppContent() {
       <MobileNav onOpenAuth={openAuth} />
 
       {policyPage && (
-        <Modal title={policyPage.title} eyebrow={policyPage.eyebrow} onClose={() => setPolicyPage(null)}>
+        <Modal
+          title={policyPage.title}
+          eyebrow={policyPage.eyebrow}
+          onClose={() => setPolicyPage(null)}
+        >
           <PolicyModalContent page={policyPage} />
         </Modal>
       )}
@@ -392,12 +461,19 @@ function AppContent() {
           type={reviewModal.type}
           status={reviewModal.status}
           onClose={() => setReviewModal(null)}
-          onSubmit={reviewModal.type === "withdrawal" ? handleReviewWithdrawal : handleReviewSubmission}
+          onSubmit={
+            reviewModal.type === "withdrawal" ? handleReviewWithdrawal : handleReviewSubmission
+          }
           saving={adminSaving}
         />
       )}
       {profileModal && (
-        <AdminProfileModal userProfile={profileModal} onClose={() => setProfileModal(null)} onSubmit={handleUpdateProfile} saving={adminSaving} />
+        <AdminProfileModal
+          userProfile={profileModal}
+          onClose={() => setProfileModal(null)}
+          onSubmit={handleUpdateProfile}
+          saving={adminSaving}
+        />
       )}
       {launchGame && (
         <GameLaunchModal
@@ -408,8 +484,22 @@ function AppContent() {
           onLaunch={handleLaunchGame}
         />
       )}
-      {activeGame && <SlotGameModal game={activeGame} balance={balance} setBalance={setBalance} onClose={() => setActiveGame(null)} />}
-      {activeArcadeGame && <ArcadeGameModal game={activeArcadeGame} balance={balance} setBalance={setBalance} onClose={() => setActiveArcadeGame(null)} />}
+      {activeGame && (
+        <SlotGameModal
+          game={activeGame}
+          balance={balance}
+          setBalance={setBalance}
+          onClose={() => setActiveGame(null)}
+        />
+      )}
+      {activeArcadeGame && (
+        <ArcadeGameModal
+          game={activeArcadeGame}
+          balance={balance}
+          setBalance={setBalance}
+          onClose={() => setActiveArcadeGame(null)}
+        />
+      )}
       {authOpen && (
         <AuthModal
           mode={authMode}
@@ -432,17 +522,28 @@ function VIPSection() {
       <div className="xl:col-span-2 rounded-3xl border border-white/10 bg-white/[0.06] p-6">
         <h2 className="mb-5 text-2xl font-black">Leaderboard</h2>
         {["LuckyDion", "NeonWolf", "KiwiJackpot", "SpinQueen"].map((name, i) => (
-          <div key={name} className="flex items-center gap-4 border-b border-white/10 py-4 last:border-none">
-            <div className="grid h-10 w-10 place-items-center rounded-2xl bg-white/10 font-black">#{i + 1}</div>
+          <div
+            key={name}
+            className="flex items-center gap-4 border-b border-white/10 py-4 last:border-none"
+          >
+            <div className="grid h-10 w-10 place-items-center rounded-2xl bg-white/10 font-black">
+              #{i + 1}
+            </div>
             <div className="flex-1 font-bold">{name}</div>
-            <div className="font-black text-cyan-300">{(98000 - i * 13750).toLocaleString()} pts</div>
+            <div className="font-black text-cyan-300">
+              {(98000 - i * 13750).toLocaleString()} pts
+            </div>
           </div>
         ))}
       </div>
       <div className="rounded-3xl border border-amber-300/20 bg-gradient-to-br from-amber-300/15 to-orange-500/10 p-6">
-        <div className="flex items-center gap-2 font-black text-amber-200"><span>★</span> VIP Progress</div>
+        <div className="flex items-center gap-2 font-black text-amber-200">
+          <span>★</span> VIP Progress
+        </div>
         <h2 className="mt-5 text-4xl font-black">Gold II</h2>
-        <p className="mt-2 text-slate-300">Complete missions to unlock rewards and account perks.</p>
+        <p className="mt-2 text-slate-300">
+          Complete missions to unlock rewards and account perks.
+        </p>
         <div className="mt-6 h-4 overflow-hidden rounded-full bg-black/30">
           <div className="h-full w-[62%] bg-amber-300" />
         </div>

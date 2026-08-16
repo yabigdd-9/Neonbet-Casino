@@ -20,7 +20,9 @@ export async function getSession() {
 
 export async function onAuthChange(callback) {
   if (!hasSupabaseConfig) return () => {};
-  const { data } = supabase.auth.onAuthStateChange((_event, session) => callback(session?.user || null));
+  const { data } = supabase.auth.onAuthStateChange((_event, session) =>
+    callback(session?.user || null),
+  );
   return () => data.subscription.unsubscribe();
 }
 
@@ -50,4 +52,16 @@ export async function resetPassword(email, redirectTo) {
   if (error) throw error;
 }
 
-export default { getSession, onAuthChange, signIn, signUp, signOut, resetPassword, PROFILE_COLUMNS, SUBMISSION_COLUMNS, WITHDRAWAL_COLUMNS, ADMIN_SUBMISSION_COLUMNS, ADMIN_WITHDRAWAL_COLUMNS };
+export default {
+  getSession,
+  onAuthChange,
+  signIn,
+  signUp,
+  signOut,
+  resetPassword,
+  PROFILE_COLUMNS,
+  SUBMISSION_COLUMNS,
+  WITHDRAWAL_COLUMNS,
+  ADMIN_SUBMISSION_COLUMNS,
+  ADMIN_WITHDRAWAL_COLUMNS,
+};

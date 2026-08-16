@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+# Pre-commit hook entry — delegates to scripts/pre-commit.mjs.
+# Installed via: git config core.hooksPath .githooks
+DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+exec node "$DIR/../scripts/pre-commit.mjs"

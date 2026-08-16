@@ -2,7 +2,14 @@
 import React, { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 
-export default function Modal({ title, eyebrow, onClose, children, maxWidth = "max-w-4xl", footer }) {
+export default function Modal({
+  title,
+  eyebrow,
+  onClose,
+  children,
+  maxWidth = "max-w-4xl",
+  footer,
+}) {
   const panelRef = useRef(null);
 
   useEffect(() => {
@@ -33,10 +40,19 @@ export default function Modal({ title, eyebrow, onClose, children, maxWidth = "m
         {(title || eyebrow) && (
           <div className="flex items-center justify-between border-b border-white/10 p-5">
             <div>
-              {eyebrow && <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">{eyebrow}</div>}
+              {eyebrow && (
+                <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">
+                  {eyebrow}
+                </div>
+              )}
               {title && <h2 className="mt-1 text-2xl font-black">{title}</h2>}
             </div>
-            <button type="button" onClick={onClose} className="rounded-2xl bg-white/10 p-3 text-white hover:bg-white/15" aria-label="Close">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-2xl bg-white/10 p-3 text-white hover:bg-white/15"
+              aria-label="Close"
+            >
               <X size={20} />
             </button>
           </div>
