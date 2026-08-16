@@ -1,7 +1,13 @@
 // Centralised design tokens surfaced to Tailwind via tailwind.config.js.
 // Theme values are kept here so buyer theming is data-driven.
 
-export const tokens = {
+interface Tokens {
+  color: Record<string, string>;
+  radius: Record<string, string>;
+  font: Record<string, string>;
+}
+
+export const tokens: Tokens = {
   color: {
     background: "#020617", // slate-950
     surface: "rgba(255,255,255,0.06)",

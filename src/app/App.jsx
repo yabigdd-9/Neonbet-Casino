@@ -308,11 +308,17 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-2xl focus:bg-cyan-400 focus:px-4 focus:py-3 focus:font-black focus:text-slate-950"
+      >
+        Skip to content
+      </a>
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(34,211,238,0.15),transparent_35%),radial-gradient(circle_at_80%_20%,rgba(168,85,247,0.14),transparent_35%)]" />
       <Sidebar open={open} setOpen={setOpen} />
       <Header setOpen={setOpen} balance={balance} user={user} onOpenAuth={openAuth} onLogout={handleLogout} />
 
-      <main className="relative space-y-8 px-4 py-8 md:px-8 lg:ml-72">
+      <main id="main-content" className="relative space-y-8 px-4 py-8 md:px-8 lg:ml-72">
         <Hero onClaim={() => scrollToSection("verification")} onOpenGame={setActiveArcadeGame} />
 
         {features.account && (

@@ -2,14 +2,20 @@
 // Personal Telegram/WhatsApp links must NOT be buried in components for a sale build.
 // Buyers override these via VITE_ env vars; safe empty placeholders ship by default.
 
-export const contact = {
+interface ContactConfig {
+  telegramUrl: string;
+  whatsappUrl: string;
+  supportEmail: string;
+}
+
+export const contact: ContactConfig = {
   telegramUrl: import.meta.env.VITE_TELEGRAM_URL || "",
   whatsappUrl: import.meta.env.VITE_WHATSAPP_URL || "",
   supportEmail: import.meta.env.VITE_SUPPORT_EMAIL || "support@example.com",
 };
 
 // Build a deep link for contact. Falls back to empty string when not configured.
-export function buildContactUrl(channel, username = "", phone = "") {
+export function buildContactUrl(channel: string, username = "", phone = ""): string {
   const handle = username.trim() || "new player";
   const mobile = phone.trim() || "not provided";
   const message = encodeURIComponent(
@@ -27,9 +33,9 @@ export function buildContactUrl(channel, username = "", phone = "") {
   return "";
 }
 
-function brandName() {
+function brandName(): string {
   // Local import to avoid a circular dependency at module init.
-  return (import.meta.env.VITE_BRAND_NAME || "NeonBet");
+  return import.meta.env.VITE_BRAND_NAME || "NeonBet";
 }
 
 export default contact;

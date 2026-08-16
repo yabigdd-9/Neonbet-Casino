@@ -2,12 +2,14 @@
 // demo    -> no Supabase; local simulated balance + localStorage persistence
 // supabase -> real auth + database (fails clearly if required env vars are missing)
 
+import type { AppMode } from "../types";
+
 const configuredMode = import.meta.env.VITE_APP_MODE;
 const hasSupabaseConfig = Boolean(
   import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY
 );
 
-let resolvedMode = "demo";
+let resolvedMode: AppMode = "demo";
 if (configuredMode === "supabase") {
   resolvedMode = hasSupabaseConfig ? "supabase" : "demo";
 } else if (configuredMode === "demo") {
@@ -16,7 +18,7 @@ if (configuredMode === "supabase") {
   resolvedMode = hasSupabaseConfig ? "supabase" : "demo";
 }
 
-export const APP_MODE = resolvedMode;
-export const IS_SUPABASE = resolvedMode === "supabase";
+export const APP_MODE: AppMode = resolvedMode;
+export const IS_SUPABASE: boolean = resolvedMode === "supabase";
 
 export default APP_MODE;

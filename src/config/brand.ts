@@ -2,10 +2,23 @@
 // A buyer can rebrand most of the product by editing THIS file (plus /public/brand assets).
 // Safe demo placeholders are used by default. Override per-deployment with VITE_ env vars.
 
+interface BrandConfig {
+  name: string;
+  shortName: string;
+  tagline: string;
+  logo: string;
+  favicon: string;
+  supportEmail: string;
+  primaryColor: string;
+  secondaryColor: string;
+  currency: string;
+  social: { telegram: string; whatsapp: string };
+}
+
 const envBrandName = import.meta.env.VITE_BRAND_NAME;
 const envSupportEmail = import.meta.env.VITE_SUPPORT_EMAIL;
 
-export const brand = {
+export const brand: BrandConfig = {
   name: envBrandName || "NeonBet",
   shortName: "NB",
   tagline: "Play in the neon.",

@@ -33,14 +33,17 @@ export default function Header({ setOpen, balance, user, onOpenAuth, onLogout, o
         )}
 
         <div className="ml-auto flex items-center gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            className="hidden sm:flex"
-            onClick={() => document.getElementById("featured-games")?.scrollIntoView({ behavior: "smooth" })}
-          >
-            <Wallet size={18} /> {`$${Number(balance).toFixed(2)}`}
-          </Button>
+          <div aria-live="polite" aria-atomic="true" className="hidden sm:block">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="hidden sm:flex"
+              aria-label={`Balance: $${Number(balance).toFixed(2)}`}
+              onClick={() => document.getElementById("featured-games")?.scrollIntoView({ behavior: "smooth" })}
+            >
+              <Wallet size={18} /> {`$${Number(balance).toFixed(2)}`}
+            </Button>
+          </div>
           <button className="rounded-2xl bg-white/10 p-3 hover:bg-white/15" aria-label="Notifications"><Bell size={18} /></button>
           {user ? (
             <>

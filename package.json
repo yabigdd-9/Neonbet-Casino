@@ -6,7 +6,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "secret-scan": "node scripts/secret-scan.mjs"
+    "secret-scan": "node scripts/secret-scan.mjs",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.105.4",

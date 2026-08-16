@@ -2,7 +2,27 @@
 // Live wallet addresses and personal links are externalized here as safe placeholders.
 // Buyers replace VERIFICATION_* values (or the public QR assets) before distribution.
 
-export const verificationConfig = {
+export interface CryptoMethod {
+  name: string;
+  network: string;
+  label: string;
+  address: string;
+  qrCodeSrc: string;
+  notice: string;
+  note: string;
+}
+
+export interface CryptoMethodConfig extends CryptoMethod {}
+
+export interface VerificationConfig {
+  feeUsd: number;
+  referenceFormat: string;
+  contactMethods: string[];
+  contactLinks: { telegram: string; whatsapp: string };
+  acceptedCrypto: CryptoMethod[];
+}
+
+export const verificationConfig: VerificationConfig = {
   feeUsd: 75,
   referenceFormat: "@TelegramOrWhatsAppUsername + transaction hash",
   contactMethods: ["Telegram", "WhatsApp"],

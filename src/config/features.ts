@@ -1,13 +1,28 @@
 // Feature flags. Navigation and capabilities reflect these.
 // Toggle with VITE_ENABLE_* env vars or edit directly.
+import type { FeatureKey } from "../types";
 
-function envBool(name, fallback) {
+function envBool(name: string, fallback: boolean): boolean {
   const value = import.meta.env[name];
   if (value === undefined || value === null || value === "") return fallback;
   return value === "true" || value === "1";
 }
 
-export const features = {
+export interface FeatureFlags {
+  demoGames: boolean;
+  promotions: boolean;
+  verification: boolean;
+  favourites: boolean;
+  recentlyPlayed: boolean;
+  admin: boolean;
+  casinoProviders: boolean;
+  payments: boolean;
+  liveWallet: boolean;
+  withdrawals: boolean;
+  account: boolean;
+}
+
+export const features: FeatureFlags = {
   demoGames: true,
   promotions: envBool("VITE_ENABLE_PROMOTIONS", true),
   verification: envBool("VITE_ENABLE_VERIFICATION", true),
@@ -21,4 +36,5 @@ export const features = {
   account: true,
 };
 
+export type { FeatureKey };
 export default features;
