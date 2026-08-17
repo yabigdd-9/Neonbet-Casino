@@ -10,6 +10,7 @@ import {
   Copy,
 } from "lucide-react";
 import Button from "../../components/ui/Button";
+import QRCode from "qrcode";
 import { verificationConfig } from "../../config/verification";
 import { contact } from "../../config/contact";
 import { statusLabel } from "../../lib/status";
@@ -56,6 +57,7 @@ export default function VerificationPanel({
   const [selectedMethodIndex, setSelectedMethodIndex] = useState(0);
   const [txHash, setTxHash] = useState("");
   const [fee, setFee] = useState<number>(verificationConfig.feeUsd);
+  const [qrDataUrl, setQrDataUrl] = useState<string>("");
   const selectedMethod = verificationConfig.acceptedCrypto[selectedMethodIndex];
   const referenceExample = "@yourname + 0x/txid...";
 
@@ -74,6 +76,26 @@ export default function VerificationPanel({
       active = false;
     };
   }, []);
+
+  // The displayed QR MUST encode exactly the configured wallet address. Generate
+  // it dynamically (never a static placeholder that could mismatch the address).
+  useEffect(() => {
+    let active = true;
+    if (selectedMethod?.address) {
+      QRCode.toDataURL(selectedMethod.address, { margin: 1, width: 160 })
+        .then((url) => {
+          if (active) setQrDataUrl(url);
+        })
+        .catch(() => {
+          if (active) setQrDataUrl("");
+        });
+    } else {
+      setQrDataUrl("");
+    }
+    return () => {
+      active = false;
+    };
+  }, [selectedMethod?.address]);
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -182,8 +204,8 @@ export default function VerificationPanel({
             </div>
           ) : (
             <div className="mt-7 rounded-3xl border border-amber-300/20 bg-amber-400/10 p-4 text-sm text-amber-100">
-              Contact links are not configured. Set VITE_TELEGRAM_URL / VITE_WHATSAPP_URL or edit
-              src/config/contact.js to enable proof submission.
+              Contact links are not configured for this demo. Enable them in the brand
+              settings to submit proof.
             </div>
           )}
         </div>
@@ -223,11 +245,13 @@ export default function VerificationPanel({
                 </div>
                 <h3 className="mt-2 text-2xl font-black">Payment details</h3>
               </div>
-              <img
-                src={selectedMethod.qrCodeSrc}
-                alt={`${selectedMethod.name} ${selectedMethod.network} verification QR code`}
-                className="h-20 w-20 rounded-2xl border border-white/10 bg-white p-1"
-              />
+              {qrDataUrl && (
+                <img
+                  src={qrDataUrl}
+                  alt={`${selectedMethod.name} ${selectedMethod.network} deposit address QR code`}
+                  className="h-20 w-20 rounded-2xl border border-white/10 bg-white p-1"
+                />
+              )}
             </div>
 
             <div className="mt-6 space-y-4">
@@ -276,8 +300,7 @@ export default function VerificationPanel({
           </>
         ) : (
           <div className="rounded-3xl border border-amber-300/20 bg-amber-400/10 p-4 text-sm text-amber-100">
-            No wallet address configured for {selectedMethod.name}. Add it in
-            src/config/verification.js before distribution.
+            No wallet address is configured for {selectedMethod.name} in this demo.
           </div>
         )}
 
