@@ -4,6 +4,19 @@ Format per entry: Change / Date / Commit / Area / Problem / Implementation / Fil
 
 ---
 
+## P13/P14/P15/P19/P32 — Premium visual overhaul (RESOLVED)
+- **Date:** 2026-08-18 · **Commit:** `957555c`
+- **Area:** Casino UI, design system
+- **Problem:** Game tiles were emoji-on-gradient, Hero hard-coded promo numbers (`$100`/`10x`/`$75`), and there was no reusable premium surface language — visually "developer template", not "sellable product".
+- **Implementation:** Added `GameArt` (deterministic SVG artwork: gradient mesh + glowing glyph + pattern, stable color per title, never a broken image). Rebuilt `GameCard` (art tile + provider chip + tag + larger favorite target + lift), `Hero` (stats from `promotionConfig`, animated mesh, shimmer CTA, art preview), `ArcadeGamesSection` + `SlotProviderLibrary` (art tiles/mini-thumbnails). Added `glass`/`neon-border`/`shimmer`/`mesh`/`card-lift` CSS utilities. Fixed the long-broken typecheck by adding the missing `@types/react` + `@types/react-dom` (React 19) — `tsc --noEmit` now passes with 0 errors.
+
+## P46/P47/P48 — Playwright E2E + CI quality gate (RESOLVED)
+- **Date:** 2026-08-18 · **Commit:** `0802158`
+- **Area:** QA, CI, commercial readiness
+- **Problem:** No end-to-end verification or CI pipeline — a buyer can't trust the build stays green.
+- **Implementation:** `playwright.config.ts` boots the production preview; `e2e/smoke.spec.ts` asserts the core buyer contract (lobby renders, a game opens, verification fee visible with **zero** `src/config`/`VITE_` leakage, skip link present, mobile nav active state). Added `npm run e2e`, included `e2e` in tsconfig (node types), and `.github/workflows/ci.yml` runs secret-scan → typecheck → lint → unit → build → Playwright chromium → e2e on every push/PR. Verified the production preview serves HTTP 200 with injected metadata and no developer leakage in the HTML.
+- **Remaining Risk:** The full browser run executes in CI (ubuntu-latest installs chromium `--with-deps`); the chromium binary download was still in flight in the local macOS environment during this session, so the in-repo suite was not executed locally — CI is the source of truth for the green E2E run.
+
 ## P1 — App mode single source of truth (RESOLVED)
 - **Date:** 2026-08-17
 - **Commit:** `94dc8c7` (pushed to `upgrade/neonbet-commercial-v2`)
