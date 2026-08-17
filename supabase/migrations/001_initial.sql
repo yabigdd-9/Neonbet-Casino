@@ -1,3 +1,6 @@
+-- 001_initial.sql — core schema for NeonBet Commercial V2.
+-- Generated/synced from supabase/schema.sql. Apply in order.
+
 create extension if not exists pgcrypto;
 
 create schema if not exists private;
@@ -23,7 +26,7 @@ create table if not exists public.verification_submissions (
   asset text not null check (char_length(asset) between 1 and 64),
   network text not null check (char_length(network) between 1 and 64),
   tx_hash text not null check (char_length(tx_hash) between 8 and 256),
-  amount_usd numeric(12,2) not null default 75 check (amount_usd > 0),
+  amount_usd numeric(12,2) not null check (amount_usd > 0),
   status text not null default 'pending' check (status in ('pending', 'verified', 'rejected')),
   admin_notes text not null default '' check (char_length(admin_notes) <= 2000),
   created_at timestamptz not null default now(),
@@ -324,9 +327,8 @@ to authenticated
 using (user_id = (select auth.uid()) or (select private.is_admin()));
 
 -- NOTE: the verification fee is enforced server-side against operator_settings
--- (see migrations/002_operator_settings.sql). The literal `= 75` check is
--- intentionally removed so each brand can configure its own fee without editing
--- SQL. Kept in sync with supabase/migrations/001_initial.sql.
+-- (see 002_operator_settings.sql). The literal `= 75` check is intentionally
+-- removed so each brand can configure its own fee without editing SQL.
 create policy "Users can create own submissions"
 on public.verification_submissions for insert
 to authenticated
@@ -380,93 +382,6 @@ revoke execute on function public.update_profile_admin(uuid, numeric, numeric, n
 grant execute on function public.review_verification_submission(uuid, text, text) to authenticated, service_role;
 grant execute on function public.review_withdrawal_request(uuid, text, text) to authenticated, service_role;
 grant execute on function public.update_profile_admin(uuid, numeric, numeric, numeric, text) to authenticated, service_role;
-
--- ============================================================================
--- Operator settings (server-authoritative verification fee) — synced from
--- migrations/002_operator_settings.sql. Kept here as the generated reference.
--- ============================================================================
-create table if not exists public.operator_settings (
-  id int primary key default 1,
-  fee_usd numeric(12,2) not null default 75 check (fee_usd > 0),
-  brand_name text not null default 'NeonBet',
-  support_email text not null default 'support@example.com',
-  updated_at timestamptz not null default now(),
-  constraint operator_settings_single_row check (id = 1)
-);
-
-insert into public.operator_settings (id, fee_usd, brand_name, support_email)
-values (1, 75, 'NeonBet', 'support@example.com')
-on conflict (id) do nothing;
-
-create or replace function public.get_verification_fee()
-returns numeric
-language sql
-security definer
-set search_path = public
-stable
-as $$
-  select coalesce((select fee_usd from public.operator_settings limit 1), 75);
-$$;
-
-create or replace function public.submit_verification_submission(
-  p_user_id uuid,
-  p_asset text,
-  p_network text,
-  p_tx_hash text
-)
-returns uuid
-language plpgsql
-security definer
-set search_path = public, private
-as $$
-declare
-  v_fee numeric;
-  v_id uuid;
-begin
-  if (select auth.uid()) is distinct from p_user_id then
-    raise exception 'Cannot submit verification for another user' using errcode = '42501';
-  end if;
-  if not (char_length(p_asset) between 1 and 64) then
-    raise exception 'Invalid asset' using errcode = '22023';
-  end if;
-  if not (char_length(p_network) between 1 and 64) then
-    raise exception 'Invalid network' using errcode = '22023';
-  end if;
-  if not (char_length(p_tx_hash) between 8 and 256) then
-    raise exception 'Invalid transaction hash' using errcode = '22023';
-  end if;
-  select fee_usd into v_fee from public.operator_settings limit 1;
-  v_fee := coalesce(v_fee, 75);
-  insert into public.verification_submissions (user_id, asset, network, tx_hash, amount_usd)
-  values (p_user_id, p_asset, p_network, p_tx_hash, v_fee)
-  returning id into v_id;
-  return v_id;
-end;
-$$;
-
-alter table public.operator_settings enable row level security;
-
-drop policy if exists "Operator settings readable by authenticated" on public.operator_settings;
-create policy "Operator settings readable by authenticated"
-on public.operator_settings for select
-to authenticated
-using (true);
-
-drop policy if exists "Operator settings writable by admins" on public.operator_settings;
-create policy "Operator settings writable by admins"
-on public.operator_settings for update
-to authenticated
-using ((select private.is_admin()))
-with check ((select private.is_admin()));
-
-revoke all on table public.operator_settings from anon, authenticated;
-grant select on table public.operator_settings to authenticated;
-grant all on table public.operator_settings to service_role;
-
-revoke execute on function public.get_verification_fee() from public, anon;
-grant execute on function public.get_verification_fee() to authenticated, service_role, anon;
-revoke execute on function public.submit_verification_submission(uuid, text, text, text) from public, anon;
-grant execute on function public.submit_verification_submission(uuid, text, text, text) to authenticated, service_role;
 
 -- After your first admin signs up, run this with their email:
 -- update public.profiles set role = 'admin' where email = 'you@example.com';

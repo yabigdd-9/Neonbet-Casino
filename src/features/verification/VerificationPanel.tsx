@@ -1,5 +1,5 @@
 // Manual crypto verification panel. Uses verification service + config.
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import type { VerificationSubmission } from "../../types";
 import {
   ShieldCheck,
@@ -13,6 +13,7 @@ import Button from "../../components/ui/Button";
 import { verificationConfig } from "../../config/verification";
 import { contact } from "../../config/contact";
 import { statusLabel } from "../../lib/status";
+import { getVerificationFee } from "../../services/verification.service";
 
 interface CopyButtonProps {
   value: string;
@@ -54,8 +55,25 @@ export default function VerificationPanel({
   const [copied, setCopied] = useState("");
   const [selectedMethodIndex, setSelectedMethodIndex] = useState(0);
   const [txHash, setTxHash] = useState("");
+  const [fee, setFee] = useState<number>(verificationConfig.feeUsd);
   const selectedMethod = verificationConfig.acceptedCrypto[selectedMethodIndex];
   const referenceExample = "@yourname + 0x/txid...";
+
+  // Resolve the authoritative verification fee (RPC in Supabase mode, config
+  // fallback in demo). The displayed fee always matches what the server stores.
+  useEffect(() => {
+    let active = true;
+    getVerificationFee()
+      .then((value) => {
+        if (active) setFee(typeof value === "number" ? value : Number(value));
+      })
+      .catch(() => {
+        /* keep the config fallback */
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -85,7 +103,7 @@ export default function VerificationPanel({
             <div>
               <h2 className="text-3xl font-black leading-tight md:text-5xl">
                 Verify your account for{" "}
-                <span className="text-cyan-300">${verificationConfig.feeUsd} USD</span>.
+                <span className="text-cyan-300">${fee} USD</span>.
               </h2>
               <p className="mt-4 max-w-2xl text-slate-300">
                 Send crypto to the listed wallet, then message your Telegram or WhatsApp username
@@ -98,7 +116,7 @@ export default function VerificationPanel({
                 Verification fee
               </div>
               <div className="mt-1 text-5xl font-black text-white">
-                ${verificationConfig.feeUsd}
+                ${fee}
               </div>
               <div className="text-sm text-slate-400">USD equivalent</div>
             </div>

@@ -9,6 +9,7 @@
 // only answers "are we in supabase mode?" so it can pick a storage backend.
 import { createClient } from "@supabase/supabase-js";
 import { IS_SUPABASE } from "../config/appMode";
+import verificationConfig from "../config/verification";
 import {
   readStoredValue,
   readStoredArray,
@@ -101,6 +102,18 @@ export const dataStore = {
     return data || [];
   },
 
+  // Server-authoritative fee. In Supabase mode the DB decides the amount; the
+  // client-supplied amountUsd is ignored for storage. In demo mode we fall back
+  // to the config value so the UI still shows a fee.
+  async getVerificationFee() {
+    if (!IS_SUPABASE) {
+      return verificationConfig.feeUsd;
+    }
+    const { data, error } = await supabase.rpc("get_verification_fee");
+    if (error) throw error;
+    return typeof data === "number" ? data : Number(data);
+  },
+
   async insertSubmission({ userId, asset, network, txHash, amountUsd }) {
     if (!IS_SUPABASE) {
       const localSubmission = {
@@ -117,15 +130,15 @@ export const dataStore = {
       writeStoredArray(DEMO_SUBMISSIONS_KEY, next);
       return { localSubmission };
     }
-    const { error } = await supabase.from("verification_submissions").insert({
-      user_id: userId,
-      asset,
-      network,
-      tx_hash: txHash,
-      amount_usd: amountUsd,
+    // The RPC sets amount_usd from operator_settings; the client cannot choose it.
+    const { data, error } = await supabase.rpc("submit_verification_submission", {
+      p_user_id: userId,
+      p_asset: asset,
+      p_network: network,
+      p_tx_hash: txHash,
     });
     if (error) throw error;
-    return { error: null };
+    return { error: null, id: data };
   },
 
   async reviewSubmission(submissionId, status, adminNotes = "") {
