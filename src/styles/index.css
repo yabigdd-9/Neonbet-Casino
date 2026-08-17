@@ -27,3 +27,38 @@ a {
 input::placeholder {
   color: rgb(148 163 184);
 }
+
+/* Accessibility: visible keyboard focus + reduced-motion support (P35). */
+:focus-visible {
+  outline: 2px solid #22d3ee;
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Skip link (paired with the control in App.tsx). */
+.skip-link {
+  position: absolute;
+  left: 0.5rem;
+  top: -3rem;
+  z-index: 100;
+  border-radius: 0.75rem;
+  background: #22d3ee;
+  color: #020617;
+  padding: 0.5rem 1rem;
+  font-weight: 800;
+  transition: top 0.15s ease;
+}
+.skip-link:focus {
+  top: 0.5rem;
+}
