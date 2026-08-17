@@ -15,8 +15,8 @@
     "allowJs": true,
     "checkJs": false,
     "noEmit": true,
-    "types": ["vite/client"]
+    "types": ["vite/client", "node"]
   },
-  "include": ["src", "scripts", "vite.config.js", "vitest.config.js"],
+  "include": ["src", "scripts", "e2e", "playwright.config.ts", "vite.config.js", "vitest.config.js"],
   "exclude": ["node_modules", "dist"]
 }
