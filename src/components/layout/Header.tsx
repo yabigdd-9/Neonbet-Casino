@@ -1,9 +1,11 @@
 // App header. Supports brand, nav, balance, account/verification state, mobile drawer.
 import React from "react";
-import { Menu, Wallet, Bell } from "lucide-react";
+import { Menu, Wallet } from "lucide-react";
 import Button from "../../components/ui/Button";
+import BrandMark from "./BrandMark";
 import { brand } from "../../config/brand";
 import { features } from "../../config/features";
+import { IS_DEMO } from "../../config/appMode";
 import GameSearch from "../../features/casino/GameSearch";
 
 interface HeaderUser {
@@ -45,9 +47,7 @@ export default function Header({
           className="flex items-center gap-3"
           aria-label={`${brand.name} home`}
         >
-          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-cyan-400 font-black text-slate-950 shadow-neon">
-            {brand.shortName}
-          </div>
+          <BrandMark size={44} />
           <div className="hidden text-left sm:block">
             <div className="font-black leading-tight tracking-tight">{brand.name}</div>
             <div className="text-xs text-cyan-300">{brand.tagline}</div>
@@ -61,12 +61,15 @@ export default function Header({
         )}
 
         <div className="ml-auto flex items-center gap-2">
-          <div aria-live="polite" aria-atomic="true" className="hidden sm:block">
+          <div aria-live="polite" aria-atomic="true" className="hidden flex-col items-end sm:flex">
+            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
+              {IS_DEMO ? "Demo credits" : "Balance"}
+            </span>
             <Button
               variant="secondary"
               size="sm"
               className="hidden sm:flex"
-              aria-label={`Balance: $${Number(balance).toFixed(2)}`}
+              aria-label={`${IS_DEMO ? "Demo credits" : "Balance"}: $${Number(balance).toFixed(2)}`}
               onClick={() =>
                 document.getElementById("featured-games")?.scrollIntoView({ behavior: "smooth" })
               }
@@ -74,12 +77,6 @@ export default function Header({
               <Wallet size={18} /> {`$${Number(balance).toFixed(2)}`}
             </Button>
           </div>
-          <button
-            className="rounded-2xl bg-white/10 p-3 hover:bg-white/15"
-            aria-label="Notifications"
-          >
-            <Bell size={18} />
-          </button>
           {user ? (
             <>
               <span className="hidden rounded-2xl bg-white/10 px-4 py-3 font-bold md:block">

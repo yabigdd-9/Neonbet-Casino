@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { brand } from "../../config/brand";
 import { promotionConfig } from "../../config/promotion";
+import BrandMark from "./BrandMark";
 
 interface SidebarLink {
   label: string;
@@ -48,10 +49,8 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
       >
         <div className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="grid h-11 w-11 place-items-center rounded-2xl bg-cyan-400 font-black text-slate-950 shadow-neon">
-              {brand.shortName}
-            </div>
-            <div>
+            <BrandMark size={44} showWordmark />
+            <div className="hidden lg:block">
               <div className="font-black text-xl tracking-tight">{brand.name}</div>
               <div className="text-xs text-cyan-300">casino lobby</div>
             </div>
