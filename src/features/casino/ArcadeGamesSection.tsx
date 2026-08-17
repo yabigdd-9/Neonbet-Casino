@@ -3,19 +3,10 @@ import React from "react";
 import { Play } from "lucide-react";
 import { arcadeGames } from "../../data/arcadeGames";
 import GameArt from "../../components/GameArt";
-
-interface ArcadeGame {
-  id: string;
-  emoji: string;
-  gradient: string;
-  tag: string;
-  type: string;
-  title: string;
-  rule: string;
-}
+import type { ArcadeGameDef } from "../../types";
 
 interface ArcadeGamesSectionProps {
-  onPlay: (game: ArcadeGame) => void;
+  onPlay: (game: ArcadeGameDef) => void;
 }
 
 export default function ArcadeGamesSection({ onPlay }: ArcadeGamesSectionProps) {

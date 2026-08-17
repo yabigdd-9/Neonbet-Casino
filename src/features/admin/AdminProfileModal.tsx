@@ -3,13 +3,14 @@ import React, { useState } from "react";
 import Modal from "../../components/ui/Modal";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
+import type { Profile } from "../../types";
 
 interface AdminProfileModalProps {
-  item: any;
+  item: Profile;
   type: string;
   status: string;
   onClose: () => void;
-  onSubmit: (profile: any, updates?: Record<string, unknown>) => void;
+  onSubmit: (profile: Profile, updates?: Record<string, unknown>) => void;
   saving: boolean;
 }
 
@@ -19,10 +20,10 @@ export default function AdminProfileModal({
   onSubmit,
   saving,
 }: AdminProfileModalProps) {
-  const [bonusBalance, setBonusBalance] = useState(item?.bonus_balance ?? 0);
-  const [rolloverProgress, setRolloverProgress] = useState(item?.rollover_progress ?? 0);
-  const [rolloverRequired, setRolloverRequired] = useState(item?.rollover_required ?? 0);
-  const [adminNotes, setAdminNotes] = useState(item?.admin_notes ?? "");
+  const [bonusBalance, setBonusBalance] = useState<string>(String(item?.bonus_balance ?? 0));
+  const [rolloverProgress, setRolloverProgress] = useState<string>(String(item?.rollover_progress ?? 0));
+  const [rolloverRequired, setRolloverRequired] = useState<string>(String(item?.rollover_required ?? 0));
+  const [adminNotes, setAdminNotes] = useState<string>(String(item?.admin_notes ?? ""));
 
   if (!item) return null;
 

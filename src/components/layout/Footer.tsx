@@ -2,12 +2,7 @@
 import React from "react";
 import { policyPages } from "../../data/promotions";
 import { promotionConfig } from "../../config/promotion";
-
-interface PolicyPage {
-  title: string;
-  eyebrow: string;
-  sections: string[][];
-}
+import type { PolicyPage } from "../../features/promotions";
 
 interface FooterProps {
   onOpenPolicy: (page: PolicyPage) => void;

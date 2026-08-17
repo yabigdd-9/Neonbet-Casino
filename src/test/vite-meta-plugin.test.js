@@ -1,6 +1,6 @@
 // P5 — brand-aware metadata. Verifies the meta plugin builds a full tag set from
 // env-driven config and replaces the index.html placeholders end-to-end.
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 import { metaPlugin } from "../../scripts/vite-meta-plugin.js";
 
 const SAMPLE = `<!doctype html><html><head>

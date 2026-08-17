@@ -1,6 +1,6 @@
 // Admin dashboard: users, verification queue, withdrawal queue.
 import React, { useState } from "react";
-import type { Profile } from "../../types";
+import type { Profile, VerificationSubmission, WithdrawalRequest } from "../../types";
 import StatusBadge from "../../components/ui/StatusBadge";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
@@ -10,10 +10,10 @@ import { formatMoney } from "../../lib/storage";
 interface AdminDashboardProps {
   profile: Profile | null;
   profiles: Profile[];
-  submissions: any[];
-  withdrawals: any[];
-  onReview: (submission: any, status: string) => void;
-  onReviewWithdrawal: (withdrawal: any, status: string) => void;
+  submissions: VerificationSubmission[];
+  withdrawals: WithdrawalRequest[];
+  onReview: (submission: VerificationSubmission, status: string) => void;
+  onReviewWithdrawal: (withdrawal: WithdrawalRequest, status: string) => void;
   onUpdateProfile: (profile: Profile) => void;
   adminSaving: boolean;
 }
@@ -32,7 +32,10 @@ export default function AdminDashboard({
   const [statusFilter, setStatusFilter] = useState("all");
   if (profile?.role !== "admin") return null;
 
-  const matchesFilters = (item: any, userText: string) => {
+  const matchesFilters = (
+    item: Profile | VerificationSubmission | WithdrawalRequest,
+    userText: string,
+  ) => {
     const query = searchTerm.trim().toLowerCase();
     const haystack = `${userText} ${JSON.stringify(item)}`.toLowerCase();
     const matchesSearch = !query || haystack.includes(query);

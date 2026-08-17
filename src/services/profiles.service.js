@@ -2,8 +2,6 @@
 import { dataStore } from "./dataStore";
 import { readStoredValue } from "../lib/storage";
 
-const DEMO_PROFILE_KEY = "neonbetProfile";
-
 export async function getProfile(userId) {
   return dataStore.getProfile(userId);
 }

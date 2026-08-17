@@ -50,10 +50,17 @@ import { updateProfileAdmin } from "../services/admin.service";
 import { useFavorites, useRecentGames } from "../hooks/useGameHistory";
 import { readStoredValue, writeStoredValue } from "../lib/storage";
 import { features } from "../config/features";
-import type { Profile, SlotGame } from "../types";
+import type {
+  Profile,
+  SlotGame,
+  VerificationSubmission,
+  WithdrawalRequest,
+  ArcadeGameDef,
+} from "../types";
+import type { PolicyPage } from "../features/promotions";
 
 interface ReviewModalState {
-  item: unknown;
+  item: VerificationSubmission | WithdrawalRequest;
   status: string;
   type: "verification" | "withdrawal";
 }
@@ -67,7 +74,7 @@ function AppContent() {
   const [open, setOpen] = useState(false);
   const [balance, setBalance] = useState(100);
   const [activeGame, setActiveGame] = useState<SlotGame | null>(null);
-  const [activeArcadeGame, setActiveArcadeGame] = useState<SlotGame | null>(null);
+  const [activeArcadeGame, setActiveArcadeGame] = useState<ArcadeGameDef | null>(null);
   const [launchGame, setLaunchGame] = useState<SlotGame | null>(null);
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
   const { recentGames, recordGame } = useRecentGames();
@@ -76,14 +83,14 @@ function AppContent() {
   const [authOpen, setAuthOpen] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [submissions, setSubmissions] = useState<any[]>([]);
-  const [withdrawals, setWithdrawals] = useState<any[]>([]);
+  const [submissions, setSubmissions] = useState<VerificationSubmission[]>([]);
+  const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([]);
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
   const [verificationSaving, setVerificationSaving] = useState(false);
   const [withdrawalSaving, setWithdrawalSaving] = useState(false);
   const [adminSaving, setAdminSaving] = useState(false);
-  const [policyPage, setPolicyPage] = useState<any>(null);
+  const [policyPage, setPolicyPage] = useState<PolicyPage | null>(null);
   const [reviewModal, setReviewModal] = useState<ReviewModalState | null>(null);
   const [profileModal, setProfileModal] = useState<Profile | null>(null);
 
@@ -92,8 +99,8 @@ function AppContent() {
     return readStoredValue("neonbetUser", null) as Profile | null;
   });
 
-  const latestSubmission = (submissions[0] as any) || null;
-  const latestWithdrawal = (withdrawals[0] as any) || null;
+  const latestSubmission = submissions[0] ?? null;
+  const latestWithdrawal = withdrawals[0] ?? null;
 
   const loadAccount = useCallback(
     async (nextUser: Profile | null = user) => {
@@ -108,8 +115,8 @@ function AppContent() {
         const demo = buildDemoProfile(nextUser);
         setProfile(demo);
         setProfiles([]);
-        setSubmissions(readStoredValue("neonbetVerificationSubmissions", []) || []);
-        setWithdrawals(readStoredValue("neonbetWithdrawalRequests", []) || []);
+        setSubmissions(readStoredValue("neonbetVerificationSubmissions", []) as VerificationSubmission[]);
+        setWithdrawals(readStoredValue("neonbetWithdrawalRequests", []) as WithdrawalRequest[]);
         return;
       }
       try {
@@ -123,8 +130,8 @@ function AppContent() {
           getWithdrawals({ userId: nextUser.id, isAdmin }),
         ]);
         setProfiles(isAdmin ? adminRows : []);
-        setSubmissions(submissionRows);
-        setWithdrawals(withdrawalRows);
+        setSubmissions(submissionRows as VerificationSubmission[]);
+        setWithdrawals(withdrawalRows as WithdrawalRequest[]);
       } catch (error: unknown) {
         setAuthError((error as { message?: string }).message || "Account data failed to load.");
       }
@@ -134,18 +141,17 @@ function AppContent() {
 
   useEffect(() => {
     if (!IS_SUPABASE) return undefined;
-    let active = true;
     getSession().then((session) => {
-      const s = session as any;
-      if (s?.user && active) {
-        setUser(s.user as unknown as Profile);
-        loadAccount(s.user as unknown as Profile);
+      const s = session as unknown as { user?: Profile };
+      if (s?.user) {
+        setUser(s.user);
+        loadAccount(s.user);
       }
     });
     let unsub: (() => void) | undefined;
-    onAuthChange((nextUser: any) => {
-      setUser(nextUser as unknown as Profile | null);
-      if (nextUser) loadAccount(nextUser as unknown as Profile);
+    onAuthChange((nextUser: Profile | null) => {
+      setUser(nextUser);
+      if (nextUser) loadAccount(nextUser);
       else {
         setProfile(null);
         setProfiles([]);
@@ -156,7 +162,6 @@ function AppContent() {
       unsub = fn;
     });
     return () => {
-      active = false;
       unsub?.();
     };
   }, [loadAccount]);
@@ -406,7 +411,7 @@ function AppContent() {
       <main id="main-content" className="relative space-y-8 px-4 py-8 md:px-8 lg:ml-72">
         <Hero
           onClaim={() => scrollToSection("verification")}
-          onOpenGame={(g: any) => setActiveArcadeGame(g as unknown as SlotGame)}
+          onOpenGame={(g: ArcadeGameDef) => setActiveArcadeGame(g)}
         />
 
         {features.account && (
@@ -415,18 +420,18 @@ function AppContent() {
 
         <FeaturedGames
           onPlay={handleOpenGame}
-          _favorites={favorites as any[]}
+          _favorites={favorites as string[]}
           isFavorite={isFavorite}
         />
 
-        <ArcadeGamesSection onPlay={(g: any) => setActiveArcadeGame(g as unknown as SlotGame)} />
+        <ArcadeGamesSection onPlay={(g: ArcadeGameDef) => setActiveArcadeGame(g)} />
 
         <SlotProviderLibrary
           onPlay={handleOpenGame}
-          favorites={favorites as any[]}
+          favorites={favorites as string[]}
           isFavorite={isFavorite}
           _onToggleFavorite={toggleFavorite}
-          recentGames={recentGames as any[]}
+          recentGames={recentGames as SlotGame[]}
         />
 
         {features.verification && (
@@ -468,9 +473,9 @@ function AppContent() {
 
         <VIPSection />
 
-        <TermsSection onOpenPolicy={setPolicyPage} />
+        <TermsSection onOpenPolicy={(page) => setPolicyPage(page)} />
 
-        <Footer onOpenPolicy={setPolicyPage} />
+        <Footer onOpenPolicy={(page) => setPolicyPage(page)} />
       </main>
 
       <MobileNav onOpenAuth={openAuth} />
@@ -486,7 +491,7 @@ function AppContent() {
       )}
       {reviewModal && (
         <AdminReviewModal
-          item={reviewModal.item as any}
+          item={reviewModal.item}
           type={reviewModal.type}
           status={reviewModal.status}
           onClose={() => setReviewModal(null)}
@@ -525,7 +530,7 @@ function AppContent() {
       )}
       {activeArcadeGame && (
         <ArcadeGameModal
-          game={activeArcadeGame as any}
+          game={activeArcadeGame}
           balance={balance}
           setBalance={setBalance}
           onClose={() => setActiveArcadeGame(null)}

@@ -6,7 +6,7 @@ import { games } from "../../data/games";
 
 interface FeaturedGamesProps {
   onPlay: (game: SlotGame) => void;
-  _favorites?: any[];
+  _favorites?: string[];
   isFavorite?: (game: SlotGame) => boolean;
   onToggleFavorite?: (game: SlotGame) => void;
 }

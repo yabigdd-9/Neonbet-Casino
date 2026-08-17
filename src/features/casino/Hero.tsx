@@ -5,16 +5,11 @@ import { arcadeGames } from "../../data/arcadeGames";
 import { games } from "../../data/games";
 import { promotionConfig } from "../../config/promotion";
 import GameArt from "../../components/GameArt";
-
-interface ArcadeGame {
-  id: string;
-  emoji: string;
-  title: string;
-}
+import type { ArcadeGameDef } from "../../types";
 
 interface HeroProps {
   onClaim: () => void;
-  onOpenGame: (game: ArcadeGame) => void;
+  onOpenGame: (game: ArcadeGameDef) => void;
 }
 
 const featured = games[0];

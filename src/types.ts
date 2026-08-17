@@ -87,3 +87,15 @@ export type FeatureKey =
   | "liveWallet"
   | "withdrawals"
   | "account";
+
+// Local simulated arcade game (Dice / Plinko / Crash). Defined here so the
+// section, the modal, and the orchestrator share one type instead of `any`.
+export interface ArcadeGameDef {
+  id: string;
+  gradient: string;
+  type: string;
+  title: string;
+  rule: string;
+  emoji?: string;
+  tag?: string;
+}

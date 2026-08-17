@@ -26,7 +26,7 @@ export function PromotionsSection() {
   );
 }
 
-interface PolicyPage {
+export interface PolicyPage {
   title: string;
   eyebrow: string;
   sections: [string, string][];

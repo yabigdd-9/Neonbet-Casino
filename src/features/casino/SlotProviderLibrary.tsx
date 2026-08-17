@@ -10,10 +10,10 @@ import GameArt from "../../components/GameArt";
 
 interface SlotProviderLibraryProps {
   onPlay: (game: SlotGame) => void;
-  favorites: any[];
+  favorites: string[];
   isFavorite?: (game: SlotGame) => boolean;
   _onToggleFavorite?: (game: SlotGame) => void;
-  recentGames: any[];
+  recentGames: SlotGame[];
 }
 
 export default function SlotProviderLibrary({

@@ -4,14 +4,7 @@ import { Play } from "lucide-react";
 import Modal from "../../components/ui/Modal";
 import { formatMoney } from "../../lib/storage";
 import { betOptions } from "../../lib/gameEngine";
-
-interface ArcadeGameDef {
-  id: string;
-  gradient: string;
-  type: string;
-  title: string;
-  rule: string;
-}
+import type { ArcadeGameDef } from "../../types";
 
 interface RoundState {
   title: string;
