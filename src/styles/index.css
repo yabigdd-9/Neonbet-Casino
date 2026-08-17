@@ -62,3 +62,53 @@ input::placeholder {
 .skip-link:focus {
   top: 0.5rem;
 }
+
+/* Premium surface utilities (P13/P32 visual system). */
+.glass {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+}
+.neon-border {
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.08),
+    0 18px 40px -22px rgba(34, 211, 238, 0.55);
+}
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.18) 50%,
+    transparent 70%
+  );
+}
+.group:hover .shimmer::after {
+  transition: transform 0.7s ease;
+  transform: translateX(100%);
+}
+.mesh {
+  background-image:
+    radial-gradient(at 20% 10%, rgba(34, 211, 238, 0.18), transparent 40%),
+    radial-gradient(at 80% 20%, rgba(168, 85, 247, 0.16), transparent 40%),
+    radial-gradient(at 60% 90%, rgba(56, 189, 248, 0.12), transparent 45%);
+}
+.card-lift {
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+.card-lift:hover {
+  transform: translateY(-4px);
+  border-color: rgba(34, 211, 238, 0.4);
+  box-shadow: 0 24px 50px -28px rgba(34, 211, 238, 0.6);
+}

@@ -6,6 +6,7 @@ import { buildProviderGame, getGameId, gameFilters } from "../../lib/gameEngine"
 import { slotProviders } from "../../data/slotProviders";
 import GameSearch from "./GameSearch";
 import EmptyState from "../../components/ui/EmptyState";
+import GameArt from "../../components/GameArt";
 
 interface SlotProviderLibraryProps {
   onPlay: (game: SlotGame) => void;
@@ -130,6 +131,9 @@ export default function SlotProviderLibrary({
                   onClick={() => onPlay(game)}
                   className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-2 text-left text-xs font-bold text-slate-200 transition hover:border-cyan-300/40 hover:bg-cyan-400 hover:text-slate-950"
                 >
+                  <span className="h-6 w-6 shrink-0 overflow-hidden rounded-md">
+                    <GameArt title={game.title} symbols={game.symbols} gradient={game.gradient} className="h-6 w-6" />
+                  </span>
                   <Play size={12} />
                   {isFavorite?.(game) && (
                     <Star size={12} className="fill-amber-300 text-amber-300" />

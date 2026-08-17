@@ -2,6 +2,7 @@
 import React from "react";
 import { Play } from "lucide-react";
 import { arcadeGames } from "../../data/arcadeGames";
+import GameArt from "../../components/GameArt";
 
 interface ArcadeGame {
   id: string;
@@ -49,8 +50,8 @@ export default function ArcadeGamesSection({ onPlay }: ArcadeGamesSectionProps) 
             />
             <div className="relative">
               <div className="flex items-start justify-between gap-4">
-                <div className="grid h-16 w-16 place-items-center rounded-3xl border border-white/20 bg-black/30 text-4xl shadow-neon transition group-hover:scale-105">
-                  {game.emoji}
+                <div className="h-16 w-16 overflow-hidden rounded-3xl border border-white/20 shadow-neon">
+                  <GameArt title={game.title} symbols={[game.emoji]} gradient={game.gradient} className="h-16 w-16" />
                 </div>
                 <span className="rounded-full bg-black/35 px-3 py-1 text-xs font-black text-white">
                   {game.tag}
