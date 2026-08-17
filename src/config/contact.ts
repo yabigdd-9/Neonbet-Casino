@@ -2,6 +2,7 @@
 // Personal Telegram/WhatsApp links must NOT be buried in components for a sale build.
 // Buyers override these via VITE_ env vars; safe empty placeholders ship by default.
 
+import { promotionConfig } from "./promotion";
 interface ContactConfig {
   telegramUrl: string;
   whatsappUrl: string;
@@ -19,7 +20,7 @@ export function buildContactUrl(channel: string, username = "", phone = ""): str
   const handle = username.trim() || "new player";
   const mobile = phone.trim() || "not provided";
   const message = encodeURIComponent(
-    `Hi ${brandName()}, I want to register.\nUsername: ${handle}\nMobile: ${mobile}\nBonus: $100 sign-up + 300% match with 10x rollover`,
+    `Hi ${brandName()}, I want to register.\nUsername: ${handle}\nMobile: ${mobile}\nBonus: ${promotionConfig.signupBonus} sign-up + ${promotionConfig.matchPercent} match with ${promotionConfig.rollover} rollover`,
   );
 
   if (channel === "whatsapp" && contact.whatsappUrl) {

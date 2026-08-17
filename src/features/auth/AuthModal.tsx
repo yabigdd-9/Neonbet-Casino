@@ -7,6 +7,7 @@ import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 import { IS_SUPABASE } from "../../config/appMode";
 import { buildContactUrl } from "../../config/contact";
+import { promotionConfig } from "../../config/promotion";
 
 interface AuthModalProps {
   mode: "login" | "register" | "reset";
@@ -88,7 +89,7 @@ export default function AuthModal({
             ))}
           </div>
           <div className="mt-5 rounded-3xl bg-black/25 p-5">
-            <div className="font-black text-4xl text-cyan-300">$100</div>
+            <div className="font-black text-4xl text-cyan-300">{promotionConfig.signupBonus}</div>
             <div className="mt-1 font-bold">Sign-up bonus</div>
             <p className="mt-3 text-sm leading-6 text-slate-400">
               Register through Telegram or WhatsApp, complete account verification, and clear the
@@ -170,8 +171,9 @@ export default function AuthModal({
                 onChange={(e) => setAcceptedTerms(e.target.checked)}
                 className="mt-1 h-4 w-4 accent-cyan-400"
               />
-              I understand the $100 bonus and 300% match require account verification and 10x
-              rollover.
+              I understand the {promotionConfig.signupBonus} bonus and{" "}
+              {promotionConfig.matchPercent} match require account verification and{" "}
+              {promotionConfig.rollover} rollover.
             </label>
           )}
 

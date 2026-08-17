@@ -5,7 +5,6 @@ import {
   Gamepad2,
   Dice5,
   Sparkles,
-  CircleDollarSign,
   Gift,
   ShieldCheck,
   Wallet,
@@ -13,6 +12,7 @@ import {
   ShieldCheck as Shield,
 } from "lucide-react";
 import { brand } from "../../config/brand";
+import { promotionConfig } from "../../config/promotion";
 
 interface SidebarLink {
   label: string;
@@ -24,7 +24,6 @@ const LINKS: SidebarLink[] = [
   { label: "Lobby", Icon: Gamepad2, sectionId: "lobby" },
   { label: "Slots", Icon: Dice5, sectionId: "featured-games" },
   { label: "Arcade Tables", Icon: Sparkles, sectionId: "arcade-games" },
-  { label: "Live Tables", Icon: CircleDollarSign, sectionId: "featured-games" },
   { label: "Promotions", Icon: Gift, sectionId: "promotions" },
   { label: "Verification", Icon: ShieldCheck, sectionId: "verification" },
   { label: "Withdrawals", Icon: Wallet, sectionId: "withdrawals" },
@@ -64,8 +63,8 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
 
         <div className="mb-5 rounded-3xl border border-cyan-300/20 bg-gradient-to-br from-cyan-500/15 to-purple-500/15 p-4">
           <p className="text-sm text-slate-300">Sign-Up Bonus</p>
-          <p className="mt-1 text-3xl font-black text-white">$100</p>
-          <p className="text-xs text-slate-400">Plus 300% match, 10x rollover</p>
+          <p className="mt-1 text-3xl font-black text-white">{promotionConfig.signupBonus}</p>
+          <p className="text-xs text-slate-400">Plus {promotionConfig.matchPercent} match, {promotionConfig.rollover} rollover</p>
         </div>
 
         <nav className="space-y-2">

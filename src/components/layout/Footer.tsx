@@ -1,6 +1,7 @@
 // Site footer with licensing / responsible play / payments notices + policy links.
 import React from "react";
 import { policyPages } from "../../data/promotions";
+import { promotionConfig } from "../../config/promotion";
 
 interface PolicyPage {
   title: string;
@@ -39,8 +40,7 @@ export default function Footer({ onOpenPolicy }: FooterProps) {
         <div>
           <div className="font-black uppercase tracking-[0.18em] text-slate-300">Payments</div>
           <p className="mt-2">
-            The $75 crypto verification fee is reviewed manually and is not an instant deposit,
-            wagering balance, withdrawal approval, casino credit, or automated payment confirmation.
+            {`The ${promotionConfig.verificationFee} crypto verification fee is reviewed manually and is not an instant deposit, wagering balance, withdrawal approval, casino credit, or automated payment confirmation.`}
           </p>
         </div>
       </div>

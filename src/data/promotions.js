@@ -1,9 +1,11 @@
 // Promotion content (configurable, not embedded in component logic).
+import { promotionConfig } from "../config/promotion";
+
 export const promos = [
   {
-    title: "Free $100 Sign-Up Bonus",
+    title: `Free ${promotionConfig.signupBonus} Sign-Up Bonus`,
     detail:
-      "New accounts can claim $100 plus a 300% welcome match after verification. Bonus funds require 10x rollover.",
+      `New accounts can claim ${promotionConfig.signupBonus} plus a ${promotionConfig.matchPercent} welcome match after verification. Bonus funds require ${promotionConfig.rollover} rollover.`,
     icon: "Gift",
   },
   {
@@ -23,17 +25,17 @@ export const terms = [
   {
     title: "Bonus Offer",
     detail:
-      "Eligible new accounts may receive a $100 sign-up bonus and a 300% welcome match after account review and verification approval.",
+      `Eligible new accounts may receive a ${promotionConfig.signupBonus} sign-up bonus and a ${promotionConfig.matchPercent} welcome match after account review and verification approval.`,
   },
   {
-    title: "10x Rollover",
+    title: `${promotionConfig.rollover} Rollover`,
     detail:
       "Bonus funds and bonus-linked winnings must be wagered 10 times before they are treated as eligible for withdrawal review.",
   },
   {
     title: "Verification Fee",
     detail:
-      "The $75 verification payment is reviewed manually. It does not create an instant deposit, automatic approval, casino credit, or guaranteed withdrawal.",
+      `The ${promotionConfig.verificationFee} verification payment is reviewed manually. It does not create an instant deposit, automatic approval, casino credit, or guaranteed withdrawal.`,
   },
   {
     title: "Crypto Networks",
@@ -69,11 +71,11 @@ export const policyPages = {
     sections: [
       [
         "Bonuses",
-        "The $100 sign-up bonus and 300% match are subject to account approval, verification, rollover review, and published limits.",
+        `The ${promotionConfig.signupBonus} sign-up bonus and ${promotionConfig.matchPercent} match are subject to account approval, verification, rollover review, and published limits.`,
       ],
       [
         "Verification",
-        "The $75 verification fee is reviewed manually and does not create an instant deposit, casino credit, withdrawal approval, or automated payment confirmation.",
+        `The ${promotionConfig.verificationFee} verification fee is reviewed manually and does not create an instant deposit, casino credit, withdrawal approval, or automated payment confirmation.`,
       ],
       [
         "Withdrawals",
