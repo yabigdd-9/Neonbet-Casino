@@ -5,7 +5,7 @@ import { Send, MessageCircle, ExternalLink } from "lucide-react";
 import Modal from "../../components/ui/Modal";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
-import { hasSupabaseConfig } from "../../services/dataStore";
+import { IS_SUPABASE } from "../../config/appMode";
 import { buildContactUrl } from "../../config/contact";
 
 interface AuthModalProps {
@@ -42,7 +42,7 @@ export default function AuthModal({
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const isRegister = mode === "register";
-  const canSubmit = hasSupabaseConfig
+  const canSubmit = IS_SUPABASE
     ? email.trim().includes("@") &&
       password.length >= 6 &&
       (!isRegister || (username.trim().length >= 3 && acceptedTerms))
@@ -98,7 +98,7 @@ export default function AuthModal({
         </div>
 
         <form onSubmit={handleAuth} className="space-y-4">
-          {hasSupabaseConfig && (
+          {IS_SUPABASE && (
             <>
               <Input
                 label="Email"
@@ -124,7 +124,7 @@ export default function AuthModal({
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder={
-              hasSupabaseConfig && !isRegister ? "Optional after login" : "Choose a username"
+              IS_SUPABASE && !isRegister ? "Optional after login" : "Choose a username"
             }
           />
 
@@ -179,7 +179,7 @@ export default function AuthModal({
             {authLoading ? "Please wait..." : isRegister ? "Create account" : "Login"}
           </Button>
 
-          {hasSupabaseConfig && !isRegister && (
+          {IS_SUPABASE && !isRegister && (
             <Button
               type="button"
               variant="secondary"

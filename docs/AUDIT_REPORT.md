@@ -1,7 +1,10 @@
 # Audit Report — NeonBet Commercial V2
 
 **Date:** 2026-08-17 · **Baseline SHA:** `5ded8ea98d404bfb5d4bda774d9bc8a4a325ed45`
+**Current SHA (working tree):** `a1407e3` + P1 working changes · **Branch:** `upgrade/neonbet-commercial-v2`
 Scope: code architecture, security, Supabase schema, accessibility, mobile/responsive, demo-vs-Supabase mode, and secret scan. Findings are grounded in the actual repo files at the baseline commit.
+
+> **Current-state note (2026-08-17, P1 complete):** The baseline below was written against the original `5ded8ea` monolith. The repo has since been modularized (branch `upgrade/neonbet-commercial-v2`, 36 `.tsx`/11 `.ts` files, tests + ESLint/Prettier + TypeScript + secret-scan guard). **P1 (app-mode single source of truth) is now RESOLVED:** `VITE_APP_MODE=supabase` + missing credentials throws a clear bootstrap error instead of silently downgrading to demo; all runtime branching uses `IS_SUPABASE`/`IS_DEMO`. Still open: **P2** (verification-fee server authority — `schema.sql:333` still hardcodes `amount_usd = 75`), **P5** (brand-aware `index.html` metadata — hard-coded NeonBet copy remains), and the broader frontend/mobile/a11y/QA phases.
 
 ## a) Code Architecture
 - **Monolith risk — CRITICAL.** All UI, state, data access, routing, game logic, and config live in `src/main.jsx` (2,973 lines / ~130 KB). Only `src/styles.css` and `src/supabaseClient.js` sit outside it.

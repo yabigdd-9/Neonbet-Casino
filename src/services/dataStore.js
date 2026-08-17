@@ -1,11 +1,14 @@
 // Unified data store for core entities (profiles, verification submissions,
 // withdrawal requests). Selects between a Supabase-backed strategy and a
-// localStorage-backed demo strategy based on whether Supabase env vars exist.
+// localStorage-backed demo strategy based on the resolved APP_MODE.
 //
 // This collapses the demo/supabase branching that used to be duplicated across
 // profiles/verification/transactions/admin services into one place, and is the
-// single source of truth for the Supabase client.
+// single source of truth for the Supabase client. The *mode decision* itself now
+// lives in src/config/appMode.ts (APP_MODE / IS_SUPABASE / IS_DEMO); this module
+// only answers "are we in supabase mode?" so it can pick a storage backend.
 import { createClient } from "@supabase/supabase-js";
+import { IS_SUPABASE } from "../config/appMode";
 import {
   readStoredValue,
   readStoredArray,
@@ -16,6 +19,9 @@ import {
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// `hasSupabaseConfig` still answers "are credentials physically present?" — it is
+// used by appMode.ts to resolve the mode, but must not be used anywhere else to
+// decide runtime behaviour.
 export const hasSupabaseConfig = Boolean(supabaseUrl && supabaseAnonKey);
 
 export const supabase = hasSupabaseConfig
@@ -46,7 +52,7 @@ const DEMO_WITHDRAWALS_KEY = "neonbetWithdrawalRequests";
 export const dataStore = {
   // ---- Profiles ----
   async getProfile(userId) {
-    if (!hasSupabaseConfig) return readStoredValue(DEMO_PROFILE_KEY, null);
+    if (!IS_SUPABASE) return readStoredValue(DEMO_PROFILE_KEY, null);
     const { data, error } = await supabase
       .from("profiles")
       .select(PROFILE_COLUMNS)
@@ -57,7 +63,7 @@ export const dataStore = {
   },
 
   async getAdminProfiles(limit = 200) {
-    if (!hasSupabaseConfig) return [];
+    if (!IS_SUPABASE) return [];
     const { data, error } = await supabase
       .from("profiles")
       .select(PROFILE_COLUMNS)
@@ -68,7 +74,7 @@ export const dataStore = {
   },
 
   async upsertProfile(profile) {
-    if (!hasSupabaseConfig) {
+    if (!IS_SUPABASE) {
       writeStoredValue(DEMO_PROFILE_KEY, profile);
       return profile;
     }
@@ -83,7 +89,7 @@ export const dataStore = {
 
   // ---- Verification submissions ----
   async getSubmissions({ userId, isAdmin, limit = 20 }) {
-    if (!hasSupabaseConfig) return readStoredArray(DEMO_SUBMISSIONS_KEY);
+    if (!IS_SUPABASE) return readStoredArray(DEMO_SUBMISSIONS_KEY);
     let query = supabase
       .from("verification_submissions")
       .select(isAdmin ? ADMIN_SUBMISSION_COLUMNS : SUBMISSION_COLUMNS)
@@ -96,7 +102,7 @@ export const dataStore = {
   },
 
   async insertSubmission({ userId, asset, network, txHash, amountUsd }) {
-    if (!hasSupabaseConfig) {
+    if (!IS_SUPABASE) {
       const localSubmission = {
         id: `local-submission-${Date.now()}`,
         user_id: userId,
@@ -133,7 +139,7 @@ export const dataStore = {
 
   // ---- Withdrawals ----
   async getWithdrawals({ userId, isAdmin, limit = 20 }) {
-    if (!hasSupabaseConfig) return readStoredArray(DEMO_WITHDRAWALS_KEY);
+    if (!IS_SUPABASE) return readStoredArray(DEMO_WITHDRAWALS_KEY);
     let query = supabase
       .from("withdrawal_requests")
       .select(isAdmin ? ADMIN_WITHDRAWAL_COLUMNS : WITHDRAWAL_COLUMNS)
@@ -146,7 +152,7 @@ export const dataStore = {
   },
 
   async insertWithdrawal({ userId, request }) {
-    if (!hasSupabaseConfig) {
+    if (!IS_SUPABASE) {
       const local = {
         id: `local-withdrawal-${Date.now()}`,
         user_id: userId,

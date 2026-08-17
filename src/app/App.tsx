@@ -24,7 +24,6 @@ import AdminProfileModal from "../features/admin/AdminProfileModal";
 import { PromotionsSection, TermsSection, PolicyModalContent } from "../features/promotions";
 
 import {
-  hasSupabaseConfig,
   getSession,
   onAuthChange,
   signIn,
@@ -32,6 +31,7 @@ import {
   signOut,
   resetPassword,
 } from "../services/auth.service";
+import { IS_SUPABASE, IS_DEMO } from "../config/appMode";
 import { getProfile, getAdminProfiles, buildDemoProfile } from "../services/profiles.service";
 import {
   getSubmissions,
@@ -88,7 +88,7 @@ function AppContent() {
   const [profileModal, setProfileModal] = useState<Profile | null>(null);
 
   const [user, setUser] = useState<Profile | null>(() => {
-    if (hasSupabaseConfig) return null;
+    if (IS_SUPABASE) return null;
     return readStoredValue("neonbetUser", null) as Profile | null;
   });
 
@@ -104,7 +104,7 @@ function AppContent() {
         setWithdrawals([]);
         return;
       }
-      if (!hasSupabaseConfig) {
+      if (IS_DEMO) {
         const demo = buildDemoProfile(nextUser);
         setProfile(demo);
         setProfiles([]);
@@ -133,7 +133,7 @@ function AppContent() {
   );
 
   useEffect(() => {
-    if (!hasSupabaseConfig) return undefined;
+    if (!IS_SUPABASE) return undefined;
     let active = true;
     getSession().then((session) => {
       const s = session as any;
@@ -178,7 +178,7 @@ function AppContent() {
     setAuthLoading(true);
     setAuthError("");
     try {
-      if (!hasSupabaseConfig) {
+      if (IS_DEMO) {
         const localUser: Profile = {
           id: `local-${Date.now()}`,
           username: payload.username,
@@ -226,7 +226,7 @@ function AppContent() {
   }
 
   async function handleResetPassword(email: string) {
-    if (!hasSupabaseConfig || !email.includes("@")) return;
+    if (!IS_SUPABASE || !email.includes("@")) return;
     setAuthLoading(true);
     setAuthError("");
     try {
@@ -241,7 +241,7 @@ function AppContent() {
   }
 
   async function handleLogout() {
-    if (hasSupabaseConfig) await signOut();
+    if (IS_SUPABASE) await signOut();
     setUser(null);
     setProfile(null);
     setProfiles([]);
@@ -326,7 +326,7 @@ function AppContent() {
     status: string,
     adminNotes = (submission as { admin_notes?: string })?.admin_notes || "",
   ) {
-    if (!hasSupabaseConfig || profile?.role !== "admin") return;
+    if (!IS_SUPABASE || profile?.role !== "admin") return;
     setAdminSaving(true);
     try {
       await reviewSubmission(submission?.id, status, adminNotes);
@@ -345,7 +345,7 @@ function AppContent() {
     status: string,
     adminNotes = (withdrawal as { admin_notes?: string })?.admin_notes || "",
   ) {
-    if (!hasSupabaseConfig || profile?.role !== "admin") return;
+    if (!IS_SUPABASE || profile?.role !== "admin") return;
     setAdminSaving(true);
     try {
       await reviewWithdrawal(withdrawal?.id, status, adminNotes);
@@ -360,7 +360,7 @@ function AppContent() {
   }
 
   async function handleUpdateProfile(userProfile: Profile, updates?: Record<string, unknown>) {
-    if (!hasSupabaseConfig || profile?.role !== "admin") return;
+    if (!IS_SUPABASE || profile?.role !== "admin") return;
     setAdminSaving(true);
     try {
       await updateProfileAdmin(userProfile.id, updates || {});

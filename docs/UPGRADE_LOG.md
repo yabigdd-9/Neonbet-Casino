@@ -4,6 +4,17 @@ Format per entry: Change / Date / Commit / Area / Problem / Implementation / Fil
 
 ---
 
+## P1 — App mode single source of truth (RESOLVED)
+- **Date:** 2026-08-17
+- **Commit:** pending (working tree, ready to commit on `upgrade/neonbet-commercial-v2`)
+- **Area:** Config, services, app orchestration
+- **Problem:** Two competing runtime authorities existed. `src/config/appMode.ts` exported `APP_MODE`/`IS_SUPABASE` but **silently downgraded `VITE_APP_MODE=supabase` → `demo` when Supabase env vars were missing** (violating the P1 acceptance test "Do not silently downgrade explicitly requested production/Supabase mode to demo"). Meanwhile `App.tsx` and the service layer (dataStore/auth/admin) still branched on `hasSupabaseConfig`, so portions of the app could behave like Supabase mode even when explicitly in demo, and vice-versa.
+- **Implementation:** Made `resolveAppMode(configuredMode, hasSupabaseConfig)` the single pure resolver. `VITE_APP_MODE=supabase` + missing creds now **throws a clear error at bootstrap** instead of silently falling back. `hasSupabaseConfig` is now confined to `appMode.ts` (mode decision) and `dataStore.js` (answers "are creds physically present?") and is no longer used to decide runtime behaviour anywhere else. All consumers (`App.tsx` ×10, `AuthModal.tsx`, `auth.service.js`, `admin.service.js`, `dataStore.js`) now branch on `IS_SUPABASE`/`IS_DEMO`. Added 6 unit tests covering the five P1 acceptance scenarios.
+- **Files Changed:** `src/config/appMode.ts`, `src/app/App.tsx`, `src/features/auth/AuthModal.tsx`, `src/services/auth.service.js`, `src/services/admin.service.js`, `src/services/dataStore.js`, `src/config/appMode.test.js` (new).
+- **Validation:** `npm run test` ✅ 64/64 (58 baseline + 6 new mode tests); `npm run typecheck` ✅; `npm run lint` ✅ 0 errors; `npm run build` ✅; `npm run secret-scan` ✅ clean.
+- **Result:** One runtime authority. Demo/Supabase behaviour is now deterministic and explicit-misconfiguration fails loudly.
+- **Remaining Risk:** None for P1. (P2 — verification-fee server authority — and P5 — brand-aware `index.html` metadata — still open.)
+
 ## Baseline establishment (commercial V2 start)
 - **Date:** 2026-08-17
 - **Commit:** pending (docs only; not committed)
@@ -24,4 +35,4 @@ Format per entry: Change / Date / Commit / Area / Problem / Implementation / Fil
 - **Files Changed:** ~70 new files (src tree) + docs/* + README rewrite + package.json (added test script + vitest/jsdom) + vitest.config.js + styles/index.css rename.
 - **Validation:** `npm run build` ✅ (492 KB JS / 138 KB gzip); `npm run test` ✅ 58/58 pass across 9 files; `npm run dev` ✅ serves on :5173, all modules transform; current-file secret sweep (src/public/supabase) ✅ clean — no live wallet/contact strings present.
 - **Result:** Monolith decomposed; secrets removed from source; baseline tests established. Product is now modular, buyer-rebrandable, and verified building/running.
-- **Remaining Risk:** **Git history still leaks owner secrets.** `git log -p --all` shows the personal wallet `0x3f8b…a7d29`, `t.me/&lt;owner-handle&gt;`, and `wa.me/&lt;owner-number&gt;` committed in the baseline (line refs ~187–190, ~268–269, ~2642–2645, ~2902–2937) on `main` and inherited by this branch. Current working tree is clean, so committing the refactor is safe, but any push to a public/remote target must first purge history (rebase/ filter-repo) or the personal data ships. This is an open P0 gate requiring owner decision. RLS still not confirmed applied to the live project.
+- **Remaining Risk (RESOLVED — see history note below):** The prior log claimed git history still leaked owner secrets (`0x3f8b…a7d29`, `t.me/…`, `wa.me/…`). That was true of the original `main` monolith baseline, but **commit `9416b0f` ("Initial clean NeonBet Commercial V2 (history purged of owner secrets)") already rewrote the branch history and the current tree is clean** (confirmed by `npm run secret-scan` → "Secret scan clean — 108+ files checked"). The remaining RLS/white-label work is functional, not a secret-exposure risk. Open items: RLS not yet confirmed applied to a live project; verification fee is still client-facing config (see P2).

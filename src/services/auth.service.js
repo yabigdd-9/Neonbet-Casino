@@ -1,7 +1,6 @@
 // Authentication + account session service.
-import { supabase, hasSupabaseConfig } from "./dataStore";
-
-export { hasSupabaseConfig };
+import { supabase } from "./dataStore";
+import { IS_SUPABASE } from "../config/appMode";
 
 export const PROFILE_COLUMNS =
   "id,email,username,phone,role,verification_status,bonus_balance,rollover_required,rollover_progress,admin_notes,created_at,updated_at";
@@ -13,13 +12,13 @@ export const ADMIN_SUBMISSION_COLUMNS = `${SUBMISSION_COLUMNS}, profiles(usernam
 export const ADMIN_WITHDRAWAL_COLUMNS = `${WITHDRAWAL_COLUMNS}, profiles(username,email)`;
 
 export async function getSession() {
-  if (!hasSupabaseConfig) return null;
+  if (!IS_SUPABASE) return null;
   const { data } = await supabase.auth.getSession();
   return data.session || null;
 }
 
 export async function onAuthChange(callback) {
-  if (!hasSupabaseConfig) return () => {};
+  if (!IS_SUPABASE) return () => {};
   const { data } = supabase.auth.onAuthStateChange((_event, session) =>
     callback(session?.user || null),
   );
@@ -43,7 +42,7 @@ export async function signUp({ email, password, username, phone, contactMethod }
 }
 
 export async function signOut() {
-  if (!hasSupabaseConfig) return;
+  if (!IS_SUPABASE) return;
   await supabase.auth.signOut();
 }
 

@@ -1,5 +1,6 @@
 // Admin service (server-validated actions only).
-import { supabase, hasSupabaseConfig } from "./dataStore";
+import { supabase } from "./dataStore";
+import { IS_SUPABASE } from "../config/appMode";
 
 export async function getAdminSummary({ profiles = [], submissions = [], withdrawals = [] }) {
   return {
@@ -11,7 +12,7 @@ export async function getAdminSummary({ profiles = [], submissions = [], withdra
 }
 
 export async function updateProfileAdmin(profileId, updates) {
-  if (!hasSupabaseConfig) throw new Error("Admin actions require Supabase mode.");
+  if (!IS_SUPABASE) throw new Error("Admin actions require Supabase mode.");
   const { error } = await supabase.rpc("update_profile_admin", {
     p_profile_id: profileId,
     p_bonus_balance: Number(updates.bonus_balance),
