@@ -1,68 +1,77 @@
-# NeonBet White-Label Guide (Commercial V2)
+# White-Label Guide — NeonBet Commercial V2
 
-A buyer can rebrand most of NeonBet by editing a small number of files. No feature logic
-needs to change.
+This document explains how to rebrand the product for a buyer without touching
+component code. Everything brand-sensitive is driven by config or environment
+variables.
 
-## Change the brand name
+## 1. Quick start (recommended)
 
-- `src/config/brand.js` → `name`, `shortName`, `tagline`, `supportEmail`, `primaryColor`,
-  `secondaryColor`, `currency`, `social`.
-- Or override per-deployment with `VITE_BRAND_NAME` / `VITE_SUPPORT_EMAIL`.
+```bash
+cp .env.example .env.local
+npm run setup        # interactive wizard writes .env.local
+npm ci
+npm run dev          # demo works immediately
+```
 
-## Change the logo / favicon
+## 2. Brand identity
 
-- Replace `/public/brand/logo.svg` and `/public/brand/favicon.svg`.
-- Point `brand.logo` / `brand.favicon` at your asset paths.
-- Update `<link rel="icon">` and the page `<title>` in `index.html`.
+| What | Where |
+|------|-------|
+| Brand name / short name / tagline / description | `src/config/brand.ts` |
+| Logo / wordmark / favicon / app icon / social preview | `public/brand/*.svg`, `public/brand/social-preview.png` |
+| Support email / Telegram / WhatsApp | `VITE_SUPPORT_EMAIL`, `VITE_TELEGRAM_URL`, `VITE_WHATSAPP_URL` |
+| Currency, theme colors | `src/config/brand.ts` + `src/config/tokens.ts` |
 
-## Change the colours
+If a buyer does not supply a logo, `BrandMark` falls back to the brand short-name
+text badge — **no broken images**.
 
-- `src/config/tokens.js` — central design tokens (background, surface, brand, success,
-  warning, danger, info, radius).
-- `tailwind.config.js` — `boxShadow.neon` / `boxShadow.gold` accents.
-- The primary neon accent is `cyan-400` (`#22d3ee`); change it in both places for a coherent
-  re-theme.
+## 3. Promotion & fee copy (single source)
 
-## Change promotions
+`src/config/promotion.ts` exports `promotionConfig`, sourced from env with
+safe defaults:
 
-- `src/data/promotions.js` → `promos` (cards), `terms` (account-terms grid), `policyPages`
-  (Terms / Privacy / Responsible Play modals).
+- `VITE_SIGNUP_BONUS` (default `$100`)
+- `VITE_MATCH_PERCENT` (default `300%`)
+- `VITE_ROLLOVER` (default `10x`)
+- `VITE_VERIFICATION_FEE` (default `$75`)
 
-## Change support contact
+Changing these updates the hero, sidebar, promotions, terms, account, and
+metadata automatically.
 
-- `src/config/contact.js` → `telegramUrl`, `whatsappUrl`, `supportEmail`.
-- Prefer env overrides: `VITE_TELEGRAM_URL`, `VITE_WHATSAPP_URL`, `VITE_SUPPORT_EMAIL`.
-- Empty by default — the UI shows a "not configured" notice instead of dead links.
+## 4. SEO / metadata
 
-## Change game data
+`index.html` is generated at build time by `scripts/vite-meta-plugin.js` from
+env. Override without editing HTML:
 
-- `src/data/games.js` — featured lobby slots.
-- `src/data/arcadeGames.js` — Dice / Plinko / Crash definitions.
-- `src/data/slotProviders.js` — the deep provider catalogue (24 providers). These are lobby
-  themes only; toggle provider availability copy as needed.
+- `VITE_BRAND_NAME`, `VITE_SITE_URL`, `VITE_META_TITLE`, `VITE_META_DESCRIPTION`
+- `VITE_THEME_COLOR`, `VITE_SOCIAL_PREVIEW`
 
-## Change verification methods
+## 5. Verification fee (server-authoritative)
 
-- `src/config/verification.js` → `feeUsd`, `acceptedCrypto` (name, network, label, **address**,
-  `qrCodeSrc`, notice, note), `contactLinks`.
-- Ship with **blank** wallet addresses; operators paste their own before distribution.
+The displayed verification fee is decided by the database, **not** the client.
+In Supabase mode the amount is read from `operator_settings.fee_usd` (RPC
+`get_verification_fee()`) and stored via `submit_verification_submission()`.
+A malicious client cannot submit an arbitrary amount. To change the fee for a
+brand, update `operator_settings` in the database — do **not** hard-code it in
+SQL policy.
 
-## Enable / disable features
+Apply the schema with migrations:
 
-- `src/config/features.js` → `demoGames`, `promotions`, `verification`, `favourites`,
-  `recentlyPlayed`, `admin`, `withdrawals`, `casinoProviders`, `payments`, `liveWallet`.
-- Toggle with `VITE_ENABLE_PROMOTIONS` / `VITE_ENABLE_VERIFICATION` / `VITE_ENABLE_ADMIN`.
-- Navigation and sections reflect these flags.
+```bash
+# run supabase/migrations/001_initial.sql then 002_operator_settings.sql
+# then set the fee:
+update public.operator_settings set fee_usd = 75 where id = 1;
+```
 
-## Configure Supabase
+## 6. App mode
 
-- Copy `.env.example` → `.env`, fill `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`,
-  set `VITE_APP_MODE=supabase`.
-- Apply `supabase/schema.sql` to the project. Promote the first admin by SQL (see
-  `docs/DATABASE.md`).
+- `VITE_APP_MODE=demo` → local simulated balance + localStorage (no backend).
+- `VITE_APP_MODE=supabase` → real auth + database. **Fails clearly at bootstrap
+  if `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` are missing** (never silently
+  downgrades to demo).
 
-## Replace the demo game provider
+## 7. Feature toggles
 
-- `src/providers/casino/LocalDemoProvider.js` implements `CasinoProvider`.
-- Subclass `CasinoProvider` and implement real `getGames` / `launchReal` (return real launch
-  URLs). Swap the instance in `App.jsx`. `launchReal` throws in this build by design.
+`src/config/features.ts` + `VITE_ENABLE_PROMOTIONS` / `VITE_ENABLE_VERIFICATION`
+/ `VITE_ENABLE_ADMIN` control which nav/sections render. Disabled features hide
+their links — the UI never implies functionality that is turned off.

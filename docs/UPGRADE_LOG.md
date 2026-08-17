@@ -6,14 +6,51 @@ Format per entry: Change / Date / Commit / Area / Problem / Implementation / Fil
 
 ## P1 — App mode single source of truth (RESOLVED)
 - **Date:** 2026-08-17
-- **Commit:** pending (working tree, ready to commit on `upgrade/neonbet-commercial-v2`)
+- **Commit:** `94dc8c7` (pushed to `upgrade/neonbet-commercial-v2`)
 - **Area:** Config, services, app orchestration
 - **Problem:** Two competing runtime authorities existed. `src/config/appMode.ts` exported `APP_MODE`/`IS_SUPABASE` but **silently downgraded `VITE_APP_MODE=supabase` → `demo` when Supabase env vars were missing** (violating the P1 acceptance test "Do not silently downgrade explicitly requested production/Supabase mode to demo"). Meanwhile `App.tsx` and the service layer (dataStore/auth/admin) still branched on `hasSupabaseConfig`, so portions of the app could behave like Supabase mode even when explicitly in demo, and vice-versa.
 - **Implementation:** Made `resolveAppMode(configuredMode, hasSupabaseConfig)` the single pure resolver. `VITE_APP_MODE=supabase` + missing creds now **throws a clear error at bootstrap** instead of silently falling back. `hasSupabaseConfig` is now confined to `appMode.ts` (mode decision) and `dataStore.js` (answers "are creds physically present?") and is no longer used to decide runtime behaviour anywhere else. All consumers (`App.tsx` ×10, `AuthModal.tsx`, `auth.service.js`, `admin.service.js`, `dataStore.js`) now branch on `IS_SUPABASE`/`IS_DEMO`. Added 6 unit tests covering the five P1 acceptance scenarios.
 - **Files Changed:** `src/config/appMode.ts`, `src/app/App.tsx`, `src/features/auth/AuthModal.tsx`, `src/services/auth.service.js`, `src/services/admin.service.js`, `src/services/dataStore.js`, `src/config/appMode.test.js` (new).
 - **Validation:** `npm run test` ✅ 64/64 (58 baseline + 6 new mode tests); `npm run typecheck` ✅; `npm run lint` ✅ 0 errors; `npm run build` ✅; `npm run secret-scan` ✅ clean.
 - **Result:** One runtime authority. Demo/Supabase behaviour is now deterministic and explicit-misconfiguration fails loudly.
-- **Remaining Risk:** None for P1. (P2 — verification-fee server authority — and P5 — brand-aware `index.html` metadata — still open.)
+- **Remaining Risk:** None for P1. (P2–P51 subsequently completed; see entries below.)
+
+## P2 — Server-authoritative verification fee (RESOLVED)
+- **Date:** 2026-08-17 · **Commit:** `5328e49`
+- **Area:** Supabase schema, services, verification UI
+- **Problem:** `schema.sql` hardcoded `amount_usd = 75` in the RLS insert policy (broke white-label config) and the client chose the fee — a malicious client could submit `amount_usd = 1`.
+- **Implementation:** Added `operator_settings` table + `get_verification_fee()` RPC + `submit_verification_submission()` RPC that derives `amount_usd` from `operator_settings` server-side. RLS now enforces the *configured* fee (not a literal). Introduced migration discipline (`supabase/migrations/001_initial.sql`, `002_operator_settings.sql`; `schema.sql` kept as generated reference). `verification.service` reads the authoritative fee; client amount ignored on storage. `VerificationPanel` displays the live fee. 9 new tests.
+
+## P5 — Brand-aware index.html metadata (RESOLVED)
+- **Date:** 2026-08-17 · **Commit:** `5bd765b`
+- **Area:** Build, SEO
+- **Problem:** `index.html` hard-coded `NeonBet Casino` / `$100` / `300%` / `10x` / `75` / GitHub Pages canonical + OG — defeating white-label.
+- **Implementation:** Vite plugin (`scripts/vite-meta-plugin.js`) injects the full meta set (title, description, canonical, theme-color, og:*, twitter:*) from `VITE_*` env at build time. `index.html` uses a `<!--META_BLOCK-->` placeholder. Added `.env.example`. 3 new tests (verified brand override → "LuckyStar Casino").
+
+## P6 / P51 — Brand asset package + buyer setup wizard (RESOLVED)
+- **Date:** 2026-08-17 · **Commit:** `59fe1a7`
+- **Area:** Assets, tooling
+- **Implementation:** Added `public/brand/` logo/wordmark/favicon/app-icon/social-preview; `BrandMark` component with `onError` → short-name fallback (never a broken image); `npm run setup` wizard writing `.env.local` from a short Q&A without clobbering.
+
+## P7 / P8 — Dynamic address-driven QR + remove developer language (RESOLVED)
+- **Date:** 2026-08-17 · **Commit:** `660084c`
+- **Area:** Verification UI
+- **Implementation:** `VerificationPanel` generates the QR from the configured wallet address via `qrcode` (effect → `QRCode.toDataURL`); the QR always encodes the exact address shown (no static placeholder). Removed two developer/setup messages from customer UI. Added `@types/qrcode`.
+
+## P9 / P17 / P18 — Navigation cleanup + mobile active state (RESOLVED)
+- **Date:** 2026-08-17 · **Commit:** `a34f13f`
+- **Area:** Layout
+- **Implementation:** Confirmed no "Live Tables" dead link remains in `Sidebar`. Removed the dead decorative Notifications bell from `Header`. `MobileNav` gains an active-section state with `aria-current="page"` and >=48px tap targets. `BrandMark` wired into `Header`/`Sidebar`.
+
+## P10 — Single promotionConfig source (RESOLVED)
+- **Date:** 2026-08-17 · **Commit:** `2c412fd`
+- **Area:** Config, copy
+- **Implementation:** `src/config/promotion.ts` exports `promotionConfig` (signupBonus/matchPercent/rollover/verificationFee from `VITE_*`). Replaced every hard-coded `$100`/`300%`/`10x`/`$75` literal in `promotions.js`, `Sidebar`, `Footer`, `AuthModal`, `contact.ts`.
+
+## P20 / P35 / P36 — Demo-credits label, a11y globals, error boundary (RESOLVED)
+- **Date:** 2026-08-17 · **Commit:** `e5a0bf4`
+- **Area:** Header, styles, root
+- **Implementation:** `Header` balance shows "Demo credits" in demo mode (never implies withdrawable wallet). `index.css` adds global `:focus-visible` + `prefers-reduced-motion` + skip-link styles (App.tsx already provides a working skip link to `#main-content`). `ErrorBoundary` class wraps `<App/>` in `main.tsx` (Retry / Return to lobby).
 
 ## Baseline establishment (commercial V2 start)
 - **Date:** 2026-08-17
