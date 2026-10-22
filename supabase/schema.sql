@@ -133,7 +133,7 @@ create or replace function public.mark_profile_pending_verification()
 returns trigger
 language plpgsql
 security definer
-set search_path = public
+set search_path = ''
 as $$
 begin
   update public.profiles
@@ -154,7 +154,7 @@ create or replace function private.is_admin()
 returns boolean
 language sql
 security definer
-set search_path = public
+set search_path = ''
 stable
 as $$
   select exists (
@@ -169,7 +169,7 @@ create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
 security definer
-set search_path = public
+set search_path = ''
 as $$
 begin
   insert into public.profiles (id, email, username, phone)
@@ -198,7 +198,7 @@ create or replace function public.review_verification_submission(
 returns void
 language plpgsql
 security definer
-set search_path = public, private
+set search_path = ''
 as $$
 declare
   target_user_id uuid;
@@ -236,7 +236,7 @@ create or replace function public.review_withdrawal_request(
 returns void
 language plpgsql
 security definer
-set search_path = public, private
+set search_path = ''
 as $$
 begin
   if not private.is_admin() then
@@ -268,7 +268,7 @@ create or replace function public.update_profile_admin(
 returns void
 language plpgsql
 security definer
-set search_path = public, private
+set search_path = ''
 as $$
 begin
   if not private.is_admin() then

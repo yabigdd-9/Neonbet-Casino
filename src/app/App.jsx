@@ -312,7 +312,8 @@ function AppContent() {
       <Sidebar open={open} setOpen={setOpen} />
       <Header setOpen={setOpen} balance={balance} user={user} onOpenAuth={openAuth} onLogout={handleLogout} />
 
-      <main className="relative space-y-8 px-4 py-8 md:px-8 lg:ml-72">
+      <a href="#main-content" className="skip-link">Skip to main content</a>
+      <main id="main-content" tabIndex={-1} className="relative space-y-8 px-4 py-8 md:px-8 lg:ml-72">
         <Hero onClaim={() => scrollToSection("verification")} onOpenGame={setActiveArcadeGame} />
 
         {features.account && (
