@@ -96,3 +96,9 @@ it("does not expose trigger functions as authenticated RPCs", async () => {
   expect(rows.length).toBe(3);
   expect(rows.every((row) => !row.allowed)).toBe(true);
 });
+
+it("denies admin RPCs to ordinary authenticated users", async () => {
+  await asUser(alice);
+  await expect(db.query("select public.update_profile_admin($1, 0, 0, 0, '')", [alice]))
+    .rejects.toMatchObject({ code: "42501" });
+});

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { ToastProvider, useToast } from "../components/feedback/ToastProvider";
 import Sidebar from "../components/layout/Sidebar";
 import Header from "../components/layout/Header";
@@ -15,6 +15,7 @@ import SlotGameModal from "../features/casino/SlotGameModal";
 import ArcadeGameModal from "../features/casino/ArcadeGameModal";
 
 import AuthModal from "../features/auth/AuthModal";
+import PasswordRecoveryModal from "../features/auth/PasswordRecoveryModal";
 import AccountStatusPanel from "../features/account/AccountStatusPanel";
 import VerificationPanel from "../features/verification/VerificationPanel";
 import WithdrawalRequestPanel from "../features/transactions/WithdrawalRequestPanel";
@@ -23,7 +24,7 @@ import AdminReviewModal from "../features/admin/AdminReviewModal";
 import AdminProfileModal from "../features/admin/AdminProfileModal";
 import { PromotionsSection, TermsSection, PolicyModalContent } from "../features/promotions";
 
-import { hasSupabaseConfig, getSession, onAuthChange, signIn, signUp, signOut, resetPassword } from "../services/auth.service";
+import { hasSupabaseConfig, signIn, signUp, signOut, resetPassword } from "../services/auth.service";
 import { getProfile, getAdminProfiles, buildDemoProfile, saveDemoProfile } from "../services/profiles.service";
 import { getSubmissions, submitSubmission, reviewSubmission, validateTxHash } from "../services/verification.service";
 import { getWithdrawals, submitWithdrawal, reviewWithdrawal, validateWithdrawal } from "../services/transactions.service";
@@ -34,6 +35,9 @@ import { getGameId } from "../lib/gameEngine";
 import { readStoredValue, writeStoredValue } from "../lib/storage";
 import { features } from "../config/features";
 import { IS_SUPABASE } from "../config/appMode";
+
+import useAccountSession from "../hooks/useAccountSession";
+import { reportClientError } from "../lib/diagnostics";
 
 function scrollToSection(id) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -50,6 +54,7 @@ function AppContent() {
   const { recentGames, recordGame } = useRecentGames();
 
   const [authMode, setAuthMode] = useState("login");
+  const [recoveryOpen, setRecoveryOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [profile, setProfile] = useState(null);
   const [profiles, setProfiles] = useState([]);
@@ -69,11 +74,14 @@ function AppContent() {
     return readStoredValue("neonbetUser", null);
   });
 
+  const accountRequest = useRef(0);
+
   const latestSubmission = submissions[0] || null;
   const latestWithdrawal = withdrawals[0] || null;
 
   const loadAccount = useCallback(
     async (nextUser = user) => {
+      const request = ++accountRequest.current;
       if (!nextUser) {
         setProfile(null);
         setProfiles([]);
@@ -89,49 +97,43 @@ function AppContent() {
         setWithdrawals(readStoredValue("neonbetWithdrawalRequests", []));
         return;
       }
+      setProfile(null);
+      setProfiles([]);
+      setSubmissions([]);
+      setWithdrawals([]);
       try {
         const profileData = await getProfile(nextUser.id);
+        if (request !== accountRequest.current) return;
         setProfile(profileData);
         const isAdmin = profileData.role === "admin";
         const [adminRows, submissionRows, withdrawalRows] = await Promise.all([
-          getAdminProfiles(),
+          isAdmin ? getAdminProfiles() : Promise.resolve([]),
           getSubmissions({ userId: nextUser.id, isAdmin }),
           getWithdrawals({ userId: nextUser.id, isAdmin }),
         ]);
+        if (request !== accountRequest.current) return;
         setProfiles(isAdmin ? adminRows : []);
         setSubmissions(submissionRows);
         setWithdrawals(withdrawalRows);
       } catch (error) {
-        setAuthError(error.message || "Account data failed to load.");
+        if (request === accountRequest.current) {
+          setAuthError("Account data could not be loaded. Please try again.");
+          reportClientError("session_error");
+        }
       }
     },
     [user]
   );
 
-  useEffect(() => {
-    if (!hasSupabaseConfig) return undefined;
-    let active = true;
-    getSession().then((session) => {
-      if (session?.user && active) {
-        setUser(session.user);
-        loadAccount(session.user);
-      }
-    });
-    const unsub = onAuthChange((nextUser) => {
-      setUser(nextUser);
-      if (nextUser) loadAccount(nextUser);
-      else {
-        setProfile(null);
-        setProfiles([]);
-        setSubmissions([]);
-        setWithdrawals([]);
-      }
-    });
-    return () => {
-      active = false;
-      unsub();
-    };
-  }, [loadAccount]);
+  useAccountSession((nextUser, event) => {
+    if (event === "PASSWORD_RECOVERY") setRecoveryOpen(true);
+    if (!nextUser) setRecoveryOpen(false);
+    setUser(nextUser);
+    void loadAccount(nextUser);
+  }, () => {
+    setAuthError("Your session could not be restored. Please sign in again.");
+    reportClientError("session_error");
+  });
 
   function openAuth(mode) {
     setAuthError("");
@@ -172,7 +174,7 @@ function AppContent() {
       setAuthOpen(false);
       toast.success("Signed in");
     } catch (error) {
-      setAuthError(error.message || "Account action failed.");
+      setAuthError("Account action failed. Check your details and try again.");
     } finally {
       setAuthLoading(false);
     }
@@ -184,17 +186,24 @@ function AppContent() {
     setAuthError("");
     try {
       await resetPassword(email, window.location.origin + window.location.pathname);
-      setAuthError("Password reset email sent. Check your inbox.");
-      toast.info("Reset email sent");
+      setAuthError("If this email is registered, password reset instructions will be sent.");
+      toast.info("Check your email for reset instructions");
     } catch (error) {
-      setAuthError(error.message || "Password reset failed.");
+      setAuthError("Password reset could not be requested. Please try again later.");
     } finally {
       setAuthLoading(false);
     }
   }
 
   async function handleLogout() {
-    if (hasSupabaseConfig) await signOut();
+    try {
+      if (hasSupabaseConfig) await signOut();
+    } catch {
+      reportClientError("logout_error");
+      toast.error("Sign out failed. Please try again.");
+      return;
+    }
+    ++accountRequest.current;
     setUser(null);
     setProfile(null);
     setProfiles([]);
@@ -308,11 +317,11 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
+      <a href="#main-content" className="skip-link">Skip to main content</a>
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(34,211,238,0.15),transparent_35%),radial-gradient(circle_at_80%_20%,rgba(168,85,247,0.14),transparent_35%)]" />
       <Sidebar open={open} setOpen={setOpen} />
       <Header setOpen={setOpen} balance={balance} user={user} onOpenAuth={openAuth} onLogout={handleLogout} />
 
-      <a href="#main-content" className="skip-link">Skip to main content</a>
       <main id="main-content" tabIndex={-1} className="relative space-y-8 px-4 py-8 md:px-8 lg:ml-72">
         <Hero onClaim={() => scrollToSection("verification")} onOpenGame={setActiveArcadeGame} />
 
@@ -405,6 +414,7 @@ function AppContent() {
       )}
       {activeGame && <SlotGameModal game={activeGame} balance={balance} setBalance={setBalance} onClose={() => setActiveGame(null)} />}
       {activeArcadeGame && <ArcadeGameModal game={activeArcadeGame} balance={balance} setBalance={setBalance} onClose={() => setActiveArcadeGame(null)} />}
+      {recoveryOpen && <PasswordRecoveryModal onClose={() => setRecoveryOpen(false)} onSuccess={() => { setRecoveryOpen(false); toast.success("Password updated"); }} />}
       {authOpen && (
         <AuthModal
           mode={authMode}

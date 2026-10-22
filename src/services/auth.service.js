@@ -14,40 +14,65 @@ export const ADMIN_WITHDRAWAL_COLUMNS = `${WITHDRAWAL_COLUMNS}, profiles(usernam
 
 export async function getSession() {
   if (!hasSupabaseConfig) return null;
-  const { data } = await supabase.auth.getSession();
+  const { data, error } = await supabase.auth.getSession();
+  if (error) throw error;
   return data.session || null;
 }
 
-export async function onAuthChange(callback) {
+export function onAuthChange(callback) {
   if (!hasSupabaseConfig) return () => {};
-  const { data } = supabase.auth.onAuthStateChange((_event, session) => callback(session?.user || null));
-  return () => data.subscription.unsubscribe();
+  let active = true;
+  const timers = new Set();
+  const { data } = supabase.auth.onAuthStateChange((event, session) => {
+    // Run account requests after the auth callback releases its session lock.
+    const timer = window.setTimeout(() => {
+      timers.delete(timer);
+      if (active) callback(session?.user || null, event);
+    }, 0);
+    timers.add(timer);
+  });
+  return () => {
+    active = false;
+    timers.forEach((timer) => window.clearTimeout(timer));
+    timers.clear();
+    data.subscription.unsubscribe();
+  };
 }
 
 export async function signIn({ email, password }) {
+  if (!hasSupabaseConfig) throw new Error("Account service is unavailable.");
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw error;
-  return data;
+  return { data };
 }
 
 export async function signUp({ email, password, username, phone, contactMethod }) {
+  if (!hasSupabaseConfig) throw new Error("Account service is unavailable.");
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: { data: { username, phone, contact_method: contactMethod } },
   });
   if (error) throw error;
-  return data;
+  return { data };
 }
 
 export async function signOut() {
   if (!hasSupabaseConfig) return;
-  await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut();
+  if (error) throw error;
 }
 
 export async function resetPassword(email, redirectTo) {
+  if (!hasSupabaseConfig) throw new Error("Account service is unavailable.");
   const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
   if (error) throw error;
 }
 
-export default { getSession, onAuthChange, signIn, signUp, signOut, resetPassword, PROFILE_COLUMNS, SUBMISSION_COLUMNS, WITHDRAWAL_COLUMNS, ADMIN_SUBMISSION_COLUMNS, ADMIN_WITHDRAWAL_COLUMNS };
+export async function updatePassword(password) {
+  if (!hasSupabaseConfig) throw new Error("Account service is unavailable.");
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) throw error;
+}
+
+export default { updatePassword, getSession, onAuthChange, signIn, signUp, signOut, resetPassword, PROFILE_COLUMNS, SUBMISSION_COLUMNS, WITHDRAWAL_COLUMNS, ADMIN_SUBMISSION_COLUMNS, ADMIN_WITHDRAWAL_COLUMNS };
