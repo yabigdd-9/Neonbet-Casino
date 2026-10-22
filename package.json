@@ -6,7 +6,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "secret-scan": "node scripts/secret-scan.mjs"
+    "secret-scan": "node scripts/secret-scan.mjs",
+    "test:browser": "playwright test"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.105.4",
@@ -18,6 +19,7 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.11",
+    "@playwright/test": "1.62.1",
     "autoprefixer": "10.5.0",
     "jsdom": "^30.0.1",
     "postcss": "8.5.14",
