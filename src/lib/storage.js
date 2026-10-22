@@ -8,7 +8,8 @@ export function formatMoney(amount) {
 
 export function readStoredArray(key) {
   try {
-    return JSON.parse(window.localStorage.getItem(key)) || [];
+    const value = JSON.parse(window.localStorage.getItem(key));
+    return Array.isArray(value) ? value : [];
   } catch {
     return [];
   }

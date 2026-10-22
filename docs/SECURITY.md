@@ -12,7 +12,8 @@
 ## Row Level Security
 
 - RLS is enabled on `profiles`, `verification_submissions`, `withdrawal_requests`.
-- Users may read/update only their own rows; admins (via `private.is_admin()`) may read all.
+- Users may read only their own rows; admins (via `private.is_admin()`) may read all.
+- Direct profile updates are denied to browser roles; privileged changes require server-checked RPCs.
 - Clients may **insert** verifications/withdrawals only with `status = pending`, no admin
   notes, and (`verification`) `amount_usd = 75`.
 
@@ -60,3 +61,10 @@
 
 - `PaymentProvider.verifyWebhook()` is a stub. A real implementation must verify provider
   signatures (HMAC) server-side and never trust client-supplied webhook payloads.
+
+## Privileged function hardening
+
+- All six `SECURITY DEFINER` functions in the schema use an empty `search_path` and schema-qualified relations and helper calls, following the [Supabase function security guidance](https://supabase.com/docs/guides/database/functions).
+- `src/security/database.test.js` executes the schema twice against isolated PGlite Postgres, then checks owner-only profile reads, anonymous denial, denied profile self-promotion, ignored user-supplied admin metadata, authorized admin reads, missing-identity denial, function search paths, and function execution grants.
+- This harness stubs `auth.users` and `auth.uid()`. It omits the unsupported pgcrypto extension; UUID defaults use Postgres core `gen_random_uuid()`. It does not verify Supabase Auth, HTTP API configuration, or the deployed database.
+- Schema changes in this repository do not automatically update an existing Supabase project. Apply and verify separately on the intended project after a backup and staging check.

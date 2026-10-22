@@ -40,6 +40,11 @@ describe('stored arrays', () => {
     expect(readStoredArray('missing')).toEqual([]);
   });
 
+  it.each([{}, 'text', 42, true, null])('rejects a valid JSON value that is not an array: %j', (value) => {
+    window.localStorage.setItem('wrong-shape', JSON.stringify(value));
+    expect(readStoredArray('wrong-shape')).toEqual([]);
+  });
+
   it('returns an empty array when stored JSON is corrupt', () => {
     window.localStorage.setItem('bad', '{not valid json');
     expect(readStoredArray('bad')).toEqual([]);
