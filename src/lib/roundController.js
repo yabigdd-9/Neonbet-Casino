@@ -30,6 +30,9 @@ export class RoundController {
     return weekend ? "claimed-weekend" : "claimed";
   };
   start = (game, stake, target = 2) => {
+    const arcade = typeof game?.id === "string" && game.id.trim().length > 0;
+    const slot = typeof game?.title === "string" && game.title.trim().length > 0;
+    if ((!arcade && !slot) || typeof stake !== "number" || !Number.isFinite(stake)) return false;
     const cents = Math.round(stake * 100);
     if (
       this.snapshot.busy ||
@@ -39,18 +42,24 @@ export class RoundController {
       this.snapshot.cents < cents
     )
       return false;
-    const result = game.id ? playArcade(game.id, target) : buildSpin(game);
-    const winCents = Math.round(cents * result.multiplier);
-    if (!Number.isSafeInteger(winCents) || winCents < 0) return false;
-    const id = crypto.randomUUID();
-    const round = {
-      ...result,
-      id,
-      gameId: game.id || game.title,
-      stakeCents: cents,
-      winCents,
-      win: winCents / 100,
-    };
+    let round;
+    let winCents;
+    try {
+      const result = arcade ? playArcade(game.id, target) : buildSpin(game);
+      winCents = Math.round(cents * result.multiplier);
+      if (!Number.isSafeInteger(winCents) || winCents < 0) return false;
+      round = {
+        ...result,
+        id: crypto.randomUUID(),
+        gameId: arcade ? game.id : game.title,
+        stakeCents: cents,
+        winCents,
+        win: winCents / 100,
+      };
+    } catch {
+      // Malformed catalogue data or an unavailable browser API must not debit the wallet.
+      return false;
+    }
     this.publish({
       cents: this.snapshot.cents - cents,
       wageredCents: this.snapshot.wageredCents + cents,

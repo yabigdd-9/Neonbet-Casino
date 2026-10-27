@@ -39,6 +39,16 @@ it("rejects invalid, imprecise, and unaffordable stakes without changing the bal
   expect(wallet.getSnapshot().cents).toBe(5000);
   expect(wallet.getSnapshot().wageredCents).toBe(0);
 });
+it("fails closed for malformed games and nonnumeric stakes without changing wallet state", () => {
+  const wallet = new RoundController();
+  const snapshot = wallet.getSnapshot();
+  expect(wallet.start(null, 0.25)).toBe(false);
+  expect(wallet.start({}, 0.25)).toBe(false);
+  expect(wallet.start({ title: "Test" }, "0.25")).toBe(false);
+  expect(wallet.start({ id: "unknown-arcade" }, 0.25)).toBe(false);
+  expect(wallet.start({ title: "Broken symbols", symbols: { length: 1 } }, 0.25)).toBe(false);
+  expect(wallet.getSnapshot()).toBe(snapshot);
+});
 it("can reach every advertised Plinko payout tier", () => {
   const lanes = new Set();
   for (let bits = 0; bits < 256; bits++) {
