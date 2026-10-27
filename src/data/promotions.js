@@ -1,8 +1,8 @@
 // Promotion content (configurable, not embedded in component logic).
 export const promos = [
   {
-    title: "100 Demo Credits",
-    detail: "Start each browser session with 100 simulated credits. No sign-up or payment required.",
+    title: "$50 Simulated Balance",
+    detail: "Start with $50 in simulated credits and a $1,000 (20×) wagering target. No cash value.",
     icon: "Gift",
   },
   {
@@ -21,13 +21,11 @@ export const promos = [
 export const terms = [
   {
     title: "Bonus Offer",
-    detail:
-      "Eligible new accounts may receive a $100 sign-up bonus and a 300% welcome match after account review and verification approval.",
+    detail: "The $50 starting balance is simulated and has no cash value.",
   },
   {
-    title: "10x Rollover",
-    detail:
-      "Bonus funds and bonus-linked winnings must be wagered 10 times before they are treated as eligible for withdrawal review.",
+    title: "20× simulated target",
+    detail: "The $1,000 target tracks simulated wagers only and does not unlock cash withdrawals.",
   },
   {
     title: "Verification Fee",
@@ -68,7 +66,7 @@ export const policyPages = {
     sections: [
       [
         "Bonuses",
-        "The $100 sign-up bonus and 300% match are subject to account approval, verification, rollover review, and published limits.",
+        "The simulated $50 starting balance has no cash value. Its 20× target tracks simulated wagering only.",
       ],
       [
         "Verification",

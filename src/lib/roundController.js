@@ -4,7 +4,7 @@ import { buildSpin, playArcade } from "./gameEngine";
 export class RoundController {
   listeners = new Set();
   timer = null;
-  snapshot = { cents: 10000, busy: false, round: null };
+  snapshot = { cents: 5000, wageredCents: 0, busy: false, round: null };
   subscribe = (listener) => {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
@@ -50,7 +50,11 @@ export class RoundController {
       winCents,
       win: winCents / 100,
     };
-    this.publish({ cents: this.snapshot.cents - cents, busy: true });
+    this.publish({
+      cents: this.snapshot.cents - cents,
+      wageredCents: this.snapshot.wageredCents + cents,
+      busy: true,
+    });
     this.timer = setTimeout(() => {
       this.timer = null;
       this.publish({ cents: this.snapshot.cents + winCents, busy: false, round });

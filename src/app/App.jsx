@@ -71,8 +71,6 @@ function lazyPanel(loader) {
 function AppContent() {
   const toast = useToast();
   const [open, setOpen] = useState(false);
-  const wallet = useDemoWallet();
-  const { balance } = wallet;
   const [activeGame, setActiveGame] = useState(null);
   const [activeArcadeGame, setActiveArcadeGame] = useState(null);
   const [launchGame, setLaunchGame] = useState(null);
@@ -106,6 +104,8 @@ function AppContent() {
     recovery,
     setRecovery,
   } = useAccount();
+  const wallet = useDemoWallet(user?.id);
+  const { balance } = wallet;
   const [verificationError, setVerificationError] = useState("");
   const [withdrawalError, setWithdrawalError] = useState("");
 
@@ -336,7 +336,12 @@ function AppContent() {
           </div>
         )}
         {features.account && (
-          <AccountStatusPanel user={user} profile={profile} latestSubmission={latestSubmission} />
+          <AccountStatusPanel
+            user={user}
+            profile={profile}
+            latestSubmission={latestSubmission}
+            demoWallet={wallet}
+          />
         )}
 
         <FeaturedGames
@@ -371,6 +376,7 @@ function AppContent() {
           <WithdrawalRequestPanel
             user={user}
             profile={profile}
+            demoWallet={wallet}
             latestWithdrawal={latestWithdrawal}
             withdrawalSaving={withdrawalSaving}
             error={withdrawalError}

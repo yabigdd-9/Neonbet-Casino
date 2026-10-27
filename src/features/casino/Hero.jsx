@@ -26,7 +26,9 @@ export default function Hero({ onClaim, onOpenGame }) {
             Visit the arcade <ArrowUpRight size={17} />
           </button>
         </div>
-        <p className="mt-5 text-xs text-slate-400">100 demo credits to start · No real-money wagering</p>
+        <p className="mt-5 text-xs text-slate-400">
+          $50 simulated to start · No cash value or real-money wagering
+        </p>
       </div>
       <div className="hero-art" aria-hidden="true">
         <div className="hero-orbit" />

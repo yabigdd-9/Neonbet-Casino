@@ -54,8 +54,8 @@ export default function Header({ setOpen, balance, user, onOpenAuth, onLogout })
         className="border-t border-white/5 px-4 py-1.5 text-center text-[11px] text-slate-400 sm:hidden"
         role="status"
       >
-        Demo balance <span className="tabular-nums text-cyan-200">{balance.toFixed(2)}</span> · Simulated
-        credits only
+        Simulated USD <span className="tabular-nums text-cyan-200">${balance.toFixed(2)}</span> · No cash
+        value credits only
       </div>
     </header>
   );

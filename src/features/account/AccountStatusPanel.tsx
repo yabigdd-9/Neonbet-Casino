@@ -9,15 +9,18 @@ export default function AccountStatusPanel({
   user,
   profile,
   latestSubmission,
+  demoWallet,
 }: {
   user: AccountUser | null;
   profile: Profile | null;
   latestSubmission: Submission | null;
+  demoWallet?: { balance: number; wageredCents: number };
 }) {
   if (!user) return null;
   const status = profile?.verification_status || "not_submitted";
-  const progress = Number(profile?.rollover_progress || 0);
-  const required = Number(profile?.rollover_required ?? 1000);
+  const progress =
+    !IS_SUPABASE && demoWallet ? demoWallet.wageredCents / 100 : Number(profile?.rollover_progress || 0);
+  const required = !IS_SUPABASE && demoWallet ? 1000 : Number(profile?.rollover_required ?? 1000);
   const percent = required > 0 ? Math.min(100, Math.max(0, Math.round((progress / required) * 100))) : 100;
 
   return (
@@ -42,11 +45,17 @@ export default function AccountStatusPanel({
 
       <div className="mt-6 grid gap-4 md:grid-cols-3">
         <div className="rounded-3xl border border-white/10 bg-black/20 p-5">
-          <div className="text-sm text-slate-400">Bonus balance</div>
-          <div className="mt-1 text-3xl font-semibold">{formatMoney(profile?.bonus_balance ?? 100)}</div>
+          <div className="text-sm text-slate-400">
+            {IS_SUPABASE ? "Bonus balance" : "Simulated balance (no cash value)"}
+          </div>
+          <div className="mt-1 text-3xl font-semibold">
+            {formatMoney(!IS_SUPABASE && demoWallet ? demoWallet.balance : (profile?.bonus_balance ?? 50))}
+          </div>
         </div>
         <div className="rounded-3xl border border-white/10 bg-black/20 p-5">
-          <div className="text-sm text-slate-400">Rollover progress</div>
+          <div className="text-sm text-slate-400">
+            {IS_SUPABASE ? "Rollover progress" : "Simulated 20× wagering target"}
+          </div>
           <div className="mt-1 text-3xl font-semibold">{percent}%</div>
           <div
             className="mt-3 h-3 overflow-hidden rounded-full bg-white/10"
