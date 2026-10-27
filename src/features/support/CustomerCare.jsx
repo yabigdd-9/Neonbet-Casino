@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { MessageCircle, Send, X } from "lucide-react";
 import { contact } from "../../config/contact";
 
@@ -21,10 +21,19 @@ function reply(message) {
 
 export default function CustomerCare() {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef(null);
+  const inputRef = useRef(null);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([
     { role: "support", text: "Hi! I'm NeonBet's automated assistant. How can I help today?" },
   ]);
+  useEffect(() => {
+    if (open) inputRef.current?.focus();
+  }, [open]);
+  function close() {
+    setOpen(false);
+    triggerRef.current?.focus();
+  }
   function send(event) {
     event.preventDefault();
     const text = input.trim();
@@ -33,7 +42,15 @@ export default function CustomerCare() {
     setInput("");
   }
   return (
-    <div className="fixed bottom-20 right-4 z-40 sm:bottom-5">
+    <div
+      className="fixed bottom-20 right-4 z-40 sm:bottom-5"
+      onKeyDown={(event) => {
+        if (open && event.key === "Escape") {
+          event.stopPropagation();
+          close();
+        }
+      }}
+    >
       {open && (
         <section
           aria-label="NeonBet Customer Care"
@@ -44,7 +61,7 @@ export default function CustomerCare() {
               <h2 className="font-bold">NeonBet Customer Care</h2>
               <p className="text-xs text-slate-400">Automated assistant</p>
             </div>
-            <button type="button" onClick={() => setOpen(false)} aria-label="Close customer care">
+            <button type="button" onClick={close} aria-label="Close customer care">
               <X size={20} />
             </button>
           </header>
@@ -73,6 +90,7 @@ export default function CustomerCare() {
           </div>
           <form onSubmit={send} className="flex gap-2 border-t border-white/10 p-3">
             <input
+              ref={inputRef}
               aria-label="Your message"
               maxLength={1000}
               value={input}
@@ -91,9 +109,10 @@ export default function CustomerCare() {
         </section>
       )}
       <button
+        ref={triggerRef}
         type="button"
         aria-expanded={open}
-        onClick={() => setOpen(!open)}
+        onClick={() => (open ? close() : setOpen(true))}
         className="ml-auto flex items-center gap-2 rounded-full bg-cyan-400 px-5 py-3 font-bold text-slate-950 shadow-lg"
       >
         <MessageCircle size={20} /> Customer Care
