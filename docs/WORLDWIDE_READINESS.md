@@ -6,6 +6,8 @@ Status: preparation only. No real-money markets are approved or enabled. The bro
 
 The readiness module's `authorizeRealMoney` always denies registration, play, deposit and withdrawal for every input. It is not wired to a deployed endpoint, so it must not be represented as production geolocation or an access-control system. Before launch, enforce independent, server-side deny-by-default checks at every money-bearing endpoint, using trusted location evidence, account identity, licence coverage, provider availability and reviewed market records. Treat absent, conflicting or stale evidence as denial. Do not rely on a browser-provided country or this static inventory alone.
 
+`server/syntheticReconciliation.ts` is a local, in-memory exercise for synthetic records. It reports duplicate, missing, unexpected, mismatched, unconfirmed and malformed entries. It does not fetch chain or provider data, establish ownership or confirmations, persist results, reconcile a ledger, or authorize a credit or payout.
+
 ## Operator verification
 
 The operator name, Curaçao licence number, approved domain, player markets and provider identities have not been supplied or verified. Obtain these from the operator and check the [Curaçao Gaming Authority licence information](https://portal.gamingcontrolcuracao.org/page/online-gaming-info) and [licence register](https://cert.cga.cw/) directly. Record the licence, operator, domain, scope, verification date, reviewer and evidence in a restricted operational system; investigate expiry or discrepancies. Do not create or display a seal without regulator authorization.
