@@ -1,12 +1,25 @@
 // Promotions + terms/policy sections.
-import React from "react";
+import React, { useState } from "react";
 import { Gift, Flame, Trophy, MessageCircle } from "lucide-react";
 import { promos, terms, policyPages } from "../../data/promotions";
 import { contact } from "../../config/contact";
 
 const ICONS = { Gift, Flame, Trophy };
 
-export function PromotionsSection() {
+export function PromotionsSection({ onClaimDaily }) {
+  const [claimMessage, setClaimMessage] = useState("");
+  function claim() {
+    const result = onClaimDaily();
+    setClaimMessage(
+      result === "claimed"
+        ? "5 demo credits added for this session."
+        : result === "claimed-weekend"
+          ? "10 weekend demo credits added for this session."
+          : result === "already-claimed"
+            ? "Already claimed today. Try again after 00:00 UTC."
+            : "Could not save your claim. Enable browser storage and try again.",
+    );
+  }
   return (
     <section id="promotions" className="grid scroll-mt-24 gap-5 lg:grid-cols-3">
       {promos.map(({ title, detail, icon }) => {
@@ -18,6 +31,23 @@ export function PromotionsSection() {
             </div>
             <h3 className="text-xl font-semibold">{title}</h3>
             <p className="mt-2 text-slate-400">{detail}</p>
+            {title === "Daily Rewards" && (
+              <>
+                <button
+                  type="button"
+                  onClick={claim}
+                  className="mt-4 rounded-xl bg-cyan-400 px-4 py-3 font-semibold text-slate-950"
+                >
+                  Claim daily demo credits
+                </button>
+                <p className="mt-2 text-xs text-slate-400">
+                  Once per browser per UTC day. Demo balance resets on refresh; no cash value.
+                </p>
+                <p role="status" className="mt-2 text-sm text-cyan-200">
+                  {claimMessage}
+                </p>
+              </>
+            )}
           </div>
         );
       })}

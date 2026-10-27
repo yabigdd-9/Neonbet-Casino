@@ -2,6 +2,27 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdirSync, writeFileSync } from "node:fs";
 const widths = [360, 390, 768, 1440];
+test("daily demo reward credits the wallet once per day", async ({ page }) => {
+  await page.goto("./");
+  const claim = page.getByRole("button", { name: "Claim daily demo credits" });
+  await claim.click();
+  await expect(page.getByText(/demo credits added for this session/)).toBeVisible();
+  await claim.click();
+  await expect(page.getByText(/Already claimed today/)).toBeVisible();
+});
+test("new arcade games settle a simulated round", async ({ page }) => {
+  await page.goto("./");
+  for (const title of ["Neon Coin Flip", "Lucky Wheel"]) {
+    await page.getByRole("button", { name: `Play ${title}`, exact: true }).click();
+    const dialog = page.getByRole("dialog", { name: title });
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", { name: "Play $0.50", exact: true }).click();
+    await expect(dialog.getByRole("button", { name: "Play $0.50", exact: true })).toBeEnabled();
+    await expect(dialog.getByRole("status")).not.toContainText("Ready");
+    await page.keyboard.press("Escape");
+    await expect(dialog).toHaveCount(0);
+  }
+});
 for (const width of widths) {
   test(`lobby, search, modal and layout at ${width}px`, async ({ page }, info) => {
     await page.setViewportSize({ width, height: 900 });

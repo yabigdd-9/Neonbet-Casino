@@ -393,7 +393,7 @@ function AppContent() {
           />
         )}
 
-        {features.promotions && <PromotionsSection />}
+        {features.promotions && <PromotionsSection onClaimDaily={wallet.claimDaily} />}
 
         <VIPSection />
 

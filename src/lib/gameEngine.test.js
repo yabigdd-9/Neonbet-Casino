@@ -151,6 +151,21 @@ describe("static exports", () => {
 });
 
 import { evaluateReels } from "./gameEngine";
+import { playArcade } from "./gameEngine";
+it("scores coin outcomes and every wheel segment as displayed", () => {
+  expect(playArcade("coin-flip", 2, () => 0.49)).toMatchObject({
+    title: "Heads",
+    multiplier: 2,
+    visual: [1],
+  });
+  expect(playArcade("coin-flip", 2, () => 0.5)).toMatchObject({ title: "Tails", multiplier: 0, visual: [0] });
+  [0, 0.5, 1, 2, 3, 5].forEach((multiplier, index) => {
+    expect(playArcade("lucky-wheel", 2, () => (index + 0.5) / 6)).toMatchObject({
+      multiplier,
+      visual: [index],
+    });
+  });
+});
 it("scores the symbols actually shown, including incidental higher matches", () => {
   expect(evaluateReels(["7", "7", "7", "7", "7"]).multiplier).toBe(50);
   expect(evaluateReels(["🍒", "🍒", "🍒", "🍒", "🍒"]).multiplier).toBe(20);
