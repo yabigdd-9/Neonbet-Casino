@@ -4,6 +4,7 @@ import Sidebar from "../components/layout/Sidebar";
 import Header from "../components/layout/Header";
 import MobileNav from "../components/layout/MobileNav";
 import Footer from "../components/layout/Footer";
+import CustomerCare from "../features/support/CustomerCare";
 import Modal from "../components/ui/Modal";
 
 import Hero from "../features/casino/Hero";
@@ -402,6 +403,7 @@ function AppContent() {
       </main>
 
       <MobileNav user={user} onOpenAuth={openAuth} />
+      <CustomerCare />
 
       {policyPage && (
         <Modal title={policyPage.title} eyebrow={policyPage.eyebrow} onClose={() => setPolicyPage(null)}>
