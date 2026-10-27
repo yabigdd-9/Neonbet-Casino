@@ -53,6 +53,12 @@ export default function VerificationPanel({
       <div className="relative overflow-hidden rounded-[2rem] border border-cyan-300/20 bg-gradient-to-br from-slate-900 via-slate-950 to-cyan-950/70 p-6 md:p-8">
         <div className="absolute -right-24 top-10 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
         <div className="relative">
+          <p
+            role="status"
+            className="mb-5 rounded-2xl border border-amber-300/30 bg-amber-400/10 p-4 text-sm text-amber-100"
+          >
+            Real-money deposits are not available. Do not send cryptocurrency for this demo.
+          </p>
           <div className="flex flex-wrap items-center gap-3 text-cyan-200">
             <ShieldCheck />{" "}
             <span className="text-sm font-semibold uppercase tracking-[0.2em]">
@@ -66,9 +72,8 @@ export default function VerificationPanel({
                 <span className="text-cyan-300">${verificationConfig.feeUsd} USD</span>.
               </h2>
               <p className="mt-4 max-w-2xl text-slate-300">
-                Send crypto to the listed wallet, then message your Telegram or WhatsApp username with the
-                transaction hash. A team member confirms the payment manually before marking the account
-                verified.
+                This section demonstrates manual account verification. Payment instructions and real-money
+                deposits are not active.
               </p>
             </div>
             <div className="rounded-3xl border border-white/10 bg-black/25 p-5 text-center">
@@ -180,11 +185,6 @@ export default function VerificationPanel({
                 </div>
                 <h3 className="mt-2 text-2xl font-semibold">Payment details</h3>
               </div>
-              <img
-                src={selectedMethod.qrCodeSrc}
-                alt={`${selectedMethod.name} ${selectedMethod.network} verification QR code`}
-                className="h-20 w-20 rounded-2xl border border-white/10 bg-white p-1"
-              />
             </div>
 
             <div className="mt-6 space-y-4">

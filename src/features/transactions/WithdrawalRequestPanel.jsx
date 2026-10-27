@@ -5,6 +5,7 @@ import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import StatusBadge from "../../components/ui/StatusBadge";
+import { IS_SUPABASE } from "../../config/appMode";
 
 export default function WithdrawalRequestPanel({
   user,
@@ -51,6 +52,9 @@ export default function WithdrawalRequestPanel({
             Submit a manual request after verification and rollover review. Admin approval is required before
             any payout.
           </p>
+          {!IS_SUPABASE && (
+            <p className="mt-2 text-sm text-cyan-200">Demo request only. No cryptocurrency is sent.</p>
+          )}
         </div>
         {latestWithdrawal && (
           <StatusBadge status={latestWithdrawal.status} label={`Latest: ${latestWithdrawal.status}`} />

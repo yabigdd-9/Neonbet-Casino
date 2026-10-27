@@ -2,6 +2,14 @@
 
 The delivered scope is disabled adapter contracts and a local synthetic harness. No provider, launch country or licensed operator has been selected. These decisions must be made before implementing a live adapter.
 
+## Manual crypto preparation
+
+The screenshots supplied by the operator are reference material, not verified configuration. Do not copy their addresses into a build or accept funds until an authorized operator independently verifies the exact asset, network, destination, custody arrangements and acceptance criteria with the destination wallet or exchange. The server-only `depositDirectory` validator accepts synthetic records with an operator verification record, but it cannot prove that verification occurred or that an address belongs to the operator. It is not connected to the frontend or a database. Verification QR placeholders are not displayed; a future implementation must generate each QR from its exact verified address and test the decoded payload.
+
+The existing $75 account verification submission is not a deposit or account credit. Existing withdrawal requests do not transfer funds and are not backed by a money ledger. The demo account balance is simulated. No live payment flow is enabled by this preparation.
+
+Before accepting live deposits or paying withdrawals, implement authenticated operator review, ownership policies, unique network-specific transaction references, durable immutable audit events, and withdrawal payout references. Build a transactional ledger with idempotent postings and separate available and reserved balances; reconcile each deposit and payout to independently verified chain or provider records and investigate unmatched, duplicate, reversed or under-confirmed transactions. Test concurrent operations and recovery before any production use. These components are not yet implemented.
+
 ## Product and provider decisions
 
 - [ ] Identify the operator, target countries, permitted users and approval owner.
