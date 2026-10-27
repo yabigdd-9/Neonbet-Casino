@@ -1,6 +1,15 @@
 # Integration activation checklist
 
-The delivered scope is disabled adapter contracts and a local synthetic harness. No provider, launch country or licensed operator has been selected. These decisions must be made before implementing a live adapter.
+The user selected SOFTSWISS as the provider candidate. No contract, sandbox access, payment/custody arrangement, launch country or licensed operator has been verified. The server-side candidate placeholder advertises no enabled capabilities and makes no network calls; the existing synthetic provider is not SOFTSWISS. No live adapter is implemented.
+
+## SOFTSWISS onboarding
+
+- [ ] Confirm whether the operator needs the Casino Platform, the standalone Game Aggregator, or both; review integration ownership, pricing, supported markets and the existing site's compatibility.
+- [ ] Verify the operator, licence, approved domain and each target market. SOFTSWISS's own approvals or supplier certifications do not establish an operator licence.
+- [ ] Obtain the contracted API documentation, sandbox access and written specifications directly from SOFTSWISS. Its [Game Aggregator page](https://www.softswiss.com/game-aggregator/) says documentation is supplied during onboarding and the operator develops the integration.
+- [ ] Confirm game launch and wallet ownership, API authentication and callbacks, idempotency, game settlement, retries, reconciliation, supported currencies and markets, and how bonuses and wagering requirements are implemented.
+- [ ] Confirm which provider actually handles crypto payments and custody, supported assets/networks, compliance responsibilities, withdrawal procedures, verification and settlement. Do not infer that the aggregator itself supplies crypto custody.
+- [ ] Keep credentials server-side in a secret manager; never place keys, callback secrets or private keys in Vite variables or browser assets. Run synthetic and approved sandbox tests before any activation decision.
 
 ## Manual crypto preparation
 
