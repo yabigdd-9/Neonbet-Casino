@@ -1,4 +1,5 @@
 import React from "react";
+import { reportClientError } from "../../lib/diagnostics";
 
 // Keep runtime failures from exposing exception details or leaving a blank page.
 export default class ErrorBoundary extends React.Component {
@@ -6,6 +7,10 @@ export default class ErrorBoundary extends React.Component {
 
   static getDerivedStateFromError() {
     return { failed: true };
+  }
+
+  componentDidCatch() {
+    reportClientError("render_error");
   }
 
   render() {
