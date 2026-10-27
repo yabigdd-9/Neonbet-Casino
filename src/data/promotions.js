@@ -1,15 +1,18 @@
 // Promotion content (configurable, not embedded in component logic).
 export const promos = [
   {
-    title: "Free $100 Sign-Up Bonus",
-    detail:
-      "New accounts can claim $100 plus a 300% welcome match after verification. Bonus funds require 10x rollover.",
+    title: "100 Demo Credits",
+    detail: "Start each browser session with 100 simulated credits. No sign-up or payment required.",
     icon: "Gift",
   },
-  { title: "Daily Rewards", detail: "Fresh drops, missions and member rewards every day", icon: "Flame" },
   {
-    title: "VIP Club",
-    detail: "Level up with missions, rewards and exclusive account perks",
+    title: "Daily Rewards",
+    detail: "Claim 5 simulated credits each UTC day, or 10 on weekends.",
+    icon: "Flame",
+  },
+  {
+    title: "Weekend Boost",
+    detail: "The daily demo reward doubles to 10 credits on Saturday and Sunday UTC.",
     icon: "Trophy",
   },
 ];

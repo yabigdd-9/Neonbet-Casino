@@ -2,6 +2,14 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdirSync, writeFileSync } from "node:fs";
 const widths = [360, 390, 768, 1440];
+test("daily demo reward credits the wallet once per day", async ({ page }) => {
+  await page.goto("./");
+  const claim = page.getByRole("button", { name: "Claim daily demo credits" });
+  await claim.click();
+  await expect(page.getByText(/demo credits added for this session/)).toBeVisible();
+  await claim.click();
+  await expect(page.getByText(/Already claimed today/)).toBeVisible();
+});
 test("new arcade games settle a simulated round", async ({ page }) => {
   await page.goto("./");
   for (const title of ["Neon Coin Flip", "Lucky Wheel"]) {
