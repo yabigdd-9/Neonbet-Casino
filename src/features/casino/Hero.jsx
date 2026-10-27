@@ -40,7 +40,7 @@ export default function Hero({ onClaim, onOpenGame }) {
             </button>
           </div>
           <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {[["$100", "Sign-up bonus"], ["10x", "Bonus rollover"], ["24+", "Slot providers"], ["$75", "Verification"]].map(([value, label]) => (
+            {[["$100", "Sign-up bonus"], ["10x", "Bonus rollover"], ["24+", "Slot providers"], ["$50", "Verification"]].map(([value, label]) => (
               <div key={label} className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
                 <div className="text-xl font-black text-white">{value}</div>
                 <div className="text-xs text-slate-400">{label}</div>

@@ -3,7 +3,7 @@
 // Buyers replace VERIFICATION_* values (or the public QR assets) before distribution.
 
 export const verificationConfig = {
-  feeUsd: 75,
+  feeUsd: 50,
   referenceFormat: "@TelegramOrWhatsAppUsername + transaction hash",
   contactMethods: ["Telegram", "WhatsApp"],
   // Empty by default for sale builds. Operators paste their own support links via VITE_ env
@@ -13,42 +13,15 @@ export const verificationConfig = {
     whatsapp: "",
   },
   acceptedCrypto: [
-    {
-      name: "USDT",
-      network: "BSC",
-      label: "USDT BSC wallet",
-      address: "",
-      qrCodeSrc: "/verification/usdt-bsc.svg",
-      notice: "Send USDT on BSC / BEP20 only",
-      note: "Use the BSC / BEP20 network only",
-    },
-    {
-      name: "BTC",
-      network: "BTC",
-      label: "BTC wallet",
-      address: "",
-      qrCodeSrc: "/verification/btc.svg",
-      notice: "Send BTC on the Bitcoin network only",
-      note: "Do not send tokens or smart-contract deposits",
-    },
-    {
-      name: "ETH",
-      network: "ETH",
-      label: "ETH wallet",
-      address: "",
-      qrCodeSrc: "/verification/eth.svg",
-      notice: "Send ETH on the Ethereum network only",
-      note: "Do not send NFTs to this address",
-    },
-    {
-      name: "BNB",
-      network: "BSC",
-      label: "BNB BSC wallet",
-      address: "",
-      qrCodeSrc: "/verification/bnb-bsc.svg",
-      notice: "Send BNB on BSC / BEP20 only",
-      note: "Understanding network rules prevents loss.",
-    },
+    { name: "BTC", network: "Bitcoin", label: "BTC deposit address", address: import.meta.env.VITE_BTC_BITCOIN_ADDRESS || "", notice: "Send BTC on Bitcoin only" },
+    { name: "ETH", network: "Ethereum (ERC20)", label: "ETH deposit address", address: import.meta.env.VITE_ETH_ERC20_ADDRESS || "", notice: "Send ETH on Ethereum only" },
+    { name: "USDT", network: "BSC (BEP20)", label: "USDT deposit address", address: import.meta.env.VITE_USDT_BSC_ADDRESS || "", notice: "Send USDT on BNB Smart Chain only" },
+    { name: "USDT", network: "Tron (TRC20)", label: "USDT deposit address", address: import.meta.env.VITE_USDT_TRON_ADDRESS || "", notice: "Send USDT on Tron only" },
+    { name: "USDT", network: "Ethereum (ERC20)", label: "USDT deposit address", address: import.meta.env.VITE_USDT_ETH_ADDRESS || "", notice: "Send USDT on Ethereum only" },
+    { name: "USDT", network: "Solana", label: "USDT deposit address", address: import.meta.env.VITE_USDT_SOL_ADDRESS || "", notice: "Send USDT on Solana only" },
+    { name: "SOL", network: "Solana", label: "SOL deposit address", address: import.meta.env.VITE_SOL_SOLANA_ADDRESS || "", notice: "Send SOL on Solana only" },
+    { name: "TRX", network: "Tron", label: "TRX deposit address", address: import.meta.env.VITE_TRX_TRON_ADDRESS || "", notice: "Send TRX on Tron only" },
+    { name: "BNB", network: "BSC (BEP20)", label: "BNB deposit address", address: import.meta.env.VITE_BNB_BSC_ADDRESS || "", notice: "Send BNB on BNB Smart Chain only" },
   ],
 };
 

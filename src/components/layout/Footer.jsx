@@ -16,7 +16,7 @@ export default function Footer({ onOpenPolicy }) {
         </div>
         <div>
           <div className="font-black uppercase tracking-[0.18em] text-slate-300">Payments</div>
-          <p className="mt-2">The $75 crypto verification fee is reviewed manually and is not an instant deposit, wagering balance, withdrawal approval, casino credit, or automated payment confirmation.</p>
+          <p className="mt-2">The $50 crypto verification fee is reviewed manually and is not an instant deposit, wagering balance, withdrawal approval, casino credit, or automated payment confirmation.</p>
         </div>
       </div>
       <div className="mt-5 border-t border-white/10 pt-5 text-center">NeonBet bonuses, provider availability, verification, account access, and game access are subject to account approval, local rules, and published terms.</div>
