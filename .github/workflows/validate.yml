@@ -1,6 +1,7 @@
 name: Validate changes
 
 on:
+  workflow_call:
   pull_request:
   push:
     branches: ["main"]
@@ -9,13 +10,13 @@ permissions:
   contents: read
 
 concurrency:
-  group: validate-${{ github.ref }}
+  group: validate-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,7 +29,26 @@ jobs:
         run: npm ci --ignore-scripts
       - name: Secret scan
         run: npm run secret-scan
-      - name: Unit and database security tests
-        run: npm test
+      - name: Lint, typecheck, formatting and unit/database tests
+        run: |
+          npm run lint
+          npm run typecheck
+          npm run format:check
+          npm test
       - name: Build
-        run: npm run build
+        run: |
+          npm run build:e2e
+          npm run bundle:check
+      - name: Install test browsers
+        run: npx playwright install --with-deps chromium webkit
+      - name: Browser smoke and accessibility tests
+        run: npm run test:e2e
+      - name: Save verification artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-${{ github.run_id }}-${{ github.job }}
+          path: |
+            test-results/
+            docs/screenshots/
+            dist/bundle-report.json

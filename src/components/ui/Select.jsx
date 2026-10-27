@@ -4,7 +4,8 @@ import React, { useId } from "react";
 export default function Select({ label, error, id, className = "", children, ...props }) {
   const generatedId = useId();
   const inputId = id || generatedId;
-  const description = [props["aria-describedby"], error ? `${inputId}-error` : null].filter(Boolean).join(" ") || undefined;
+  const description =
+    [props["aria-describedby"], error ? `${inputId}-error` : null].filter(Boolean).join(" ") || undefined;
   return (
     <label className="block" htmlFor={inputId}>
       {label && <span className="text-sm font-bold text-slate-300">{label}</span>}
@@ -17,7 +18,14 @@ export default function Select({ label, error, id, className = "", children, ...
       >
         {children}
       </select>
-      {error && <p id={`${inputId}-error`} className="mt-2 rounded-xl border border-rose-300/20 bg-rose-400/10 p-2 text-sm text-rose-100">{error}</p>}
+      {error && (
+        <p
+          id={`${inputId}-error`}
+          className="mt-2 rounded-xl border border-rose-300/20 bg-rose-400/10 p-2 text-sm text-rose-100"
+        >
+          {error}
+        </p>
+      )}
     </label>
   );
 }

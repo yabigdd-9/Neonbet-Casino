@@ -1,59 +1,61 @@
-// App header. Supports brand, nav, balance, account/verification state, mobile drawer.
 import React from "react";
-import { Menu, Search, Wallet, Bell, Play } from "lucide-react";
-import Button from "../../components/ui/Button";
+import { Menu, Search } from "lucide-react";
+import Button from "../ui/Button";
 import { brand } from "../../config/brand";
-import { features } from "../../config/features";
-import GameSearch from "../../features/casino/GameSearch";
-
-export default function Header({ setOpen, balance, user, onOpenAuth, onLogout, onSearch }) {
+import { scrollToSection } from "../../lib/navigation";
+export default function Header({ setOpen, balance, user, onOpenAuth, onLogout }) {
   return (
-    <header className="sticky top-0 z-20 border-b border-white/10 bg-slate-950/70 backdrop-blur-xl">
-      <div className="flex items-center gap-4 px-4 py-4 md:px-8 lg:ml-72">
-        <button onClick={() => setOpen(true)} className="rounded-xl bg-white/10 p-2 lg:hidden" aria-label="Open menu">
-          <Menu />
-        </button>
-
+    <header className="sticky top-0 z-20 border-b border-white/10 bg-[#080f1e]/95 backdrop-blur-md lg:ml-64">
+      <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-2 px-4 py-3 md:gap-4 md:px-8">
         <button
-          onClick={() => document.getElementById("lobby")?.scrollIntoView({ behavior: "smooth", block: "start" })}
-          className="flex items-center gap-3"
-          aria-label={`${brand.name} home`}
+          type="button"
+          onClick={() => setOpen(true)}
+          className="icon-button lg:hidden"
+          aria-label="Open menu"
         >
-          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-cyan-400 font-black text-slate-950 shadow-neon">{brand.shortName}</div>
-          <div className="hidden text-left sm:block">
-            <div className="font-black leading-tight tracking-tight">{brand.name}</div>
-            <div className="text-xs text-cyan-300">{brand.tagline}</div>
-          </div>
+          <Menu size={20} />
         </button>
-
-        {features.casinoProviders && (
-          <div className="ml-2 hidden flex-1 md:flex">
-            <GameSearch onResult={onSearch} className="max-w-xl" />
-          </div>
-        )}
-
+        <a href="#lobby" className="text-lg font-bold lg:hidden">
+          {brand.name}
+        </a>
+        <span className="hidden text-sm text-slate-400 lg:block">Your daily dose of discovery</span>
         <div className="ml-auto flex items-center gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            className="hidden sm:flex"
-            onClick={() => document.getElementById("featured-games")?.scrollIntoView({ behavior: "smooth" })}
+          <button
+            type="button"
+            className="icon-button hidden sm:flex"
+            aria-label="Search catalogue"
+            onClick={() => scrollToSection("providers", true)}
           >
-            <Wallet size={18} /> {`$${Number(balance).toFixed(2)}`}
-          </Button>
-          <button className="rounded-2xl bg-white/10 p-3 hover:bg-white/15" aria-label="Notifications"><Bell size={18} /></button>
+            <Search size={18} />
+          </button>
+          <span className="hidden rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-400 sm:block">
+            Demo <span className="ml-2 tabular-nums font-semibold text-white">{balance.toFixed(2)}</span>
+          </span>
           {user ? (
             <>
-              <span className="hidden rounded-2xl bg-white/10 px-4 py-3 font-bold md:block">{user.username}</span>
-              <Button variant="secondary" size="sm" onClick={onLogout}>Logout</Button>
+              <span className="hidden max-w-32 truncate text-sm md:block">{user.username}</span>
+              <Button variant="secondary" size="sm" onClick={onLogout}>
+                Logout
+              </Button>
             </>
           ) : (
             <>
-              <Button variant="secondary" size="sm" onClick={() => onOpenAuth("login")}>Login</Button>
-              <Button variant="primary" size="sm" onClick={() => onOpenAuth("register")}>Register</Button>
+              <Button variant="secondary" size="sm" onClick={() => onOpenAuth("login")}>
+                Login
+              </Button>
+              <Button size="sm" onClick={() => onOpenAuth("register")}>
+                Register
+              </Button>
             </>
           )}
         </div>
+      </div>
+      <div
+        className="border-t border-white/5 px-4 py-1.5 text-center text-[11px] text-slate-400 sm:hidden"
+        role="status"
+      >
+        Demo balance <span className="tabular-nums text-cyan-200">{balance.toFixed(2)}</span> · Simulated
+        credits only
       </div>
     </header>
   );

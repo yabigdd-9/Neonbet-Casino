@@ -24,11 +24,18 @@ export default function AdminReviewModal({ item, type, status, onClose, onSubmit
         <div className="mt-5 rounded-3xl border border-white/10 bg-black/20 p-4">
           <div className="text-sm text-slate-400">{type === "withdrawal" ? "Request" : "Transaction"}</div>
           <div className="mt-2 break-all font-mono text-sm text-white">
-            {type === "withdrawal" ? `${formatMoney(Number(item.amount_usd))} ${item.payout_method} ${item.payout_address}` : item.tx_hash}
+            {type === "withdrawal"
+              ? `${formatMoney(Number(item.amount_usd))} ${item.payout_method} ${item.payout_address}`
+              : item.tx_hash}
           </div>
         </div>
         <div className="mt-4">
-          <Textarea label="Admin note" value={adminNotes} onChange={(e) => setAdminNotes(e.target.value)} placeholder="Add review notes" />
+          <Textarea
+            label="Admin note"
+            value={adminNotes}
+            onChange={(e) => setAdminNotes(e.target.value)}
+            placeholder="Add review notes"
+          />
         </div>
         <Button type="submit" variant="primary" disabled={saving} className="mt-4 w-full">
           {saving ? "Saving..." : "Save review"}

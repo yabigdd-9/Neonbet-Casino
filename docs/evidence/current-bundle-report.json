@@ -1,0 +1,19 @@
+{
+  "baselineCommit": "9717a96b8353993d1c30046247aff7cad0536659",
+  "baselineGzipBytes": 137999,
+  "initialGzipBytes": 90829,
+  "reductionPercent": 34.18,
+  "files": [
+    "assets/index-CLZFi4Rl.js",
+    "assets/jsx-runtime-Btb1Lqfl.js",
+    "assets/Modal-qcMvmBPm.js",
+    "assets/auth.service-CNu1nnK5.js",
+    "assets/gameEngine-BJ-xyxE9.js",
+    "assets/star-szEoJAau.js",
+    "assets/Button-BjPpE01I.js",
+    "assets/status-DfTzq0oR.js",
+    "assets/Select-BQ-bbsZl.js",
+    "assets/storage-CTTvFLeu.js",
+    "assets/Input-CJOZVoVD.js"
+  ]
+}

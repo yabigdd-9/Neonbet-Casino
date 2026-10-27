@@ -18,7 +18,7 @@ schema for security-definer helpers. Apply it to a Supabase project before enabl
 - **Constraints:** text-length checks, `bonus_balance/rollover_* >= 0`.
 - **Indexes:** `role`, `verification_status`, `created_at desc`.
 - **Trigger:** `set_updated_at` before update.
-- **RLS:** select own or admin; update own contact fields (admin update via RPC).
+- **RLS:** select own or admin; no direct client updates (admin update via RPC).
 
 ### `public.verification_submissions`
 - **Primary key:** `id uuid` default `gen_random_uuid()`.
@@ -43,7 +43,7 @@ schema for security-definer helpers. Apply it to a Supabase project before enabl
 - `private.is_admin()` — `true` if the calling `auth.uid()` has `role = 'admin'`.
 - `public.review_verification_submission(p_submission_id, p_status, p_admin_notes)` — sets
   submission + profile status; raises `42501` unless admin; rejects invalid status.
-- `public.review_withdrawal_request(p_withdrawal_id, p_status, p_admin_notes)` — same shape.
+- `public.review_withdrawal_request(p_withdrawal_id, p_status, p_admin_notes)` — locks the request and enforces pending → approved/rejected, approved → paid; terminal rows cannot reopen.
 - `public.update_profile_admin(p_profile_id, p_bonus_balance, p_rollover_progress,
   p_rollover_required, p_admin_notes)` — validates non-negative numbers; raises `42501` unless
   admin.
@@ -69,3 +69,7 @@ There is no self-serve admin path. After the first account exists:
 ```sql
 update public.profiles set role = 'admin' where email = 'you@example.com';
 ```
+
+## Verification boundaries
+
+`npm test` loads the schema twice into isolated PGlite with minimal synthetic auth fixtures, then checks permissions, ownership, denied role escalation, input constraints and review transitions. It does not prove a deployed Supabase project, Auth delivery, extension configuration, or production Data API settings. The existing verification amount remains $75 in both client configuration and insert policy. PostgreSQL numeric(12,2) casts input precision; client validation rejects extra decimals before submission. These manual requests are not a payment ledger.

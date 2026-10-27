@@ -13,7 +13,12 @@ export default function AdminProfileModal({ userProfile, onClose, onSubmit, savi
   if (!userProfile) return null;
 
   return (
-    <Modal title={userProfile.username || userProfile.email} eyebrow="User controls" onClose={onClose} maxWidth="max-w-2xl">
+    <Modal
+      title={userProfile.username || userProfile.email}
+      eyebrow="User controls"
+      onClose={onClose}
+      maxWidth="max-w-2xl"
+    >
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -28,8 +33,20 @@ export default function AdminProfileModal({ userProfile, onClose, onSubmit, savi
       >
         <p className="text-sm text-slate-400">Edit bonus balance, rollover progress, and admin notes.</p>
         <div className="mt-5 grid gap-4 md:grid-cols-3">
-          {[["Bonus balance", bonusBalance, setBonusBalance], ["Rollover progress", rolloverProgress, setRolloverProgress], ["Rollover required", rolloverRequired, setRolloverRequired]].map(([label, value, setter]) => (
-            <Input key={label} label={label} type="number" min="0" step="0.01" value={value} onChange={(e) => setter(e.target.value)} />
+          {[
+            ["Bonus balance", bonusBalance, setBonusBalance],
+            ["Rollover progress", rolloverProgress, setRolloverProgress],
+            ["Rollover required", rolloverRequired, setRolloverRequired],
+          ].map(([label, value, setter]) => (
+            <Input
+              key={label}
+              label={label}
+              type="number"
+              min="0"
+              step="0.01"
+              value={value}
+              onChange={(e) => setter(e.target.value)}
+            />
           ))}
         </div>
         <div className="mt-4">

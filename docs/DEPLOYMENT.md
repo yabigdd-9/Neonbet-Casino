@@ -5,14 +5,14 @@ Supabase mode needs a Supabase project for the optional backend.
 
 ## Prerequisites
 
-- Node.js 18+ and a package manager (`npm` shown).
+- Node.js 24+ and a package manager (`npm` shown).
 - For Supabase mode: a Supabase project + the anon key (service-role key is
   **never** used client-side).
 
 ## Build
 
 ```bash
-npm install
+npm ci --ignore-scripts
 npm run build          # outputs dist/
 npm run preview        # serve the built bundle locally
 ```
@@ -73,3 +73,13 @@ network calls. Safe default for previews and buyer demos.
 - [ ] Buyer set support links (`VITE_TELEGRAM_URL` / `VITE_WHATSAPP_URL`).
 - [ ] README / listing states this is **not** a turnkey regulated gambling
   platform.
+
+## Upgrade verification and release sequence
+
+Run `npm run check` and `npm run format:check`, then `npm run build:e2e` and `npm run test:e2e` after installing the test browsers. For the test mount, preview with `--base=/Neonbet-Casino/`; serving a path-prefixed build under a different preview base produces missing script requests.
+
+The Pages build now depends on the reusable validation workflow, including both browser engines. No production secrets are passed to that validation workflow. The separate deploy build retains the existing optional Supabase variables.
+
+The checked-in SQL change replaces the withdrawal review function and enforces row-locked transitions. Review the schema diff and save the target function definition before applying it to an existing project. Reapplication was tested against isolated PostgreSQL fixtures only. Existing terminal manual requests remain terminal. Rollback requires separately restoring the previous function definition from the target project's backup; it is not performed by the frontend.
+
+This local upgrade does not push, merge, deploy or apply SQL to a live project.

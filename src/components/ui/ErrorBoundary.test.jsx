@@ -16,13 +16,27 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 it("preserves healthy content", () => {
-  act(() => root.render(<ErrorBoundary><p>Content</p></ErrorBoundary>));
+  act(() =>
+    root.render(
+      <ErrorBoundary>
+        <p>Content</p>
+      </ErrorBoundary>,
+    ),
+  );
   expect(host.textContent).toBe("Content");
 });
 it("shows an accessible recovery screen without exception details", () => {
   vi.spyOn(console, "error").mockImplementation(() => {});
-  function Broken() { throw new Error("private internal details"); }
-  act(() => root.render(<ErrorBoundary><Broken /></ErrorBoundary>));
+  function Broken() {
+    throw new Error("private internal details");
+  }
+  act(() =>
+    root.render(
+      <ErrorBoundary>
+        <Broken />
+      </ErrorBoundary>,
+    ),
+  );
   expect(host.querySelector('[role="alert"]')).not.toBeNull();
   expect(host.querySelector("h1").textContent).toBe("This page couldn’t load");
   expect(host.querySelector("button").textContent).toBe("Reload page");
