@@ -71,7 +71,7 @@ export function TermsSection({ onOpenPolicy }) {
           </p>
         </div>
         <div className="rounded-2xl border border-amber-300/20 bg-amber-300/10 px-4 py-3 text-sm font-bold text-amber-100">
-          $100 bonus + 300% match + 10x rollover
+          Simulated credits only · No cash value
         </div>
       </div>
 
@@ -89,8 +89,7 @@ export function TermsSection({ onOpenPolicy }) {
           <MessageCircle size={18} /> Questions or verification proof
         </div>
         <p className="mt-2 text-sm leading-6 text-slate-300">
-          Use Telegram or WhatsApp to send your username, selected asset/network, and transaction hash. Keep
-          screenshots and hashes until verification is complete.
+          Contact support with general questions. Do not send funds or share private keys or recovery phrases.
         </p>
         {contact.telegramUrl && (
           <a

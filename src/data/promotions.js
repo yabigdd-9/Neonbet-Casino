@@ -21,38 +21,31 @@ export const promos = [
 export const terms = [
   {
     title: "Bonus Offer",
-    detail:
-      "Eligible new accounts may receive a $100 sign-up bonus and a 300% welcome match after account review and verification approval.",
+    detail: "The initial balance and daily rewards are simulated credits with no cash value.",
   },
   {
     title: "10x Rollover",
-    detail:
-      "Bonus funds and bonus-linked winnings must be wagered 10 times before they are treated as eligible for withdrawal review.",
+    detail: "Demo credits and simulated winnings cannot be withdrawn.",
   },
   {
     title: "Verification Fee",
-    detail:
-      "The $75 verification payment is reviewed manually. It does not create an instant deposit, automatic approval, casino credit, or guaranteed withdrawal.",
+    detail: "Real-money account verification and payments are not available. Do not send funds.",
   },
   {
     title: "Crypto Networks",
-    detail:
-      "Only send the selected asset on the displayed network. Wrong-network, wrong-asset, NFT, or unsupported smart-contract transfers may be unrecoverable.",
+    detail: "Crypto deposits are not enabled. Do not send cryptocurrency.",
   },
   {
     title: "Proof Required",
-    detail:
-      "After payment, send your Telegram or WhatsApp username plus the transaction hash so verification can be checked against the selected wallet and network.",
+    detail: "No payment is required for the simulated arcade.",
   },
   {
     title: "Account Approval",
-    detail:
-      "Accounts, bonuses, provider access, game access, and verification status may be approved, delayed, limited, or rejected after review.",
+    detail: "Demo accounts are local to the browser and are not real-money accounts.",
   },
   {
     title: "Withdrawals",
-    detail:
-      "Any withdrawal review requires completed verification, completed rollover, matching account details, and compliance with the published account rules.",
+    detail: "Real-money withdrawals are not available.",
   },
   {
     title: "Availability",
@@ -66,18 +59,12 @@ export const policyPages = {
     title: "Terms",
     eyebrow: "Account terms",
     sections: [
-      [
-        "Bonuses",
-        "The $100 sign-up bonus and 300% match are subject to account approval, verification, rollover review, and published limits.",
-      ],
+      ["Bonuses", "Demo credits have no cash value and cannot be withdrawn."],
       [
         "Verification",
-        "The $75 verification fee is reviewed manually and does not create an instant deposit, casino credit, withdrawal approval, or automated payment confirmation.",
+        "Real-money verification and deposits are not available. No payment is required for demo play.",
       ],
-      [
-        "Withdrawals",
-        "Withdrawal requests require admin review, completed verification, matching account details, and completion of any applicable rollover requirement.",
-      ],
+      ["Withdrawals", "Real-money withdrawals are not available."],
       [
         "Game Access",
         "Game access, provider availability, bonus eligibility, and account access can be limited, delayed, or rejected after review.",
