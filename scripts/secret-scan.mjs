@@ -48,7 +48,9 @@ for (const file of files) {
     continue;
   }
   if (content.includes("\0") || /\.(png|jpe?g|webp|zip|pdf)$/.test(file)) continue;
-  const category = detectSecret(content);
+  const allowed =
+    relative(ROOT, file) === "src/config/public-addresses.json" ? ["EVM address", "Bitcoin address"] : [];
+  const category = detectSecret(content, allowed);
   if (category) hits.push({ file: relative(ROOT, file), category });
 }
 

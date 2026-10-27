@@ -9,4 +9,5 @@ export const patterns = [
   ["Private key", /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/],
   ["API key", /sk-[a-zA-Z0-9]{20,}/],
 ];
-export const detectSecret = (content) => patterns.find(([, pattern]) => pattern.test(content))?.[0] || null;
+export const detectSecret = (content, allowed = []) =>
+  patterns.find(([category, pattern]) => !allowed.includes(category) && pattern.test(content))?.[0] || null;
