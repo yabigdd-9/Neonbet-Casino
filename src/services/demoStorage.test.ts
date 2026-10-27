@@ -40,3 +40,9 @@ it("preserves existing withdrawals when reading account storage fails", async ()
   failure.mockRestore();
   expect(await getWithdrawals({ userId, isAdmin: false })).toEqual(existing);
 });
+it("does not overwrite corrupt scoped history with legacy records", async () => {
+  const scopedKey = `neonbetWithdrawalRequests:${userId}`;
+  localStorage.setItem(scopedKey, "{broken");
+  await expect(submitWithdrawal({ userId, request })).rejects.toThrow("Unable to read");
+  expect(localStorage.getItem(scopedKey)).toBe("{broken");
+});

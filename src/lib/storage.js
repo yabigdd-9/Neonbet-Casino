@@ -56,20 +56,25 @@ export const isStoredUser = (value) =>
 export function readUserRecords(key, userId) {
   if (!userId) return [];
   const scopedKey = `${key}:${userId}`;
-  const readRecords = (storageKey) => {
+  const readRecords = (storageKey, preserveInvalid = false) => {
     let raw;
     try {
       raw = window.localStorage.getItem(storageKey);
     } catch {
       throw new Error("Unable to read your saved requests. Enable browser storage and try again.");
     }
+    if (raw === null) return null;
+    let parsed;
     try {
-      return JSON.parse(raw);
+      parsed = JSON.parse(raw);
     } catch {
-      return null;
+      parsed = null;
     }
+    if (!Array.isArray(parsed) && preserveInvalid)
+      throw new Error("Unable to read your saved requests because the stored data is invalid.");
+    return parsed;
   };
-  const scoped = readRecords(scopedKey);
+  const scoped = readRecords(scopedKey, true);
   const valid = (row) =>
     row &&
     typeof row === "object" &&
