@@ -52,3 +52,25 @@ it("uses deterministic injectable arcade engines", () => {
   expect(() => playArcade("unknown")).toThrow();
   expect(() => playArcade("neon-crash", NaN)).toThrow();
 });
+it("awards the daily demo reward only once per UTC day and handles storage failure", () => {
+  localStorage.removeItem("neonbet:daily-demo-reward");
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date("2026-01-01T23:59:59Z"));
+  const wallet = new RoundController();
+  expect(wallet.claimDaily()).toBe("claimed");
+  expect(wallet.claimDaily()).toBe("already-claimed");
+  expect(wallet.getSnapshot().cents).toBe(10500);
+  vi.setSystemTime(new Date("2026-01-02T00:00:00Z"));
+  const fail = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+    throw new Error("unavailable");
+  });
+  expect(wallet.claimDaily()).toBe("storage-error");
+  expect(wallet.getSnapshot().cents).toBe(10500);
+  fail.mockRestore();
+  expect(wallet.claimDaily()).toBe("claimed");
+  expect(wallet.getSnapshot().cents).toBe(11000);
+  vi.setSystemTime(new Date("2026-01-03T00:00:00Z"));
+  expect(wallet.claimDaily()).toBe("claimed-weekend");
+  expect(wallet.getSnapshot().cents).toBe(12000);
+  localStorage.removeItem("neonbet:daily-demo-reward");
+});

@@ -14,6 +14,20 @@ export class RoundController {
     this.snapshot = { ...this.snapshot, ...next };
     this.listeners.forEach((listener) => listener());
   }
+  claimDaily = () => {
+    const now = new Date();
+    const day = now.toISOString().slice(0, 10);
+    const weekend = now.getUTCDay() === 0 || now.getUTCDay() === 6;
+    try {
+      const previous = window.localStorage.getItem("neonbet:daily-demo-reward");
+      if (previous && previous >= day) return "already-claimed";
+      window.localStorage.setItem("neonbet:daily-demo-reward", day);
+    } catch {
+      return "storage-error";
+    }
+    this.publish({ cents: this.snapshot.cents + (weekend ? 1000 : 500) });
+    return weekend ? "claimed-weekend" : "claimed";
+  };
   start = (game, stake, target = 2) => {
     const cents = Math.round(stake * 100);
     if (
