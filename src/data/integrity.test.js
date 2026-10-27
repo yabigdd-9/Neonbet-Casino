@@ -8,8 +8,8 @@ describe("data integrity", () => {
     expect(games.length).toBe(8);
   });
 
-  it("has 3 arcade games with ids", () => {
-    expect(arcadeGames.length).toBe(3);
+  it("has uniquely identified arcade games", () => {
+    expect(new Set(arcadeGames.map((game) => game.id)).size).toBe(arcadeGames.length);
     arcadeGames.forEach((game) => {
       expect(game.id).toBeTruthy();
       expect(game.rule).toBeTruthy();

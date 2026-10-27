@@ -14,12 +14,12 @@ export default function ArcadeGamesSection({ onPlay }) {
           <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">New arcade tables</div>
           <h2 className="mt-2 text-2xl font-semibold md:text-3xl">More Ways to Play</h2>
           <p className="mt-2 max-w-3xl text-slate-400">
-            Three fast browser games now sit beside the slot lobby, all sharing the same simulated balance and
-            bet controls.
+            Five browser games sit beside the slot lobby, all sharing the same simulated balance and bet
+            controls.
           </p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm font-bold text-slate-300">
-          Dice, Plinko and Crash are local demo games only.
+          All arcade games are local demos only.
         </div>
       </div>
       <div className="grid gap-5 lg:grid-cols-3">

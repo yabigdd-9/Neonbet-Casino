@@ -11,6 +11,7 @@ export default function ArcadeGameModal({ game, wallet, onClose }) {
   const [bet, setBet] = useState(0.5);
   const [cashOutTarget, setCashOutTarget] = useState(2);
   const { balance, busy, start } = wallet;
+  const hasResult = wallet.round?.gameId === game?.id;
   const round =
     wallet.round?.gameId === game?.id
       ? wallet.round
@@ -42,6 +43,30 @@ export default function ArcadeGameModal({ game, wallet, onClose }) {
           </div>
 
           <div className="mt-6 rounded-[2rem] border border-white/10 bg-black/30 p-5">
+            {game.id === "coin-flip" && (
+              <div className="grid min-h-52 place-items-center rounded-3xl bg-amber-400/10 text-center">
+                <div>
+                  <div className="text-7xl" aria-hidden="true">
+                    🪙
+                  </div>
+                  <p className="mt-4 text-xl font-semibold">
+                    {busy ? "Flipping…" : hasResult ? (round.visual[0] ? "Heads" : "Tails") : "Ready to flip"}
+                  </p>
+                </div>
+              </div>
+            )}
+            {game.id === "lucky-wheel" && (
+              <div className="grid grid-cols-3 gap-3" aria-label="Wheel segments">
+                {["0x", "0.5x", "1x", "2x", "3x", "5x"].map((label, index) => (
+                  <div
+                    key={label}
+                    className={`rounded-2xl border p-5 text-center text-xl font-semibold ${!busy && hasResult && round.visual[0] === index ? "border-cyan-300 bg-cyan-400/20 text-cyan-200" : "border-white/10 bg-white/5"}`}
+                  >
+                    {label}
+                  </div>
+                ))}
+              </div>
+            )}
             {game.id === "dice-duel" && (
               <div className="grid gap-4 sm:grid-cols-2">
                 {["Your dice", "House dice"].map((label, groupIndex) => (
@@ -194,6 +219,17 @@ export default function ArcadeGameModal({ game, wallet, onClose }) {
                     If the crash point is below target, the round loses.
                   </p>
                 </>
+              )}
+              {game.id === "coin-flip" && (
+                <p className="rounded-2xl bg-black/20 px-3 py-2">
+                  Heads returns 2x; tails returns 0x. Each side is equally likely.
+                </p>
+              )}
+              {game.id === "lucky-wheel" && (
+                <p className="rounded-2xl bg-black/20 px-3 py-2">
+                  Each of the six shown segments is equally likely. Your payout is the segment multiplier
+                  times your stake.
+                </p>
               )}
             </div>
             <p className="mt-4 text-xs leading-5 text-slate-400">

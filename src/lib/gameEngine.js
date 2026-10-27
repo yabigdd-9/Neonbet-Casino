@@ -164,6 +164,26 @@ export default {
 
 export const PLINKO_MULTIPLIERS = [0, 0.4, 0.8, 1.5, 9, 1.5, 0.8, 0.4, 0];
 export function playArcade(id, target = 2, random = Math.random) {
+  if (id === "coin-flip") {
+    const heads = random() < 0.5;
+    return {
+      title: heads ? "Heads" : "Tails",
+      detail: heads ? "Heads pays 2x." : "Tails pays 0x.",
+      multiplier: heads ? 2 : 0,
+      visual: [heads ? 1 : 0],
+    };
+  }
+  if (id === "lucky-wheel") {
+    const payouts = [0, 0.5, 1, 2, 3, 5];
+    const segment = Math.floor(random() * payouts.length);
+    const multiplier = payouts[segment];
+    return {
+      title: "Wheel landed",
+      detail: `Segment ${segment + 1} pays ${multiplier}x.`,
+      multiplier,
+      visual: [segment],
+    };
+  }
   if (id === "dice-duel") {
     const visual = Array.from({ length: 4 }, () => 1 + Math.floor(random() * 6));
     const player = visual[0] + visual[1],

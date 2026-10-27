@@ -27,6 +27,24 @@ export const arcadeGames = [
     gradient: "from-amber-300 via-orange-500 to-rose-700",
     rule: "Cash out before the rocket crashes.",
   },
+  {
+    id: "coin-flip",
+    title: "Neon Coin Flip",
+    type: "Coin game",
+    tag: "New",
+    emoji: "🪙",
+    gradient: "from-yellow-300 via-amber-500 to-orange-800",
+    rule: "Heads pays 2x; tails pays zero.",
+  },
+  {
+    id: "lucky-wheel",
+    title: "Lucky Wheel",
+    type: "Wheel game",
+    tag: "New",
+    emoji: "🎡",
+    gradient: "from-emerald-400 via-teal-600 to-indigo-800",
+    rule: "Spin one of six equal segments for up to 5x.",
+  },
 ];
 
 export default arcadeGames;
