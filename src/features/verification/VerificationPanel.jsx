@@ -62,14 +62,13 @@ export default function VerificationPanel({
           <div className="flex flex-wrap items-center gap-3 text-cyan-200">
             <ShieldCheck />{" "}
             <span className="text-sm font-semibold uppercase tracking-[0.2em]">
-              Manual account verification
+              Demo account verification
             </span>
           </div>
           <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
               <h2 className="text-3xl font-semibold leading-tight md:text-5xl">
-                Verify your account for{" "}
-                <span className="text-cyan-300">${verificationConfig.feeUsd} USD</span>.
+                Explore the <span className="text-cyan-300">demo</span> verification flow.
               </h2>
               <p className="mt-4 max-w-2xl text-slate-300">
                 This section demonstrates manual account verification. Payment instructions and real-money
@@ -77,11 +76,9 @@ export default function VerificationPanel({
               </p>
             </div>
             <div className="rounded-3xl border border-white/10 bg-black/25 p-5 text-center">
-              <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
-                Verification fee
-              </div>
-              <div className="mt-1 text-5xl font-semibold text-white">${verificationConfig.feeUsd}</div>
-              <div className="text-sm text-slate-400">USD equivalent</div>
+              <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Real payment</div>
+              <div className="mt-1 text-3xl font-semibold text-white">Not available</div>
+              <div className="text-sm text-slate-400">No funds required</div>
             </div>
           </div>
 
@@ -91,17 +88,15 @@ export default function VerificationPanel({
                 <Clock3 size={18} /> Manual review
               </div>
               <p className="mt-3 text-sm text-slate-400">
-                Verification is not instant. Confirmation depends on network settlement and manual admin
-                review.
+                This flow demonstrates review states and does not verify a real payment.
               </p>
             </div>
             <div className="rounded-3xl bg-white/[0.06] border border-white/10 p-5">
               <div className="flex items-center gap-2 font-semibold text-cyan-200">
-                <MessageCircle size={18} /> Send proof
+                <MessageCircle size={18} /> Test details
               </div>
               <p className="mt-3 text-sm text-slate-400">
-                Contact via {verificationConfig.contactMethods.join(" or ")} with your username and
-                transaction hash.
+                Use synthetic information only. Do not share transaction details or send funds.
               </p>
             </div>
             <div className="rounded-3xl bg-white/[0.06] border border-white/10 p-5">
@@ -109,8 +104,7 @@ export default function VerificationPanel({
                 <Check size={18} /> Account badge
               </div>
               <p className="mt-3 text-sm text-slate-400">
-                The fee unlocks account verification only. Bonus eligibility is reviewed separately under
-                account terms.
+                Demo status does not grant real-money account verification or cash rewards.
               </p>
             </div>
           </div>
@@ -118,7 +112,7 @@ export default function VerificationPanel({
           {contactLinks.length > 0 ? (
             <div className="mt-7 rounded-3xl border border-white/10 bg-white/[0.06] p-5">
               <div className="mb-4 flex items-center gap-2 font-semibold text-white">
-                <ExternalLink size={18} /> Send verification proof
+                <ExternalLink size={18} /> Contact support
               </div>
               <div className="flex flex-wrap gap-3">
                 {contact.telegramUrl && (
@@ -241,7 +235,7 @@ export default function VerificationPanel({
           className="mt-4 rounded-3xl border border-cyan-300/20 bg-cyan-400/10 p-4"
         >
           <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-200">
-            Submit transaction hash
+            Test transaction hash (synthetic only)
           </div>
           <input
             value={txHash}
