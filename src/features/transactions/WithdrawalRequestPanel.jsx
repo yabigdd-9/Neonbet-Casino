@@ -6,6 +6,7 @@ import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import StatusBadge from "../../components/ui/StatusBadge";
 import { IS_SUPABASE } from "../../config/appMode";
+import { DEMO_TARGET_CENTS, DEMO_WAGER_MULTIPLIER } from "../../config/demoBonus";
 
 export default function WithdrawalRequestPanel({
   user,
@@ -14,13 +15,15 @@ export default function WithdrawalRequestPanel({
   withdrawalSaving,
   onSubmitWithdrawal,
   error,
+  demoWallet,
 }) {
   const [amountUsd, setAmountUsd] = useState("");
   const [payoutMethod, setPayoutMethod] = useState("USDT / BSC");
   const [payoutAddress, setPayoutAddress] = useState("");
   const verified = profile?.verification_status === "verified";
-  const rolloverComplete =
-    Number(profile?.rollover_progress || 0) >= Number(profile?.rollover_required || 1000);
+  const rolloverComplete = IS_SUPABASE
+    ? Number(profile?.rollover_progress || 0) >= Number(profile?.rollover_required ?? 1000)
+    : (demoWallet?.wageredCents || 0) >= DEMO_TARGET_CENTS;
   const canSubmit = user && amountUsd && Number(amountUsd) > 0 && payoutAddress.trim().length >= 10;
 
   async function handleSubmit(event) {
@@ -49,8 +52,9 @@ export default function WithdrawalRequestPanel({
           </div>
           <h2 className="mt-2 text-2xl font-semibold md:text-3xl">Withdrawal Request</h2>
           <p className="mt-2 max-w-3xl text-slate-400">
-            Submit a manual request after verification and rollover review. Admin approval is required before
-            any payout.
+            {IS_SUPABASE
+              ? "Submit a manual request for account review."
+              : "This form demonstrates a withdrawal request. Simulated credits cannot be withdrawn."}
           </p>
           {!IS_SUPABASE && (
             <p className="mt-2 text-sm text-cyan-200">Demo request only. No cryptocurrency is sent.</p>
@@ -74,7 +78,9 @@ export default function WithdrawalRequestPanel({
               </span>
             </div>
             <div className="flex items-center justify-between rounded-2xl bg-white/[0.06] px-4 py-3">
-              <span className="text-slate-300">10x rollover</span>
+              <span className="text-slate-300">
+                {IS_SUPABASE ? "Rollover" : `Simulated ${DEMO_WAGER_MULTIPLIER}× target`}
+              </span>
               <span
                 className={
                   rolloverComplete ? "font-semibold text-emerald-200" : "font-semibold text-amber-200"
@@ -85,8 +91,9 @@ export default function WithdrawalRequestPanel({
             </div>
           </div>
           <p className="mt-4 text-xs leading-5 text-slate-400">
-            Requests can be submitted before final approval, but admin may reject requests that do not meet
-            verification, rollover, or account review rules.
+            {IS_SUPABASE
+              ? "Requests are subject to account review."
+              : "Completing the simulated target does not unlock a cash payout."}
           </p>
         </div>
 

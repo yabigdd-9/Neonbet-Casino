@@ -1,8 +1,8 @@
 // Promotion content (configurable, not embedded in component logic).
 export const promos = [
   {
-    title: "100 Demo Credits",
-    detail: "Start each browser session with 100 simulated credits. No sign-up or payment required.",
+    title: "$50 Simulated Balance",
+    detail: "Start with $50 in simulated credits and a $1,500 (30×) wagering target. No cash value.",
     icon: "Gift",
   },
   {
@@ -21,15 +21,15 @@ export const promos = [
 export const terms = [
   {
     title: "Bonus Offer",
-    detail: "The initial balance and daily rewards are simulated credits with no cash value.",
+    detail: "The $50 starting balance is simulated and has no cash value.",
   },
   {
-    title: "10x Rollover",
-    detail: "Demo credits and simulated winnings cannot be withdrawn.",
+    title: "30× simulated target",
+    detail: "The $1,500 target tracks simulated wagers only and does not unlock cash withdrawals.",
   },
   {
-    title: "Verification Fee",
-    detail: "Real-money account verification and payments are not available. Do not send funds.",
+    title: "Verification",
+    detail: "Real-money verification and payments are not available. Do not send funds.",
   },
   {
     title: "Crypto Networks",
@@ -41,11 +41,12 @@ export const terms = [
   },
   {
     title: "Account Approval",
-    detail: "Demo accounts are local to the browser and are not real-money accounts.",
+    detail:
+      "Accounts, bonuses, provider access, game access, and verification status may be approved, delayed, limited, or rejected after review.",
   },
   {
     title: "Withdrawals",
-    detail: "Real-money withdrawals are not available.",
+    detail: "Simulated balances cannot be withdrawn and have no cash value.",
   },
   {
     title: "Availability",
@@ -59,7 +60,10 @@ export const policyPages = {
     title: "Terms",
     eyebrow: "Account terms",
     sections: [
-      ["Bonuses", "Demo credits have no cash value and cannot be withdrawn."],
+      [
+        "Bonuses",
+        "The simulated $50 starting balance has no cash value. Its 30× target tracks simulated wagering only.",
+      ],
       [
         "Verification",
         "Real-money verification and deposits are not available. No payment is required for demo play.",

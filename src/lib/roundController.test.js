@@ -10,13 +10,15 @@ it("debits and settles once while rejecting overlapping rounds and preserving a 
   vi.spyOn(Math, "random").mockReturnValue(0);
   const wallet = new RoundController();
   expect(wallet.start({ id: "neon-crash" }, 0.25)).toBe(true);
-  expect(wallet.getSnapshot().cents).toBe(9975);
+  expect(wallet.getSnapshot().cents).toBe(4975);
+  expect(wallet.getSnapshot().wageredCents).toBe(25);
   expect(wallet.start({ id: "neon-crash" }, 0.25)).toBe(false);
   vi.runAllTimers();
-  expect(wallet.getSnapshot().cents).toBe(9975);
+  expect(wallet.getSnapshot().cents).toBe(4975);
+  expect(wallet.getSnapshot().wageredCents).toBe(25);
   expect(wallet.getSnapshot().round.stakeCents).toBe(25);
   vi.runAllTimers();
-  expect(wallet.getSnapshot().cents).toBe(9975);
+  expect(wallet.getSnapshot().cents).toBe(4975);
 });
 it("settles after the modal subscriber disconnects", () => {
   vi.useFakeTimers();
@@ -27,14 +29,15 @@ it("settles after the modal subscriber disconnects", () => {
   wallet.start({ title: "Test" }, 0.5);
   closeModal();
   vi.runAllTimers();
-  expect(wallet.getSnapshot().cents).toBe(12450);
+  expect(wallet.getSnapshot().cents).toBe(7450);
   expect(wallet.getSnapshot().busy).toBe(false);
 });
 it("rejects invalid, imprecise, and unaffordable stakes without changing the balance", () => {
   const wallet = new RoundController();
   for (const stake of [-1, 0, NaN, Infinity, 0.001, 101])
     expect(wallet.start({ title: "Test" }, stake)).toBe(false);
-  expect(wallet.getSnapshot().cents).toBe(10000);
+  expect(wallet.getSnapshot().cents).toBe(5000);
+  expect(wallet.getSnapshot().wageredCents).toBe(0);
 });
 it("can reach every advertised Plinko payout tier", () => {
   const lanes = new Set();
@@ -59,18 +62,18 @@ it("awards the daily demo reward only once per UTC day and handles storage failu
   const wallet = new RoundController();
   expect(wallet.claimDaily()).toBe("claimed");
   expect(wallet.claimDaily()).toBe("already-claimed");
-  expect(wallet.getSnapshot().cents).toBe(10500);
+  expect(wallet.getSnapshot().cents).toBe(5500);
   vi.setSystemTime(new Date("2026-01-02T00:00:00Z"));
   const fail = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
     throw new Error("unavailable");
   });
   expect(wallet.claimDaily()).toBe("storage-error");
-  expect(wallet.getSnapshot().cents).toBe(10500);
+  expect(wallet.getSnapshot().cents).toBe(5500);
   fail.mockRestore();
   expect(wallet.claimDaily()).toBe("claimed");
-  expect(wallet.getSnapshot().cents).toBe(11000);
+  expect(wallet.getSnapshot().cents).toBe(6000);
   vi.setSystemTime(new Date("2026-01-03T00:00:00Z"));
   expect(wallet.claimDaily()).toBe("claimed-weekend");
-  expect(wallet.getSnapshot().cents).toBe(12000);
+  expect(wallet.getSnapshot().cents).toBe(7000);
   localStorage.removeItem("neonbet:daily-demo-reward");
 });

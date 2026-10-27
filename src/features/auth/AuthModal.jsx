@@ -112,11 +112,10 @@ export default function AuthModal({
             ))}
           </div>
           <div className="mt-5 rounded-3xl bg-black/25 p-5">
-            <div className="font-semibold text-4xl text-cyan-300">$100</div>
-            <div className="mt-1 font-bold">Sign-up bonus</div>
+            <div className="font-semibold text-4xl text-cyan-300">$50</div>
+            <div className="mt-1 font-bold">Simulated starting balance</div>
             <p className="mt-3 text-sm leading-6 text-slate-400">
-              Register through Telegram or WhatsApp, complete account verification, and clear the 10x rollover
-              requirement.
+              Play with simulated credits and track a 30× wagering target. Credits have no cash value.
             </p>
           </div>
         </div>
@@ -190,7 +189,7 @@ export default function AuthModal({
                 onChange={(e) => setAcceptedTerms(e.target.checked)}
                 className="mt-1 h-4 w-4 accent-cyan-400"
               />
-              I understand the $100 bonus and 300% match require account verification and 10x rollover.
+              I understand that the balance and wagering target are simulated and have no cash value.
             </label>
           )}
 

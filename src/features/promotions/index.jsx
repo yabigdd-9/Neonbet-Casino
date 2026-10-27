@@ -71,7 +71,7 @@ export function TermsSection({ onOpenPolicy }) {
           </p>
         </div>
         <div className="rounded-2xl border border-amber-300/20 bg-amber-300/10 px-4 py-3 text-sm font-bold text-amber-100">
-          Simulated credits only · No cash value
+          $50 simulated · 30× simulated wagering target
         </div>
       </div>
 
@@ -86,7 +86,7 @@ export function TermsSection({ onOpenPolicy }) {
 
       <div className="mt-6 rounded-3xl border border-cyan-300/20 bg-cyan-400/10 p-5">
         <div className="flex items-center gap-2 font-semibold text-cyan-100">
-          <MessageCircle size={18} /> Questions or verification proof
+          <MessageCircle size={18} /> Questions about the demo
         </div>
         <p className="mt-2 text-sm leading-6 text-slate-300">
           Contact support with general questions. Do not send funds or share private keys or recovery phrases.
