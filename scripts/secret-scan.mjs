@@ -59,7 +59,9 @@ for (const file of files) {
   } catch {
     continue;
   }
-  for (const re of PATTERNS) {
+  for (const [index, re] of PATTERNS.entries()) {
+    // Public deposit addresses are intentionally published in this one configuration file.
+    if (relative(ROOT, file) === "src/config/public-addresses.json" && index < 2) continue;
     const m = content.match(re);
     if (m) {
       hits.push({ file: relative(ROOT, file), match: m[0] });
