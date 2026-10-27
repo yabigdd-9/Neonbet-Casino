@@ -3,13 +3,22 @@ import React from "react";
 import StatusBadge from "../../components/ui/StatusBadge";
 import { formatMoney } from "../../lib/storage";
 import { IS_SUPABASE } from "../../config/appMode";
+import type { AccountUser, Profile, Submission } from "../../types/account";
 
-export default function AccountStatusPanel({ user, profile, latestSubmission }) {
+export default function AccountStatusPanel({
+  user,
+  profile,
+  latestSubmission,
+}: {
+  user: AccountUser | null;
+  profile: Profile | null;
+  latestSubmission: Submission | null;
+}) {
   if (!user) return null;
   const status = profile?.verification_status || "not_submitted";
   const progress = Number(profile?.rollover_progress || 0);
-  const required = Number(profile?.rollover_required || 1000);
-  const percent = Math.min(100, Math.round((progress / required) * 100));
+  const required = Number(profile?.rollover_required ?? 1000);
+  const percent = required > 0 ? Math.min(100, Math.max(0, Math.round((progress / required) * 100))) : 100;
 
   return (
     <section
@@ -39,7 +48,14 @@ export default function AccountStatusPanel({ user, profile, latestSubmission }) 
         <div className="rounded-3xl border border-white/10 bg-black/20 p-5">
           <div className="text-sm text-slate-400">Rollover progress</div>
           <div className="mt-1 text-3xl font-semibold">{percent}%</div>
-          <div className="mt-3 h-3 overflow-hidden rounded-full bg-white/10">
+          <div
+            className="mt-3 h-3 overflow-hidden rounded-full bg-white/10"
+            role="progressbar"
+            aria-label="Rollover progress"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={percent}
+          >
             <div className="h-full bg-cyan-400" style={{ width: `${percent}%` }} />
           </div>
           <p className="mt-2 text-xs text-slate-400">
