@@ -1,0 +1,74 @@
+{
+  "navigation": [
+    {
+      "name": "http://127.0.0.1:4173/Neonbet-Casino/",
+      "entryType": "navigation",
+      "startTime": 0,
+      "duration": 595.7999999523163,
+      "initiatorType": "navigation",
+      "deliveryType": "",
+      "nextHopProtocol": "http/1.1",
+      "renderBlockingStatus": "non-blocking",
+      "contentType": "text/html",
+      "contentEncoding": "gzip",
+      "workerStart": 0,
+      "workerRouterEvaluationStart": 0,
+      "workerCacheLookupStart": 0,
+      "workerMatchedSourceType": "",
+      "workerFinalSourceType": "",
+      "redirectStart": 0,
+      "redirectEnd": 0,
+      "fetchStart": 0.2999999523162842,
+      "domainLookupStart": 41.39999985694885,
+      "domainLookupEnd": 41.59999990463257,
+      "connectStart": 41.59999990463257,
+      "secureConnectionStart": 0,
+      "connectEnd": 41.89999985694885,
+      "requestStart": 42,
+      "responseStart": 47.39999985694885,
+      "firstInterimResponseStart": 0,
+      "finalResponseHeadersStart": 47.39999985694885,
+      "responseEnd": 48.200000047683716,
+      "transferSize": 1112,
+      "encodedBodySize": 812,
+      "decodedBodySize": 2927,
+      "responseStatus": 200,
+      "serverTiming": [],
+      "unloadEventStart": 0,
+      "unloadEventEnd": 0,
+      "domInteractive": 70.89999985694885,
+      "domContentLoadedEventStart": 595.5999999046326,
+      "domContentLoadedEventEnd": 595.5999999046326,
+      "domComplete": 595.7999999523163,
+      "loadEventStart": 595.7999999523163,
+      "loadEventEnd": 595.7999999523163,
+      "type": "navigate",
+      "redirectCount": 0,
+      "activationStart": 0,
+      "criticalCHRestart": 0,
+      "notRestoredReasons": null,
+      "confidence": {
+        "randomizedTriggerRate": 0.4994798,
+        "value": "low"
+      }
+    }
+  ],
+  "paints": [
+    {
+      "name": "first-paint",
+      "entryType": "paint",
+      "startTime": 568,
+      "duration": 0,
+      "paintTime": 557.2000000476837,
+      "presentationTime": 568
+    },
+    {
+      "name": "first-contentful-paint",
+      "entryType": "paint",
+      "startTime": 1384,
+      "duration": 0,
+      "paintTime": 1333.5,
+      "presentationTime": 1384
+    }
+  ]
+}

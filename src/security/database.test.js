@@ -24,21 +24,28 @@ beforeAll(async () => {
     grant execute on function auth.uid() to authenticated;
   `);
   // PGlite lacks pgcrypto; schema UUID defaults use core gen_random_uuid().
-  const schema = readFileSync(new URL("../../supabase/schema.sql", import.meta.url), "utf8")
-    .replace("create extension if not exists pgcrypto;", "");
+  const schema = readFileSync(new URL("../../supabase/schema.sql", import.meta.url), "utf8").replace(
+    "create extension if not exists pgcrypto;",
+    "",
+  );
   await db.exec(schema);
   await db.exec(schema); // Existing installs must also accept the schema update.
-  await db.query(`insert into auth.users(id,email,raw_user_meta_data) values
+  await db.query(
+    `insert into auth.users(id,email,raw_user_meta_data) values
     ($1,'alice@example.test','{"username":"Alice","role":"admin"}'),
     ($2,'bob@example.test','{"username":"Bob"}'),
-    ($3,'admin@example.test','{"username":"Admin"}')`, [alice, bob, admin]);
+    ($3,'admin@example.test','{"username":"Admin"}')`,
+    [alice, bob, admin],
+  );
   await db.query("update public.profiles set role = 'admin' where id = $1", [admin]);
 }, 30000);
 
 afterEach(async () => {
   await db.exec("reset role; select set_config('request.jwt.claim.sub', '', false);");
 });
-afterAll(async () => { await db?.close(); });
+afterAll(async () => {
+  await db?.close();
+});
 
 async function asUser(id) {
   await db.query("select set_config('request.jwt.claim.sub', $1, false)", [id]);
@@ -56,8 +63,9 @@ it("denies anonymous profile access", async () => {
 });
 it("prevents self-promotion through profile writes", async () => {
   await asUser(alice);
-  await expect(db.query("update public.profiles set role = 'admin' where id = $1", [alice]))
-    .rejects.toMatchObject({ code: "42501" });
+  await expect(
+    db.query("update public.profiles set role = 'admin' where id = $1", [alice]),
+  ).rejects.toMatchObject({ code: "42501" });
 });
 it("ignores user-supplied admin metadata", async () => {
   await asUser(alice);
@@ -95,4 +103,77 @@ it("does not expose trigger functions as authenticated RPCs", async () => {
     where n.nspname = 'public' and p.prorettype = 'trigger'::regtype`);
   expect(rows.length).toBe(3);
   expect(rows.every((row) => !row.allowed)).toBe(true);
+});
+
+it("restricts withdrawal reads and insertion to the current owner", async () => {
+  await asUser(alice);
+  const { rows } = await db.query(
+    "insert into public.withdrawal_requests(user_id,amount_usd,payout_method,payout_address) values ($1,10,'USDT / BSC','fixture-address') returning id",
+    [alice],
+  );
+  await expect(
+    db.query(
+      "insert into public.withdrawal_requests(user_id,amount_usd,payout_method,payout_address) values ($1,10,'USDT / BSC','fixture-address')",
+      [bob],
+    ),
+  ).rejects.toMatchObject({ code: "42501" });
+  await asUser(bob);
+  const visible = await db.query("select id from public.withdrawal_requests where id=$1", [rows[0].id]);
+  expect(visible.rows).toEqual([]);
+});
+it("requires admin authorization for review RPCs", async () => {
+  await asUser(alice);
+  await expect(
+    db.query("select public.review_withdrawal_request(gen_random_uuid(), 'approved', '')"),
+  ).rejects.toMatchObject({ code: "42501" });
+});
+it("enforces withdrawal transitions and refuses reopening completed requests", async () => {
+  await asUser(alice);
+  const { rows } = await db.query(
+    "insert into public.withdrawal_requests(user_id,amount_usd,payout_method,payout_address) values ($1,10,'BTC / BTC','fixture-address') returning id",
+    [alice],
+  );
+  const id = rows[0].id;
+  await asUser(admin);
+  await expect(
+    db.query("select public.review_withdrawal_request($1, 'paid', '')", [id]),
+  ).rejects.toMatchObject({ code: "22023" });
+  await db.query("select public.review_withdrawal_request($1, 'approved', '')", [id]);
+  await expect(
+    db.query("select public.review_withdrawal_request($1, 'pending', '')", [id]),
+  ).rejects.toMatchObject({ code: "22023" });
+  await db.query("select public.review_withdrawal_request($1, 'paid', '')", [id]);
+  await expect(
+    db.query("select public.review_withdrawal_request($1, 'pending', '')", [id]),
+  ).rejects.toMatchObject({ code: "22023" });
+  expect(
+    (await db.query("select status from public.withdrawal_requests where id=$1", [id])).rows[0].status,
+  ).toBe("paid");
+});
+it("validates database lengths, amounts and pending verification ownership", async () => {
+  await asUser(alice);
+  await expect(
+    db.query(
+      "insert into public.withdrawal_requests(user_id,amount_usd,payout_method,payout_address) values ($1,-1,'manual','fixture-address')",
+      [alice],
+    ),
+  ).rejects.toMatchObject({ code: "42501" });
+  await expect(
+    db.query(
+      "insert into public.withdrawal_requests(user_id,amount_usd,payout_method,payout_address) values ($1,1,'manual',$2)",
+      [alice, "a".repeat(257)],
+    ),
+  ).rejects.toMatchObject({ code: "23514" });
+  await db.query(
+    "insert into public.verification_submissions(user_id,asset,network,tx_hash,amount_usd) values ($1,'BTC','BTC',$2,75)",
+    [alice, "a".repeat(64)],
+  );
+  await expect(
+    db.query(
+      "insert into public.verification_submissions(user_id,asset,network,tx_hash,amount_usd) values ($1,'BTC','BTC',$2,75)",
+      [alice, "b".repeat(64)],
+    ),
+  ).rejects.toMatchObject({ code: "23505" });
+  await asUser(bob);
+  expect((await db.query("select id from public.verification_submissions")).rows).toEqual([]);
 });

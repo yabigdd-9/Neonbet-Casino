@@ -9,8 +9,8 @@ export const brand = {
   name: envBrandName || "NeonBet",
   shortName: "NB",
   tagline: "Play in the neon.",
-  logo: "/brand/logo.svg",
-  favicon: "/brand/favicon.svg",
+  logo: `${import.meta.env.BASE_URL}favicon.svg`,
+  favicon: `${import.meta.env.BASE_URL}favicon.svg`,
   supportEmail: envSupportEmail || "support@example.com",
   primaryColor: "#22d3ee", // cyan-400
   secondaryColor: "#a855f7", // purple-500

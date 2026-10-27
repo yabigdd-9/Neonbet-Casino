@@ -2,48 +2,41 @@
 import React, { useState } from "react";
 import { Play } from "lucide-react";
 import Modal from "../../components/ui/Modal";
-import { buildSpin, betOptions, payoutRows } from "../../lib/gameEngine";
+import { betOptions, payoutRows } from "../../lib/gameEngine";
 import { formatMoney } from "../../lib/storage";
 
-export default function SlotGameModal({ game, balance, setBalance, onClose }) {
+export default function SlotGameModal({ game, wallet, onClose }) {
   const [bet, setBet] = useState(0.5);
-  const [reels, setReels] = useState(game?.symbols?.slice(0, 5) || ["🍒", "⭐", "💎", "7", "🍋"]);
-  const [result, setResult] = useState({ label: "Ready", win: 0, multiplier: 0 });
-  const [spinning, setSpinning] = useState(false);
-
+  const { balance, busy: spinning, start } = wallet;
+  const settled = wallet.round?.gameId === game?.title ? wallet.round : null;
+  const reels = settled?.reels || game?.symbols?.slice(0, 5) || ["7", "7", "7", "7", "7"];
+  const result = settled || { label: "Ready", win: 0 };
   if (!game) return null;
-
   function spin() {
-    if (spinning || balance < bet) return;
-    setSpinning(true);
-    setBalance((current) => Number((current - bet).toFixed(2)));
-
-    window.setTimeout(() => {
-      const spinResult = buildSpin(game);
-      const win = Number((bet * spinResult.multiplier).toFixed(2));
-      setReels(spinResult.reels);
-      setResult({ label: spinResult.label, win, multiplier: spinResult.multiplier });
-      setBalance((current) => Number((current + win).toFixed(2)));
-      setSpinning(false);
-    }, 650);
+    start(game, bet);
   }
 
   return (
-    <Modal onClose={onClose} maxWidth="max-w-4xl">
+    <Modal title={game.title} eyebrow="Simulated slot" onClose={onClose} maxWidth="max-w-4xl">
       <div className={`h-2 bg-gradient-to-r ${game.gradient}`} />
       <div className="grid gap-6 p-5 md:grid-cols-[1.2fr_0.8fr] md:p-7">
         <div>
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">{game.type}</div>
-              <h2 className="mt-2 text-3xl font-black">{game.title}</h2>
+              <h2 className="mt-2 text-3xl font-semibold">{game.title}</h2>
               <p className="mt-2 text-sm text-slate-400">
                 {game.provider
                   ? `${game.provider} themed local slot session. Balance is simulated in this browser.`
                   : "High-frequency local slot session. Balance is simulated in this browser."}
               </p>
             </div>
-            <button type="button" onClick={onClose} className="rounded-2xl bg-white/10 p-3 text-white hover:bg-white/15" aria-label="Close">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-2xl bg-white/10 p-3 text-white hover:bg-white/15"
+              aria-label="Close"
+            >
               ✕
             </button>
           </div>
@@ -53,17 +46,28 @@ export default function SlotGameModal({ game, balance, setBalance, onClose }) {
               {reels.map((symbol, index) => (
                 <div
                   key={`${symbol}-${index}`}
-                  className={`grid aspect-square place-items-center rounded-3xl border border-white/10 bg-white/10 text-4xl font-black transition ${
+                  className={`grid aspect-square place-items-center rounded-3xl border border-white/10 bg-white/10 text-4xl font-semibold transition ${
                     spinning ? "scale-95 animate-pulse text-cyan-200" : "text-white"
                   }`}
                 >
-                  {spinning ? game.symbols[(index + Math.floor(Math.random() * game.symbols.length)) % game.symbols.length] : symbol}
+                  {spinning ? "·" : symbol}
                 </div>
               ))}
             </div>
-            <div className="mt-4 rounded-2xl border border-white/10 bg-slate-950/80 p-4 text-center">
-              <div className="text-sm font-bold uppercase tracking-[0.18em] text-slate-400">{result.label}</div>
-              <div className={result.win > 0 ? "mt-1 text-3xl font-black text-cyan-300" : "mt-1 text-3xl font-black text-slate-300"}>
+            <div
+              role="status"
+              className="mt-4 rounded-2xl border border-white/10 bg-slate-950/80 p-4 text-center"
+            >
+              <div className="text-sm font-bold uppercase tracking-[0.18em] text-slate-400">
+                {result.label}
+              </div>
+              <div
+                className={
+                  result.win > 0
+                    ? "mt-1 text-3xl font-semibold text-cyan-300"
+                    : "mt-1 text-3xl font-semibold text-slate-300"
+                }
+              >
                 {result.win > 0 ? `+${formatMoney(result.win)}` : "$0.00"}
               </div>
             </div>
@@ -72,16 +76,21 @@ export default function SlotGameModal({ game, balance, setBalance, onClose }) {
 
         <div className="space-y-4">
           <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
-            <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Balance</div>
-            <div className="mt-1 text-4xl font-black text-white">{formatMoney(balance)}</div>
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+              Simulated balance
+            </div>
+            <div className="mt-1 text-4xl font-semibold text-white">{formatMoney(balance)}</div>
             <div className="mt-4 grid grid-cols-3 gap-2">
               {betOptions.map((amount) => (
                 <button
                   key={amount}
                   type="button"
+                  disabled={spinning}
                   onClick={() => setBet(amount)}
-                  className={`rounded-2xl border px-3 py-3 text-sm font-black transition ${
-                    bet === amount ? "border-cyan-300/40 bg-cyan-400 text-slate-950" : "border-white/10 bg-black/20 text-slate-300 hover:bg-white/10"
+                  className={`rounded-2xl border px-3 py-3 text-sm font-semibold transition ${
+                    bet === amount
+                      ? "border-cyan-300/40 bg-cyan-400 text-slate-950"
+                      : "border-white/10 bg-black/20 text-slate-300 hover:bg-white/10"
                   }`}
                 >
                   {formatMoney(amount)}
@@ -92,7 +101,7 @@ export default function SlotGameModal({ game, balance, setBalance, onClose }) {
               type="button"
               onClick={spin}
               disabled={spinning || balance < bet}
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-cyan-400 px-5 py-4 font-black text-slate-950 shadow-neon transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-cyan-400 px-5 py-4 font-semibold text-slate-950 shadow-neon transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Play size={18} />
               {spinning ? "Spinning..." : `Spin ${formatMoney(bet)}`}
@@ -101,17 +110,22 @@ export default function SlotGameModal({ game, balance, setBalance, onClose }) {
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
-            <h3 className="font-black">Payout Table</h3>
+            <h3 className="font-semibold">Payout Table</h3>
             <div className="mt-3 space-y-2">
               {payoutRows.map(([label, payout]) => (
-                <div key={label} className="flex items-center justify-between rounded-2xl bg-black/20 px-3 py-2 text-sm">
+                <div
+                  key={label}
+                  className="flex items-center justify-between rounded-2xl bg-black/20 px-3 py-2 text-sm"
+                >
                   <span className="text-slate-300">{label}</span>
-                  <span className="font-black text-cyan-300">{payout}</span>
+                  <span className="font-semibold text-cyan-300">{payout}</span>
                 </div>
               ))}
             </div>
-            <p className="mt-4 text-xs leading-5 text-slate-500">
-              This is a simulated browser game with tuned frequent wins. It is not connected to deposits, withdrawals, or provider game servers.
+            <p className="mt-4 text-xs leading-5 text-slate-400">
+              Payouts follow the largest matching group. A mix containing the jackpot, diamond and star
+              symbols pays 2x when no group has three or more matches. This is a simulated browser game. It is
+              not connected to deposits, withdrawals, or provider game servers.
               {game.provider ? ` ${game.provider} is shown as a lobby theme only.` : ""}
             </p>
           </div>

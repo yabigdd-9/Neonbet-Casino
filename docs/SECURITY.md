@@ -68,3 +68,11 @@
 - `src/security/database.test.js` executes the schema twice against isolated PGlite Postgres, then checks owner-only profile reads, anonymous denial, denied profile self-promotion, ignored user-supplied admin metadata, authorized admin reads, missing-identity denial, function search paths, and function execution grants.
 - This harness stubs `auth.users` and `auth.uid()`. It omits the unsupported pgcrypto extension; UUID defaults use Postgres core `gen_random_uuid()`. It does not verify Supabase Auth, HTTP API configuration, or the deployed database.
 - Schema changes in this repository do not automatically update an existing Supabase project. Apply and verify separately on the intended project after a backup and staging check.
+
+## Full upgrade additions
+
+Explicit demo mode never constructs a Supabase client. Explicit incomplete Supabase configuration renders a configuration error. Admin data requests are made only after the role is confirmed, while authorization remains enforced in PostgreSQL. Withdrawal review locks and checks the current row state; terminal requests cannot reopen.
+
+The secret scanner reports category and file only, redacting matching values. It excludes generated binary/browser output and distinguishes full transaction hashes and commit IDs from wallet addresses. This remains a heuristic source scan, not a certification or history scrub.
+
+The server-only fake integration harness is synthetic and in-memory. Browser imports of server modules and Node APIs are blocked by lint. Provider credentials are not part of any public environment template. See FULL_UPGRADE_REPORT.md for dependency findings and INTEGRATION_ACTIVATION.md for the unimplemented operational backend requirements.

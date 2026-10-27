@@ -1,112 +1,29 @@
-# NeonBet Architecture (Commercial V2)
+# Architecture
 
-This document explains how the refactored NeonBet codebase is wired together. The original
-single-file `src/main.jsx` (~2973 lines) has been decomposed into a layered, feature-oriented
-structure so a buyer can understand, rebrand, and extend the product without touching one
-oversized file.
+The application remains a React/Vite/Tailwind static frontend. `src/main.jsx` installs the root error boundary and mounts the app. `src/app/App.jsx` composes sections and coordinates feature actions; it no longer owns session/account loading.
 
-## Bootstrap
+## Account and mode boundaries
 
-```
-index.html ──▶ src/main.jsx ──▶ ReactDOM.createRoot
-                            └──▶ imports ./app/App + ./styles/index.css
-                                     └──▶ src/app/App.jsx
-```
+`config/appMode.ts` is the sole mode resolver. Explicit demo bypasses the Supabase client entirely. Explicit Supabase mode requires complete configuration. Legacy deployments without an explicit mode retain automatic selection. Invalid configuration renders an operator-facing service-unavailable screen.
 
-`src/main.jsx` is now a thin bootstrap: it mounts `<App />` inside `<React.StrictMode>`.
+`services/supabaseClient.ts` conditionally loads the SDK and constructs one client. The legacy root module is a re-export. Typed services standardize auth results as `{ user, session }`, throw API errors, and use server-checked RPCs for admin writes. Auth subscriptions return synchronous cleanup and preserve event/session information.
 
-`src/app/App.jsx` exports a default `App` that wraps `AppContent` in `<ToastProvider>`.
-`AppContent` owns all top-level state and wires the feature modules together.
+`hooks/useAccount.ts` owns user, profile, page records, errors, loading and password-recovery state. An epoch invalidates old requests on account changes, logout and unmount. Supabase callbacks update state synchronously; account queries are queued outside the callback. Token refresh does not refetch unchanged account data. Only a confirmed admin profile enables admin list queries. The signed-in admin’s latest personal records are fetched separately with an explicit user filter; review pages retain their selection on refresh, and review actions are disabled while account data loads.
 
-## App shell (layout)
+## Local state
 
-`src/components/layout/`:
+Demo identities are validated before use. Legacy submission/withdrawal rows migrate into user-scoped keys only when their owner matches. Unowned rows are not assigned to another user. Local profiles never grant admin rights. Favorites remain device-level; recent games store stable IDs resolved against the current catalogue. Malformed and obsolete entries are ignored.
 
-- `Header.jsx` — sticky top bar: brand, optional global search, balance pill, notifications,
-  login/register/logout, mobile drawer trigger.
-- `Sidebar.jsx` — desktop left navigation rail with smooth scroll-to-section links.
-- `MobileNav.jsx` — fixed bottom navigation for small screens (Home / Casino / Promos /
-  Search / Account). Admin is intentionally excluded from the public bottom nav.
-- `Footer.jsx` — licensing, responsible-play, payments notices and policy links.
+`RoundController` belongs to the app through `useDemoWallet`, independently of modal lifetimes. It snapshots stake and outcome, debits integer cents, rejects overlapping rounds and settles once. Results remain available when reopening the same game. Closing a modal does not cancel a settlement. This is deliberately simulated state, never a money ledger.
 
-`src/components/feedback/ToastProvider.jsx` — lightweight context-based toasts (success /
-error / warning / info) with no external dependency.
+## Presentation and performance
 
-## Feature modules
+The sidebar is a scrollable desktop column; small-screen navigation uses the shared accessible modal and a safe-area-aware bottom bar. Shared navigation respects reduced motion. Catalogue search uses a precomputed index and renders 12 cards per page. Game/auth/admin/policy modules load on demand with local failure and loading states.
 
-`src/features/*` holds self-contained UI per domain:
+Production bundle measurement recursively sums the gzip size of the entry's static import graph. The Supabase SDK is a conditional dynamic import and remains absent from initial demo requests. The static graph budget is 75% of the reviewed 137,999-byte baseline. Browser timings are local desktop-engine measurements at a mobile viewport, not a real-device performance certification.
 
-- `casino/` — `Hero`, `FeaturedGames`, `ArcadeGamesSection`, `SlotProviderLibrary`, `GameSearch`,
-  `GameCard`, `GameLaunchModal`, `SlotGameModal`, `ArcadeGameModal`.
-- `auth/` — `AuthModal` (login / register / reset password).
-- `account/` — `AccountStatusPanel` (profile + rollover progress).
-- `verification/` — `VerificationPanel` (manual crypto submission UI).
-- `transactions/` — `WithdrawalRequestPanel` (manual withdrawal request UI).
-- `admin/` — `AdminDashboard`, `AdminReviewModal`, `AdminProfileModal`.
-- `promotions/` — `PromotionsSection`, `TermsSection`, `PolicyModalContent`.
+## Database and integration boundaries
 
-## Service layer
+The schema retains RLS, owner-only rows, database-authorized roles, private authorization lookup, restricted function grants and empty privileged search paths. Withdrawal review locks the row before checking transitions, preventing concurrent reviews from reopening or skipping states.
 
-All Supabase access lives in `src/services/*` — no React component performs raw database
-operations:
-
-- `supabaseClient.js` — creates the client from `VITE_SUPABASE_*` env vars (or `null` in demo
-  mode) and exports `hasSupabaseConfig`.
-- `auth.service.js` — session, auth-state subscription, sign in/up/out, password reset.
-- `profiles.service.js` — profile read, admin profile list, demo-profile factory.
-- `verification.service.js` — tx-hash validation, submission create/read, admin review RPC.
-- `transactions.service.js` — withdrawal validation, create/read, admin review RPC.
-- `admin.service.js` — admin summary + server-checked profile update RPC.
-
-## Supabase backend
-
-The schema (`supabase/schema.sql`) defines `profiles`, `verification_submissions`, and
-`withdrawal_requests` with Row Level Security enabled. Admin actions are performed through
-secured RPC functions (`review_verification_submission`, `review_withdrawal_request`,
-`update_profile_admin`) that raise `42501` unless `private.is_admin()` passes. See
-`docs/DATABASE.md`.
-
-## Demo vs Supabase mode
-
-`src/config/appMode.js` resolves the runtime mode:
-
-- `demo` — no Supabase; local `localStorage` accounts, simulated balance, local submissions.
-- `supabase` — real auth + Postgres; fails clearly if `VITE_SUPABASE_*` is missing while
-  `VITE_APP_MODE=supabase` is set (falls back to demo rather than silently degrading to an
-  unsafe state).
-
-## Game provider abstraction
-
-`src/providers/casino/LocalDemoProvider.js` implements the `CasinoProvider` interface
-(`getGames`, `getGame`, `getCategories`, `launchDemo`, `launchReal`). The shipped provider
-reads the static catalogue and runs browser-simulated play. A buyer adds a backend by
-subclassing `CasinoProvider`. `launchReal` is intentionally unimplemented in this build.
-
-## Payment provider abstraction
-
-`src/providers/payment/PaymentProvider.js` defines the interface (`createDeposit`,
-`createWithdrawal`, `getTransaction`, `verifyWebhook`) with a `MockPaymentProvider` that
-records simulated requests and throws on `verifyWebhook`. No real money is moved.
-
-## Configuration
-
-`src/config/*` externalises everything a buyer changes:
-
-- `brand.js` — name, short name, tagline, logos, support email, colours, currency, social.
-- `contact.js` — Telegram / WhatsApp / support links (env-overridable; safe empty by default).
-- `verification.js` — fee, accepted crypto methods (addresses blank by default for sale).
-- `features.js` — feature flags toggled by `VITE_ENABLE_*` env vars.
-- `tokens.js` — design tokens surfaced to Tailwind.
-- `appMode.js` — runtime mode resolution.
-
-## State
-
-Top-level state (user, profile, balances, submissions, withdrawals, modals, auth) is held in
-`AppContent` via `useState`/`useEffect`. Favourites and recently-played use the
-`useFavorites` / `useRecentGames` hooks backed by `localStorage`. Supabase sessions are
-subscribed through `auth.service.js` so refresh/restore works.
-
-## Deployment
-
-Static build to `dist/`. `base` is `./` for GitHub Pages. Supabase mode requires the anon key
-exposed as `VITE_SUPABASE_*` build variables. See `README.md › Deployment`.
+Typed async casino/payment interfaces expose explicit capabilities and normalized provider errors. Production adapters must live behind a server boundary. Browser modules cannot import `server/` or Node APIs (lint gate). The local fake provider verifies raw-body signatures, deduplicates events and exercises retry behavior using synthetic records only. It is not an operational server or durable payment system.

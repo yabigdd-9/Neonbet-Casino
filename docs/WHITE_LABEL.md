@@ -63,6 +63,6 @@ needs to change.
 
 ## Replace the demo game provider
 
-- `src/providers/casino/LocalDemoProvider.js` implements `CasinoProvider`.
+- `src/providers/casino/LocalDemoProvider.ts` implements `CasinoProvider`.
 - Subclass `CasinoProvider` and implement real `getGames` / `launchReal` (return real launch
   URLs). Swap the instance in `App.jsx`. `launchReal` throws in this build by design.

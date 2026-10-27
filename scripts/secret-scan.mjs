@@ -5,6 +5,8 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { detectSecret } from "./secret-patterns.mjs";
+
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const IGNORE = new Set([
   "node_modules",
@@ -12,6 +14,8 @@ const IGNORE = new Set([
   ".git",
   "output",
   ".playwright-cli",
+  "test-results",
+  "playwright-report",
 ]);
 // Filenames that are templates or generated and may contain placeholder/hash
 // strings that resemble secrets but are not (locked by standard practice).
@@ -22,22 +26,6 @@ const IGNORE_FILES = new Set([
   ".env.example",
   ".env.sample",
 ]);
-
-// Patterns that must never be committed in this owner's repos.
-const PATTERNS = [
-  // EVM wallet (the historically-leaked owner address + any 0x40 hex)
-  /0x[0-9a-fA-F]{40}/,
-  // Legacy BTC / Bech32-ish addresses
-  /(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,39}/,
-  // Personal Telegram / WhatsApp deep links
-  /t\.me\/[a-zA-Z0-9_]+/,
-  /wa\.me\/[0-9]+/,
-  // Supabase service-role / JWT
-  /eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/,
-  // Generic private key markers
-  /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/,
-  /sk-[a-zA-Z0-9]{20,}/,
-];
 
 function walk(dir, acc = []) {
   for (const entry of readdirSync(dir)) {
@@ -59,23 +47,18 @@ for (const file of files) {
   } catch {
     continue;
   }
-  for (const [index, re] of PATTERNS.entries()) {
-    // Public deposit addresses are intentionally published in this one configuration file.
-    if (relative(ROOT, file) === "src/config/public-addresses.json" && index < 2) continue;
-    const m = content.match(re);
-    if (m) {
-      hits.push({ file: relative(ROOT, file), match: m[0] });
-      break;
-    }
-  }
+  if (content.includes("\0") || /\.(png|jpe?g|webp|zip|pdf)$/.test(file)) continue;
+  const allowed =
+    relative(ROOT, file) === "src/config/public-addresses.json" ? ["EVM address", "Bitcoin address"] : [];
+  const category = detectSecret(content, allowed);
+  if (category) hits.push({ file: relative(ROOT, file), category });
 }
 
 if (hits.length) {
   console.error("SECRET SCAN FAILED — potential secrets found:");
-  for (const h of hits) console.error(`  ${h.file}: ${h.match}`);
+  for (const h of hits) console.error(`  ${h.file}: ${h.category} (value redacted)`);
   console.error(
-    "\nRemove or externalise these values (see docs/SECURITY.md). " +
-      "Do not commit real secrets."
+    "\nRemove or externalise these values (see docs/SECURITY.md). " + "Do not commit real secrets.",
   );
   process.exit(1);
 }

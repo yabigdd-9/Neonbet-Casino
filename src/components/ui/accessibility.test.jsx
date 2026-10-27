@@ -21,14 +21,24 @@ afterEach(() => {
   vi.useRealTimers();
 });
 const render = (element) => act(() => root.render(element));
-const key = (value, shiftKey = false) => act(() => document.activeElement.dispatchEvent(new KeyboardEvent("keydown", { key: value, shiftKey, bubbles: true, cancelable: true })));
+const key = (value, shiftKey = false) =>
+  act(() =>
+    document.activeElement.dispatchEvent(
+      new KeyboardEvent("keydown", { key: value, shiftKey, bubbles: true, cancelable: true }),
+    ),
+  );
 
 it("traps focus, blocks background focus, and restores the opener and scrolling", () => {
   const opener = document.createElement("button");
   document.body.append(opener);
   opener.focus();
   document.body.style.overflow = "auto";
-  render(<Modal title="Details"><button>First</button><button>Last</button></Modal>);
+  render(
+    <Modal title="Details">
+      <button>First</button>
+      <button>Last</button>
+    </Modal>,
+  );
   const panel = document.querySelector('[role="dialog"]');
   const buttons = panel.querySelectorAll("button");
   expect(document.activeElement).toBe(panel);
@@ -46,11 +56,20 @@ it("traps focus, blocks background focus, and restores the opener and scrolling"
 });
 
 it("keeps focus on rerender and calls the current close callback", () => {
-  const firstClose = vi.fn(), nextClose = vi.fn();
-  render(<Modal title="Details" onClose={firstClose}><input /></Modal>);
+  const firstClose = vi.fn(),
+    nextClose = vi.fn();
+  render(
+    <Modal title="Details" onClose={firstClose}>
+      <input />
+    </Modal>,
+  );
   const input = document.querySelector("input");
   input.focus();
-  render(<Modal title="Updated" onClose={nextClose}><input /></Modal>);
+  render(
+    <Modal title="Updated" onClose={nextClose}>
+      <input />
+    </Modal>,
+  );
   expect(document.activeElement).toBe(input);
   key("Escape");
   expect(firstClose).not.toHaveBeenCalled();
@@ -58,8 +77,13 @@ it("keeps focus on rerender and calls the current close callback", () => {
 });
 
 it("only dismisses the top dialog and retains scroll lock until all dialogs close", () => {
-  const outerClose = vi.fn(), innerClose = vi.fn();
-  const view = (inner) => <Modal title="Outer" onClose={outerClose}>{inner && <Modal title="Inner" onClose={innerClose} />}</Modal>;
+  const outerClose = vi.fn(),
+    innerClose = vi.fn();
+  const view = (inner) => (
+    <Modal title="Outer" onClose={outerClose}>
+      {inner && <Modal title="Inner" onClose={innerClose} />}
+    </Modal>
+  );
   render(view(true));
   key("Escape");
   expect(innerClose).toHaveBeenCalledOnce();
@@ -75,10 +99,27 @@ it("labels a dialog and provides a close button even without a heading", () => {
   expect(document.querySelector('[aria-label="Close dialog"]')).not.toBeNull();
 });
 
-describe.each([[Input, "input"], [Select, "select"], [Textarea, "textarea"]])("accessible fields", (Component, tag) => {
+describe.each([
+  [Input, "input"],
+  [Select, "select"],
+  [Textarea, "textarea"],
+])("accessible fields", (Component, tag) => {
   it(`${tag} has unique IDs, associated errors, and preserves control props`, () => {
     const change = vi.fn();
-    render(<><p id="hint">Hint</p><Component label="Name" name="name" error="Required" aria-describedby="hint" onChange={change} disabled /><Component label="Name" name="name" /></>);
+    render(
+      <>
+        <p id="hint">Hint</p>
+        <Component
+          label="Name"
+          name="name"
+          error="Required"
+          aria-describedby="hint"
+          onChange={change}
+          disabled
+        />
+        <Component label="Name" name="name" />
+      </>,
+    );
     const [first, second] = host.querySelectorAll(tag);
     expect(first.id).not.toBe(second.id);
     expect(first.disabled).toBe(true);
@@ -95,9 +136,22 @@ it("keeps errors visible until dismissed and clears notification timers on unmou
   vi.useFakeTimers();
   function Controls() {
     const toast = useToast();
-    return <button onClick={() => { toast.error("Error details"); toast.info("Information"); }}>Notify</button>;
+    return (
+      <button
+        onClick={() => {
+          toast.error("Error details");
+          toast.info("Information");
+        }}
+      >
+        Notify
+      </button>
+    );
   }
-  render(<ToastProvider><Controls /></ToastProvider>);
+  render(
+    <ToastProvider>
+      <Controls />
+    </ToastProvider>,
+  );
   act(() => host.querySelector("button").click());
   act(() => vi.advanceTimersByTime(8001));
   expect(host.textContent).toContain("Error details");

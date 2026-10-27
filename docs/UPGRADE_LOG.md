@@ -25,3 +25,7 @@ Format per entry: Change / Date / Commit / Area / Problem / Implementation / Fil
 - **Validation:** `npm run build` ✅ (492 KB JS / 138 KB gzip); `npm run test` ✅ 58/58 pass across 9 files; `npm run dev` ✅ serves on :5173, all modules transform; current-file secret sweep (src/public/supabase) ✅ clean — no live wallet/contact strings present.
 - **Result:** Monolith decomposed; secrets removed from source; baseline tests established. Product is now modular, buyer-rebrandable, and verified building/running.
 - **Remaining Risk:** **Git history still leaks owner secrets.** `git log -p --all` shows the personal wallet `0x3f8b…a7d29`, `t.me/&lt;owner-handle&gt;`, and `wa.me/&lt;owner-number&gt;` committed in the baseline (line refs ~187–190, ~268–269, ~2642–2645, ~2902–2937) on `main` and inherited by this branch. Current working tree is clean, so committing the refactor is safe, but any push to a public/remote target must first purge history (rebase/ filter-repo) or the personal data ships. This is an open P0 gate requiring owner decision. RLS still not confirmed applied to the live project.
+
+## 22 October 2026 — Full local upgrade
+
+Auth and account correctness, explicit mode isolation, refined lobby, app-owned round settlement, pagination, typed service/provider contracts, SQL transition guards, local fake-provider harness and expanded validation. See FULL_UPGRADE_REPORT.md for exact local evidence; no live activation or deployment was performed.

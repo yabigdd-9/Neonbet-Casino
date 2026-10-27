@@ -1,0 +1,99 @@
+{
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "caveat": "Local desktop Chromium at a mobile viewport; no CPU/network throttling. Diagnostic samples, not a real-device acceptance result.",
+  "samples": {
+    "baseline": [
+      {
+        "domContentLoadedMs": 321.90000009536743,
+        "paints": [
+          {
+            "name": "first-paint",
+            "startTime": 1224
+          },
+          {
+            "name": "first-contentful-paint",
+            "startTime": 1224
+          }
+        ],
+        "scriptBytes": 496787
+      },
+      {
+        "domContentLoadedMs": 337.90000009536743,
+        "paints": [
+          {
+            "name": "first-paint",
+            "startTime": 52
+          },
+          {
+            "name": "first-contentful-paint",
+            "startTime": 952
+          }
+        ],
+        "scriptBytes": 496787
+      },
+      {
+        "domContentLoadedMs": 234.09999990463257,
+        "paints": [
+          {
+            "name": "first-paint",
+            "startTime": 120
+          },
+          {
+            "name": "first-contentful-paint",
+            "startTime": 1096
+          }
+        ],
+        "scriptBytes": 496787
+      }
+    ],
+    "upgrade": [
+      {
+        "domContentLoadedMs": 247.60000014305115,
+        "paints": [
+          {
+            "name": "first-paint",
+            "startTime": 152
+          },
+          {
+            "name": "first-contentful-paint",
+            "startTime": 1236
+          }
+        ],
+        "scriptBytes": 279338
+      },
+      {
+        "domContentLoadedMs": 266.60000014305115,
+        "paints": [
+          {
+            "name": "first-paint",
+            "startTime": 96
+          },
+          {
+            "name": "first-contentful-paint",
+            "startTime": 1392
+          }
+        ],
+        "scriptBytes": 279338
+      },
+      {
+        "domContentLoadedMs": 474.2000000476837,
+        "paints": [
+          {
+            "name": "first-paint",
+            "startTime": 316
+          },
+          {
+            "name": "first-contentful-paint",
+            "startTime": 1052
+          }
+        ],
+        "scriptBytes": 279338
+      }
+    ]
+  },
+  "sampledAt": "2026-10-22",
+  "scope": "Baseline and candidate builds measured before the final slot-scoring correction; not a measurement of the final source tree."
+}

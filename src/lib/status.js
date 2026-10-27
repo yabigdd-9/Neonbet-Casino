@@ -53,4 +53,13 @@ export function statusLabel(status) {
   return statusLabels[status] || status || "Unknown";
 }
 
-export default { VERIFICATION_STATUS, SUBMISSION_STATUS, WITHDRAWAL_STATUS, ACCOUNT_STATUS, statusStyles, statusLabels, statusStyle, statusLabel };
+export default {
+  VERIFICATION_STATUS,
+  SUBMISSION_STATUS,
+  WITHDRAWAL_STATUS,
+  ACCOUNT_STATUS,
+  statusStyles,
+  statusLabels,
+  statusStyle,
+  statusLabel,
+};

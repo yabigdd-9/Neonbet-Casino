@@ -1,21 +1,31 @@
-// Mobile bottom navigation.
 import React from "react";
 import { Gamepad2, Dice5, Gift, Search, CircleUser } from "lucide-react";
-
-export default function MobileNav({ onOpenAuth }) {
+import { features } from "../../config/features";
+import { scrollToSection } from "../../lib/navigation";
+export default function MobileNav({ onOpenAuth, user }) {
   const items = [
-    ["Home", Gamepad2, () => document.getElementById("lobby")?.scrollIntoView({ behavior: "smooth" })],
-    ["Casino", Dice5, () => document.getElementById("featured-games")?.scrollIntoView({ behavior: "smooth" })],
-    ["Promos", Gift, () => document.getElementById("promotions")?.scrollIntoView({ behavior: "smooth" })],
-    ["Search", Search, () => document.getElementById("providers")?.scrollIntoView({ behavior: "smooth" })],
-    ["Account", CircleUser, () => onOpenAuth("login")],
+    ["Home", Gamepad2, () => scrollToSection("lobby")],
+    ["Arcade", Dice5, () => scrollToSection("arcade-games")],
+    ...(features.promotions ? [["Promos", Gift, () => scrollToSection("promotions")]] : []),
+    ["Search", Search, () => scrollToSection("providers", true)],
+    ...(features.account
+      ? [["Account", CircleUser, () => (user ? scrollToSection("account") : onOpenAuth("login"))]]
+      : []),
   ];
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-slate-950/95 backdrop-blur-xl lg:hidden">
-      <div className="grid grid-cols-5">
+    <nav
+      aria-label="Mobile navigation"
+      className="mobile-nav fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-[#080f1e]/95 lg:hidden"
+    >
+      <div className="flex">
         {items.map(([label, Icon, action]) => (
-          <button key={label} type="button" onClick={action} className="flex flex-col items-center gap-1 py-3 text-[11px] font-bold text-slate-300">
-            <Icon size={20} />
+          <button
+            type="button"
+            key={label}
+            onClick={action}
+            className="flex min-h-14 flex-1 flex-col items-center justify-center gap-1 text-[10px] text-slate-300"
+          >
+            <Icon size={18} aria-hidden="true" />
             {label}
           </button>
         ))}

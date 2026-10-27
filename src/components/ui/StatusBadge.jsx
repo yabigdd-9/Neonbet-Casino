@@ -2,10 +2,12 @@
 import React from "react";
 import { statusStyle, statusLabel } from "../../lib/status";
 
-export default function StatusBadge({ status, label }) {
+export default function StatusBadge({ status, label = undefined }) {
   const text = label || statusLabel(status);
   return (
-    <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-black ${statusStyle(status)}`}>
+    <span
+      className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${statusStyle(status)}`}
+    >
       {text}
     </span>
   );
