@@ -6,6 +6,7 @@ import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import StatusBadge from "../../components/ui/StatusBadge";
 import { IS_SUPABASE } from "../../config/appMode";
+import { DEMO_TARGET_CENTS, DEMO_WAGER_MULTIPLIER } from "../../config/demoBonus";
 
 export default function WithdrawalRequestPanel({
   user,
@@ -22,7 +23,7 @@ export default function WithdrawalRequestPanel({
   const verified = profile?.verification_status === "verified";
   const rolloverComplete = IS_SUPABASE
     ? Number(profile?.rollover_progress || 0) >= Number(profile?.rollover_required ?? 1000)
-    : (demoWallet?.wageredCents || 0) >= 100000;
+    : (demoWallet?.wageredCents || 0) >= DEMO_TARGET_CENTS;
   const canSubmit = user && amountUsd && Number(amountUsd) > 0 && payoutAddress.trim().length >= 10;
 
   async function handleSubmit(event) {
@@ -76,7 +77,9 @@ export default function WithdrawalRequestPanel({
               </span>
             </div>
             <div className="flex items-center justify-between rounded-2xl bg-white/[0.06] px-4 py-3">
-              <span className="text-slate-300">{IS_SUPABASE ? "Rollover" : "Simulated 20× target"}</span>
+              <span className="text-slate-300">
+                {IS_SUPABASE ? "Rollover" : `Simulated ${DEMO_WAGER_MULTIPLIER}× target`}
+              </span>
               <span
                 className={
                   rolloverComplete ? "font-semibold text-emerald-200" : "font-semibold text-amber-200"

@@ -22,3 +22,17 @@ it("reports a zero rollover requirement as complete and accessible", () => {
     "100",
   );
 });
+it("shows the simulated $1,500 target and proportion of wagers", () => {
+  render(
+    <AccountStatusPanel
+      user={{ id: "local-test" }}
+      profile={null}
+      latestSubmission={null}
+      demoWallet={{ balance: 50, wageredCents: 75000 }}
+    />,
+  );
+  expect(screen.getByText(/\$750.00 \/ \$1500.00/)).toBeTruthy();
+  expect(screen.getByRole("progressbar", { name: "Rollover progress" }).getAttribute("aria-valuenow")).toBe(
+    "50",
+  );
+});

@@ -3,6 +3,7 @@ import React from "react";
 import StatusBadge from "../../components/ui/StatusBadge";
 import { formatMoney } from "../../lib/storage";
 import { IS_SUPABASE } from "../../config/appMode";
+import { DEMO_TARGET_CENTS, DEMO_WAGER_MULTIPLIER } from "../../config/demoBonus";
 import type { AccountUser, Profile, Submission } from "../../types/account";
 
 export default function AccountStatusPanel({
@@ -20,7 +21,8 @@ export default function AccountStatusPanel({
   const status = profile?.verification_status || "not_submitted";
   const progress =
     !IS_SUPABASE && demoWallet ? demoWallet.wageredCents / 100 : Number(profile?.rollover_progress || 0);
-  const required = !IS_SUPABASE && demoWallet ? 1000 : Number(profile?.rollover_required ?? 1000);
+  const required =
+    !IS_SUPABASE && demoWallet ? DEMO_TARGET_CENTS / 100 : Number(profile?.rollover_required ?? 1000);
   const percent = required > 0 ? Math.min(100, Math.max(0, Math.round((progress / required) * 100))) : 100;
 
   return (
@@ -54,7 +56,7 @@ export default function AccountStatusPanel({
         </div>
         <div className="rounded-3xl border border-white/10 bg-black/20 p-5">
           <div className="text-sm text-slate-400">
-            {IS_SUPABASE ? "Rollover progress" : "Simulated 20× wagering target"}
+            {IS_SUPABASE ? "Rollover progress" : `Simulated ${DEMO_WAGER_MULTIPLIER}× wagering target`}
           </div>
           <div className="mt-1 text-3xl font-semibold">{percent}%</div>
           <div

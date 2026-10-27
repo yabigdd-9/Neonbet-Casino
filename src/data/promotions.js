@@ -2,7 +2,7 @@
 export const promos = [
   {
     title: "$50 Simulated Balance",
-    detail: "Start with $50 in simulated credits and a $1,000 (20×) wagering target. No cash value.",
+    detail: "Start with $50 in simulated credits and a $1,500 (30×) wagering target. No cash value.",
     icon: "Gift",
   },
   {
@@ -24,8 +24,8 @@ export const terms = [
     detail: "The $50 starting balance is simulated and has no cash value.",
   },
   {
-    title: "20× simulated target",
-    detail: "The $1,000 target tracks simulated wagers only and does not unlock cash withdrawals.",
+    title: "30× simulated target",
+    detail: "The $1,500 target tracks simulated wagers only and does not unlock cash withdrawals.",
   },
   {
     title: "Verification Fee",
@@ -66,7 +66,7 @@ export const policyPages = {
     sections: [
       [
         "Bonuses",
-        "The simulated $50 starting balance has no cash value. Its 20× target tracks simulated wagering only.",
+        "The simulated $50 starting balance has no cash value. Its 30× target tracks simulated wagering only.",
       ],
       [
         "Verification",

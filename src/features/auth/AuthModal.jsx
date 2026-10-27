@@ -115,7 +115,7 @@ export default function AuthModal({
             <div className="font-semibold text-4xl text-cyan-300">$50</div>
             <div className="mt-1 font-bold">Simulated starting balance</div>
             <p className="mt-3 text-sm leading-6 text-slate-400">
-              Play with simulated credits and track a 20× wagering target. Credits have no cash value.
+              Play with simulated credits and track a 30× wagering target. Credits have no cash value.
             </p>
           </div>
         </div>

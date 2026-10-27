@@ -71,7 +71,7 @@ export function TermsSection({ onOpenPolicy }) {
           </p>
         </div>
         <div className="rounded-2xl border border-amber-300/20 bg-amber-300/10 px-4 py-3 text-sm font-bold text-amber-100">
-          $50 simulated · 20× simulated wagering target
+          $50 simulated · 30× simulated wagering target
         </div>
       </div>
 

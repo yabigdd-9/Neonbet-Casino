@@ -1,10 +1,11 @@
 import { buildSpin, playArcade } from "./gameEngine";
+import { DEMO_START_CENTS } from "../config/demoBonus";
 
 // One controller belongs to the app, not to a game modal. Closing a player never loses a settlement.
 export class RoundController {
   listeners = new Set();
   timer = null;
-  snapshot = { cents: 5000, wageredCents: 0, busy: false, round: null };
+  snapshot = { cents: DEMO_START_CENTS, wageredCents: 0, busy: false, round: null };
   subscribe = (listener) => {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
