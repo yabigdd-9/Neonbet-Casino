@@ -56,7 +56,20 @@ export const isStoredUser = (value) =>
 export function readUserRecords(key, userId) {
   if (!userId) return [];
   const scopedKey = `${key}:${userId}`;
-  const scoped = readStoredValue(scopedKey, null);
+  const readRecords = (storageKey) => {
+    let raw;
+    try {
+      raw = window.localStorage.getItem(storageKey);
+    } catch {
+      throw new Error("Unable to read your saved requests. Enable browser storage and try again.");
+    }
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  };
+  const scoped = readRecords(scopedKey);
   const valid = (row) =>
     row &&
     typeof row === "object" &&
@@ -64,13 +77,16 @@ export function readUserRecords(key, userId) {
     typeof row.id === "string" &&
     typeof row.status === "string" &&
     typeof row.created_at === "string";
-  const rows = (Array.isArray(scoped) ? scoped : readStoredArray(key)).filter(valid);
+  const legacy = Array.isArray(scoped) ? null : readRecords(key);
+  const rows = (Array.isArray(scoped) ? scoped : Array.isArray(legacy) ? legacy : []).filter(valid);
   if (scoped === null) writeStoredArray(scopedKey, rows);
   return rows;
 }
 export function writeUserRecords(key, userId, rows) {
-  writeStoredArray(
-    `${key}:${userId}`,
-    rows.filter((row) => row.user_id === userId),
-  );
+  const ownedRows = rows.filter((row) => row.user_id === userId);
+  try {
+    window.localStorage.setItem(`${key}:${userId}`, JSON.stringify(ownedRows));
+  } catch {
+    throw new Error("Unable to save your request. Enable browser storage and try again.");
+  }
 }
