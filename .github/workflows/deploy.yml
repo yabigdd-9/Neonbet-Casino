@@ -20,6 +20,10 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  validate:
+    uses: ./.github/workflows/validate.yml
+    permissions:
+      contents: read
   secret-scan:
     runs-on: ubuntu-latest
     steps:
@@ -37,7 +41,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    needs: secret-scan
+    needs: [secret-scan, validate]
     steps:
       - name: Checkout
         uses: actions/checkout@v4

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { lazy, Suspense, useState } from "react";
 import { ToastProvider, useToast } from "../components/feedback/ToastProvider";
 import Sidebar from "../components/layout/Sidebar";
 import Header from "../components/layout/Header";
@@ -10,39 +10,68 @@ import Hero from "../features/casino/Hero";
 import FeaturedGames from "../features/casino/FeaturedGames";
 import ArcadeGamesSection from "../features/casino/ArcadeGamesSection";
 import SlotProviderLibrary from "../features/casino/SlotProviderLibrary";
-import GameLaunchModal from "../features/casino/GameLaunchModal";
-import SlotGameModal from "../features/casino/SlotGameModal";
-import ArcadeGameModal from "../features/casino/ArcadeGameModal";
+const GameLaunchModal = lazyPanel(() => import("../features/casino/GameLaunchModal"));
+const SlotGameModal = lazyPanel(() => import("../features/casino/SlotGameModal"));
+const ArcadeGameModal = lazyPanel(() => import("../features/casino/ArcadeGameModal"));
 
-import AuthModal from "../features/auth/AuthModal";
+const AuthModal = lazyPanel(() => import("../features/auth/AuthModal"));
 import AccountStatusPanel from "../features/account/AccountStatusPanel";
 import VerificationPanel from "../features/verification/VerificationPanel";
 import WithdrawalRequestPanel from "../features/transactions/WithdrawalRequestPanel";
-import AdminDashboard from "../features/admin/AdminDashboard";
-import AdminReviewModal from "../features/admin/AdminReviewModal";
-import AdminProfileModal from "../features/admin/AdminProfileModal";
-import { PromotionsSection, TermsSection, PolicyModalContent } from "../features/promotions";
+const AdminDashboard = lazyPanel(() => import("../features/admin/AdminDashboard"));
+const AdminReviewModal = lazyPanel(() => import("../features/admin/AdminReviewModal"));
+const AdminProfileModal = lazyPanel(() => import("../features/admin/AdminProfileModal"));
+import { PromotionsSection, TermsSection } from "../features/promotions";
 
-import { hasSupabaseConfig, getSession, onAuthChange, signIn, signUp, signOut, resetPassword } from "../services/auth.service";
-import { getProfile, getAdminProfiles, buildDemoProfile, saveDemoProfile } from "../services/profiles.service";
-import { getSubmissions, submitSubmission, reviewSubmission, validateTxHash } from "../services/verification.service";
-import { getWithdrawals, submitWithdrawal, reviewWithdrawal, validateWithdrawal } from "../services/transactions.service";
+import { hasSupabaseConfig, signIn, signUp, signOut, resetPassword } from "../services/auth.service";
+import { submitSubmission, reviewSubmission, validateTxHash } from "../services/verification.service";
+import { submitWithdrawal, reviewWithdrawal, validateWithdrawal } from "../services/transactions.service";
 import { updateProfileAdmin } from "../services/admin.service";
 
 import { useFavorites, useRecentGames } from "../hooks/useGameHistory";
-import { getGameId } from "../lib/gameEngine";
-import { readStoredValue, writeStoredValue } from "../lib/storage";
+import { writeStoredValue } from "../lib/storage";
 import { features } from "../config/features";
-import { IS_SUPABASE } from "../config/appMode";
+import ErrorBoundary from "../components/ui/ErrorBoundary";
+import { CONFIG_ERROR } from "../config/appMode";
+import { useDemoWallet } from "../hooks/useDemoWallet";
+import { useAccount } from "../hooks/useAccount";
+import { scrollToSection } from "../lib/navigation";
 
-function scrollToSection(id) {
-  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+const PolicyModalContent = lazyPanel(() => import("../features/promotions/PolicyModalContent"));
+
+function lazyPanel(loader) {
+  const Component = lazy(loader);
+  return function FeaturePanel(props) {
+    return (
+      <ErrorBoundary
+        fallback={
+          <div role="alert" className="surface fixed bottom-24 right-4 z-50 max-w-xs p-4">
+            <p>This panel could not load. Reload to try again.</p>
+            <button type="button" className="filter-chip mt-3" onClick={() => window.location.reload()}>
+              Reload
+            </button>
+          </div>
+        }
+      >
+        <Suspense
+          fallback={
+            <div role="status" className="fixed bottom-24 right-4 z-50 surface p-4">
+              Loading panel…
+            </div>
+          }
+        >
+          <Component {...props} />
+        </Suspense>
+      </ErrorBoundary>
+    );
+  };
 }
 
 function AppContent() {
   const toast = useToast();
   const [open, setOpen] = useState(false);
-  const [balance, setBalance] = useState(100);
+  const wallet = useDemoWallet();
+  const { balance } = wallet;
   const [activeGame, setActiveGame] = useState(null);
   const [activeArcadeGame, setActiveArcadeGame] = useState(null);
   const [launchGame, setLaunchGame] = useState(null);
@@ -51,10 +80,6 @@ function AppContent() {
 
   const [authMode, setAuthMode] = useState("login");
   const [authOpen, setAuthOpen] = useState(false);
-  const [profile, setProfile] = useState(null);
-  const [profiles, setProfiles] = useState([]);
-  const [submissions, setSubmissions] = useState([]);
-  const [withdrawals, setWithdrawals] = useState([]);
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
   const [verificationSaving, setVerificationSaving] = useState(false);
@@ -64,74 +89,24 @@ function AppContent() {
   const [reviewModal, setReviewModal] = useState(null);
   const [profileModal, setProfileModal] = useState(null);
 
-  const [user, setUser] = useState(() => {
-    if (hasSupabaseConfig) return null;
-    return readStoredValue("neonbetUser", null);
-  });
-
-  const latestSubmission = submissions[0] || null;
-  const latestWithdrawal = withdrawals[0] || null;
-
-  const loadAccount = useCallback(
-    async (nextUser = user) => {
-      if (!nextUser) {
-        setProfile(null);
-        setProfiles([]);
-        setSubmissions([]);
-        setWithdrawals([]);
-        return;
-      }
-      if (!hasSupabaseConfig) {
-        const demo = buildDemoProfile(nextUser);
-        setProfile(demo);
-        setProfiles([]);
-        setSubmissions(readStoredValue("neonbetVerificationSubmissions", []));
-        setWithdrawals(readStoredValue("neonbetWithdrawalRequests", []));
-        return;
-      }
-      try {
-        const profileData = await getProfile(nextUser.id);
-        setProfile(profileData);
-        const isAdmin = profileData.role === "admin";
-        const [adminRows, submissionRows, withdrawalRows] = await Promise.all([
-          getAdminProfiles(),
-          getSubmissions({ userId: nextUser.id, isAdmin }),
-          getWithdrawals({ userId: nextUser.id, isAdmin }),
-        ]);
-        setProfiles(isAdmin ? adminRows : []);
-        setSubmissions(submissionRows);
-        setWithdrawals(withdrawalRows);
-      } catch (error) {
-        setAuthError(error.message || "Account data failed to load.");
-      }
-    },
-    [user]
-  );
-
-  useEffect(() => {
-    if (!hasSupabaseConfig) return undefined;
-    let active = true;
-    getSession().then((session) => {
-      if (session?.user && active) {
-        setUser(session.user);
-        loadAccount(session.user);
-      }
-    });
-    const unsub = onAuthChange((nextUser) => {
-      setUser(nextUser);
-      if (nextUser) loadAccount(nextUser);
-      else {
-        setProfile(null);
-        setProfiles([]);
-        setSubmissions([]);
-        setWithdrawals([]);
-      }
-    });
-    return () => {
-      active = false;
-      unsub();
-    };
-  }, [loadAccount]);
+  const {
+    user,
+    setUser,
+    profile,
+    profiles,
+    submissions,
+    withdrawals,
+    latestSubmission,
+    latestWithdrawal,
+    adminPage,
+    loadAccount,
+    accountError,
+    accountLoading,
+    recovery,
+    setRecovery,
+  } = useAccount();
+  const [verificationError, setVerificationError] = useState("");
+  const [withdrawalError, setWithdrawalError] = useState("");
 
   function openAuth(mode) {
     setAuthError("");
@@ -144,7 +119,13 @@ function AppContent() {
     setAuthError("");
     try {
       if (!hasSupabaseConfig) {
-        const localUser = { id: `local-${Date.now()}`, username: payload.username, phone: payload.phone, contactMethod: payload.contactMethod, verification_status: "not_submitted" };
+        const localUser = {
+          id: `local-${crypto.randomUUID()}`,
+          username: payload.username,
+          phone: payload.phone,
+          contactMethod: payload.contactMethod,
+          verification_status: "not_submitted",
+        };
         setUser(localUser);
         writeStoredValue("neonbetUser", localUser);
         await loadAccount(localUser);
@@ -153,10 +134,17 @@ function AppContent() {
         return;
       }
       if (payload.mode === "register") {
-        const { data, error } = await signUp({ email: payload.email, password: payload.password, username: payload.username, phone: payload.phone, contactMethod: payload.contactMethod });
-        if (error) throw error;
+        const data = await signUp({
+          email: payload.email,
+          password: payload.password,
+          username: payload.username,
+          phone: payload.phone,
+          contactMethod: payload.contactMethod,
+        });
         if (!data.session) {
-          setAuthError("Account created. Check your email if Supabase email confirmation is enabled, then log in.");
+          setAuthError(
+            "Account created. Check your email if Supabase email confirmation is enabled, then log in.",
+          );
           return;
         }
         setUser(data.user);
@@ -165,8 +153,7 @@ function AppContent() {
         toast.success("Account created");
         return;
       }
-      const { data, error } = await signIn({ email: payload.email, password: payload.password });
-      if (error) throw error;
+      const data = await signIn({ email: payload.email, password: payload.password });
       setUser(data.user);
       await loadAccount(data.user);
       setAuthOpen(false);
@@ -194,36 +181,39 @@ function AppContent() {
   }
 
   async function handleLogout() {
-    if (hasSupabaseConfig) await signOut();
-    setUser(null);
-    setProfile(null);
-    setProfiles([]);
-    setSubmissions([]);
-    setWithdrawals([]);
-    writeStoredValue("neonbetUser", null);
-    toast.info("Signed out");
+    try {
+      await signOut();
+      setUser(null);
+      writeStoredValue("neonbetUser", null);
+      toast.info("Signed out");
+    } catch (error) {
+      toast.error(error.message || "Sign out failed. Try again.");
+    }
   }
 
   async function handleSubmitVerification(method, txHash) {
-    if (!user) { openAuth("register"); return; }
-    if (!validateTxHash(txHash)) { setAuthError("Enter a valid transaction hash before submitting."); return; }
+    if (!user) {
+      openAuth("register");
+      return;
+    }
+    if (!validateTxHash(txHash, method)) {
+      setVerificationError("Enter a valid transaction hash before submitting.");
+      return;
+    }
+    setVerificationError("");
     setVerificationSaving(true);
     try {
-      const result = await submitSubmission({ userId: user.id, method, txHash });
-      if (result.localSubmission) {
-        setSubmissions([result.localSubmission, ...submissions]);
-        setProfile((current) => ({ ...current, verification_status: "pending" }));
-        toast.success("Verification submitted");
-      } else {
-        await loadAccount(user);
-        toast.success("Verification submitted");
-      }
+      await submitSubmission({ userId: user.id, method, txHash });
+      await loadAccount(user);
+      toast.success("Verification submitted");
+      return true;
     } catch (error) {
-      const hasPending = error.code === "23505" || (error.message || "").includes("verification_submissions_user_pending_idx");
-      setAuthError(
+      const hasPending =
+        error.code === "23505" || (error.message || "").includes("verification_submissions_user_pending_idx");
+      setVerificationError(
         hasPending
           ? "You already have a pending verification submission."
-          : error.message || "Verification submission failed."
+          : error.message || "Verification submission failed.",
       );
     } finally {
       setVerificationSaving(false);
@@ -231,20 +221,23 @@ function AppContent() {
   }
 
   async function handleSubmitWithdrawal(request) {
-    if (!user) { openAuth("login"); return; }
-    if (!validateWithdrawal(request)) { setAuthError("Enter a valid withdrawal amount and payout address."); return; }
+    if (!user) {
+      openAuth("login");
+      return;
+    }
+    if (!validateWithdrawal(request)) {
+      setWithdrawalError("Enter a valid withdrawal amount and payout address.");
+      return;
+    }
+    setWithdrawalError("");
     setWithdrawalSaving(true);
     try {
-      const result = await submitWithdrawal({ userId: user.id, request });
-      if (result.local) {
-        setWithdrawals([result.local, ...withdrawals]);
-        toast.success("Withdrawal requested");
-      } else {
-        await loadAccount(user);
-        toast.success("Withdrawal requested");
-      }
+      await submitWithdrawal({ userId: user.id, request });
+      await loadAccount(user);
+      toast.success("Withdrawal requested");
+      return true;
     } catch (error) {
-      setAuthError(error.message || "Withdrawal request failed.");
+      setWithdrawalError(error.message || "Withdrawal request failed.");
     } finally {
       setWithdrawalSaving(false);
     }
@@ -259,7 +252,7 @@ function AppContent() {
       setReviewModal(null);
       toast.success(`Submission ${status}`);
     } catch (error) {
-      setAuthError(error.message || "Admin review failed.");
+      toast.error(error.message || "Admin review failed.");
     } finally {
       setAdminSaving(false);
     }
@@ -274,7 +267,7 @@ function AppContent() {
       setReviewModal(null);
       toast.success(`Withdrawal ${status}`);
     } catch (error) {
-      setAuthError(error.message || "Withdrawal review failed.");
+      toast.error(error.message || "Withdrawal review failed.");
     } finally {
       setAdminSaving(false);
     }
@@ -289,7 +282,7 @@ function AppContent() {
       setProfileModal(null);
       toast.success("Profile updated");
     } catch (error) {
-      setAuthError(error.message || "Profile update failed.");
+      toast.error(error.message || "Profile update failed.");
     } finally {
       setAdminSaving(false);
     }
@@ -309,18 +302,48 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(34,211,238,0.15),transparent_35%),radial-gradient(circle_at_80%_20%,rgba(168,85,247,0.14),transparent_35%)]" />
-      <Sidebar open={open} setOpen={setOpen} />
-      <Header setOpen={setOpen} balance={balance} user={user} onOpenAuth={openAuth} onLogout={handleLogout} />
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
+      <Sidebar open={open} setOpen={setOpen} user={user} />
+      <Header
+        setOpen={setOpen}
+        balance={balance}
+        user={user ? { ...user, username: profile?.username || user.username } : null}
+        onOpenAuth={openAuth}
+        onLogout={handleLogout}
+      />
 
-      <a href="#main-content" className="skip-link">Skip to main content</a>
-      <main id="main-content" tabIndex={-1} className="relative space-y-8 px-4 py-8 md:px-8 lg:ml-72">
-        <Hero onClaim={() => scrollToSection("verification")} onOpenGame={setActiveArcadeGame} />
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="relative mx-auto max-w-[1680px] space-y-10 px-4 pb-28 pt-6 md:px-8 lg:ml-64 lg:pb-12"
+      >
+        <Hero onClaim={() => scrollToSection("featured-games")} onOpenGame={setActiveArcadeGame} />
 
+        {accountLoading && (
+          <p role="status" className="surface p-4">
+            Loading account…
+          </p>
+        )}
+        {accountError && (
+          <div role="alert" className="surface p-4 text-rose-200">
+            {accountError}{" "}
+            <button type="button" onClick={() => loadAccount(user)}>
+              Retry
+            </button>
+          </div>
+        )}
         {features.account && (
           <AccountStatusPanel user={user} profile={profile} latestSubmission={latestSubmission} />
         )}
 
-        <FeaturedGames onPlay={handleOpenGame} favorites={favorites} isFavorite={isFavorite} onToggleFavorite={toggleFavorite} />
+        <FeaturedGames
+          onPlay={handleOpenGame}
+          favorites={favorites}
+          isFavorite={isFavorite}
+          onToggleFavorite={toggleFavorite}
+        />
 
         <ArcadeGamesSection onPlay={setActiveArcadeGame} />
 
@@ -338,6 +361,7 @@ function AppContent() {
             latestSubmission={latestSubmission}
             onSubmitVerification={handleSubmitVerification}
             verificationSaving={verificationSaving}
+            error={verificationError}
             onNeedAuth={() => openAuth("register")}
           />
         )}
@@ -348,12 +372,15 @@ function AppContent() {
             profile={profile}
             latestWithdrawal={latestWithdrawal}
             withdrawalSaving={withdrawalSaving}
+            error={withdrawalError}
             onSubmitWithdrawal={handleSubmitWithdrawal}
           />
         )}
 
-        {features.admin && (
+        {features.admin && profile?.role === "admin" && (
           <AdminDashboard
+            page={adminPage}
+            onPageChange={(page) => loadAccount(user, page)}
             profile={profile}
             profiles={profiles}
             submissions={submissions}
@@ -361,7 +388,7 @@ function AppContent() {
             onReview={(item, status) => setReviewModal({ item, status, type: "verification" })}
             onReviewWithdrawal={(item, status) => setReviewModal({ item, status, type: "withdrawal" })}
             onUpdateProfile={setProfileModal}
-            adminSaving={adminSaving}
+            adminSaving={adminSaving || accountLoading}
           />
         )}
 
@@ -374,7 +401,7 @@ function AppContent() {
         <Footer onOpenPolicy={setPolicyPage} />
       </main>
 
-      <MobileNav onOpenAuth={openAuth} />
+      <MobileNav user={user} onOpenAuth={openAuth} />
 
       {policyPage && (
         <Modal title={policyPage.title} eyebrow={policyPage.eyebrow} onClose={() => setPolicyPage(null)}>
@@ -392,7 +419,12 @@ function AppContent() {
         />
       )}
       {profileModal && (
-        <AdminProfileModal userProfile={profileModal} onClose={() => setProfileModal(null)} onSubmit={handleUpdateProfile} saving={adminSaving} />
+        <AdminProfileModal
+          userProfile={profileModal}
+          onClose={() => setProfileModal(null)}
+          onSubmit={handleUpdateProfile}
+          saving={adminSaving}
+        />
       )}
       {launchGame && (
         <GameLaunchModal
@@ -403,15 +435,25 @@ function AppContent() {
           onLaunch={handleLaunchGame}
         />
       )}
-      {activeGame && <SlotGameModal game={activeGame} balance={balance} setBalance={setBalance} onClose={() => setActiveGame(null)} />}
-      {activeArcadeGame && <ArcadeGameModal game={activeArcadeGame} balance={balance} setBalance={setBalance} onClose={() => setActiveArcadeGame(null)} />}
-      {authOpen && (
+      {activeGame && <SlotGameModal game={activeGame} wallet={wallet} onClose={() => setActiveGame(null)} />}
+      {activeArcadeGame && (
+        <ArcadeGameModal game={activeArcadeGame} wallet={wallet} onClose={() => setActiveArcadeGame(null)} />
+      )}
+      {(authOpen || recovery) && (
         <AuthModal
-          mode={authMode}
+          mode={recovery ? "recovery" : authMode}
           setMode={setAuthMode}
-          onClose={() => setAuthOpen(false)}
+          onClose={() => {
+            setAuthOpen(false);
+            setRecovery(false);
+          }}
           onSubmit={handleAuthSubmit}
           onResetPassword={handleResetPassword}
+          onPasswordUpdated={() => {
+            setRecovery(false);
+            setAuthOpen(false);
+            toast.success("Password updated");
+          }}
           authLoading={authLoading}
           authError={authError}
         />
@@ -425,18 +467,22 @@ function VIPSection() {
   return (
     <section id="vip" className="scroll-mt-24 grid gap-5 xl:grid-cols-3">
       <div className="xl:col-span-2 rounded-3xl border border-white/10 bg-white/[0.06] p-6">
-        <h2 className="mb-5 text-2xl font-black">Leaderboard</h2>
+        <h2 className="mb-5 text-2xl font-semibold">Demo leaderboard</h2>
         {["LuckyDion", "NeonWolf", "KiwiJackpot", "SpinQueen"].map((name, i) => (
           <div key={name} className="flex items-center gap-4 border-b border-white/10 py-4 last:border-none">
-            <div className="grid h-10 w-10 place-items-center rounded-2xl bg-white/10 font-black">#{i + 1}</div>
+            <div className="grid h-10 w-10 place-items-center rounded-2xl bg-white/10 font-semibold">
+              #{i + 1}
+            </div>
             <div className="flex-1 font-bold">{name}</div>
-            <div className="font-black text-cyan-300">{(98000 - i * 13750).toLocaleString()} pts</div>
+            <div className="font-semibold text-cyan-300">{(98000 - i * 13750).toLocaleString()} pts</div>
           </div>
         ))}
       </div>
       <div className="rounded-3xl border border-amber-300/20 bg-gradient-to-br from-amber-300/15 to-orange-500/10 p-6">
-        <div className="flex items-center gap-2 font-black text-amber-200"><span>★</span> VIP Progress</div>
-        <h2 className="mt-5 text-4xl font-black">Gold II</h2>
+        <div className="flex items-center gap-2 font-semibold text-amber-200">
+          <span>★</span> VIP Progress
+        </div>
+        <h2 className="mt-5 text-4xl font-semibold">Gold II</h2>
         <p className="mt-2 text-slate-300">Complete missions to unlock rewards and account perks.</p>
         <div className="mt-6 h-4 overflow-hidden rounded-full bg-black/30">
           <div className="h-full w-[62%] bg-amber-300" />
@@ -448,6 +494,13 @@ function VIPSection() {
 }
 
 export default function App() {
+  if (CONFIG_ERROR)
+    return (
+      <main className="mx-auto max-w-xl p-8">
+        <h1 className="text-2xl font-bold">Account service unavailable</h1>
+        <p role="alert">{CONFIG_ERROR}</p>
+      </main>
+    );
   return (
     <ToastProvider>
       <AppContent />

@@ -41,3 +41,10 @@ All notable changes to NeonBet are documented here. Format follows Keep a Change
 ### Developer Experience
 - Vitest unit tests for pure logic, services validators, providers, config, and data integrity.
 - `npm run test` script; `vitest.config.js` with jsdom environment.
+
+## Unreleased — full local upgrade
+
+- Corrected auth contracts, session cleanup, account races and demo-mode isolation.
+- Redesigned the lobby and catalogue; added lazy panels, pagination and base-relative assets.
+- Added exactly-once simulated settlement, typed service/provider boundaries, SQL transition checks and browser/regression verification.
+- Added a local integration harness and activation checklist; live capabilities remain disabled.

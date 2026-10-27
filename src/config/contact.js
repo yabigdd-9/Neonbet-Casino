@@ -13,7 +13,7 @@ export function buildContactUrl(channel, username = "", phone = "") {
   const handle = username.trim() || "new player";
   const mobile = phone.trim() || "not provided";
   const message = encodeURIComponent(
-    `Hi ${brandName()}, I want to register.\nUsername: ${handle}\nMobile: ${mobile}\nBonus: $100 sign-up + 300% match with 10x rollover`
+    `Hi ${brandName()}, I want to register.\nUsername: ${handle}\nMobile: ${mobile}\nBonus: $100 sign-up + 300% match with 10x rollover`,
   );
 
   if (channel === "whatsapp" && contact.whatsappUrl) {
@@ -29,7 +29,7 @@ export function buildContactUrl(channel, username = "", phone = "") {
 
 function brandName() {
   // Local import to avoid a circular dependency at module init.
-  return (import.meta.env.VITE_BRAND_NAME || "NeonBet");
+  return import.meta.env.VITE_BRAND_NAME || "NeonBet";
 }
 
 export default contact;

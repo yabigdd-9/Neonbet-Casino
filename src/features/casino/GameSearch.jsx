@@ -5,6 +5,10 @@ import { Search, X } from "lucide-react";
 export default function GameSearch({ onResult, className = "" }) {
   const [value, setValue] = useState("");
   const [debounced, setDebounced] = useState("");
+  const callbackRef = useRef(onResult);
+  useEffect(() => {
+    callbackRef.current = onResult;
+  }, [onResult]);
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -13,8 +17,8 @@ export default function GameSearch({ onResult, className = "" }) {
   }, [value]);
 
   useEffect(() => {
-    onResult?.(debounced.trim());
-  }, [debounced, onResult]);
+    callbackRef.current?.(debounced.trim());
+  }, [debounced]);
 
   return (
     <div className={`relative block ${className}`}>

@@ -238,23 +238,26 @@ language plpgsql
 security definer
 set search_path = ''
 as $$
+declare
+  current_status text;
 begin
   if not private.is_admin() then
     raise exception 'Admin access required' using errcode = '42501';
   end if;
-
-  if p_status not in ('pending', 'approved', 'paid', 'rejected') then
-    raise exception 'Invalid withdrawal status' using errcode = '22023';
-  end if;
-
-  update public.withdrawal_requests
-  set status = p_status,
-      admin_notes = coalesce(p_admin_notes, '')
-  where id = p_withdrawal_id;
-
+  select status into current_status from public.withdrawal_requests
+  where id = p_withdrawal_id for update;
   if not found then
     raise exception 'Withdrawal request not found' using errcode = 'P0002';
   end if;
+  if p_status is null or not (
+    (current_status = 'pending' and p_status in ('approved', 'rejected'))
+    or (current_status = 'approved' and p_status = 'paid')
+  ) then
+    raise exception 'Invalid withdrawal transition' using errcode = '22023';
+  end if;
+  update public.withdrawal_requests
+  set status = p_status, admin_notes = coalesce(p_admin_notes, '')
+  where id = p_withdrawal_id;
 end;
 $$;
 

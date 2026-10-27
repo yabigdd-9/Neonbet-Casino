@@ -23,7 +23,8 @@ export function writeStoredArray(key, value) {
   }
 }
 
-export function readStoredValue(key, fallback = null) {
+/** @template [T=null] @param {string} key @param {T} [fallback] @returns {T} */
+export function readStoredValue(key, fallback = /** @type {T} */ (null)) {
   try {
     const raw = window.localStorage.getItem(key);
     return raw === null ? fallback : JSON.parse(raw);
@@ -41,3 +42,35 @@ export function writeStoredValue(key, value) {
 }
 
 export default { formatMoney, readStoredArray, writeStoredArray, readStoredValue, writeStoredValue };
+
+export const isStoredUser = (value) =>
+  Boolean(
+    value &&
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    typeof value.id === "string" &&
+    value.id.startsWith("local-") &&
+    typeof value.username === "string" &&
+    value.username.length <= 80,
+  );
+export function readUserRecords(key, userId) {
+  if (!userId) return [];
+  const scopedKey = `${key}:${userId}`;
+  const scoped = readStoredValue(scopedKey, null);
+  const valid = (row) =>
+    row &&
+    typeof row === "object" &&
+    row.user_id === userId &&
+    typeof row.id === "string" &&
+    typeof row.status === "string" &&
+    typeof row.created_at === "string";
+  const rows = (Array.isArray(scoped) ? scoped : readStoredArray(key)).filter(valid);
+  if (scoped === null) writeStoredArray(scopedKey, rows);
+  return rows;
+}
+export function writeUserRecords(key, userId, rows) {
+  writeStoredArray(
+    `${key}:${userId}`,
+    rows.filter((row) => row.user_id === userId),
+  );
+}

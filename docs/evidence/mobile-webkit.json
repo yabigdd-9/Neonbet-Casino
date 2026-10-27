@@ -1,0 +1,53 @@
+{
+  "navigation": [
+    {
+      "name": "http://127.0.0.1:4173/Neonbet-Casino/",
+      "entryType": "navigation",
+      "startTime": 0,
+      "duration": 721,
+      "initiatorType": "navigation",
+      "nextHopProtocol": "http/1.1",
+      "workerStart": 0,
+      "redirectStart": 0,
+      "redirectEnd": 0,
+      "fetchStart": 113,
+      "domainLookupStart": 113,
+      "domainLookupEnd": 113,
+      "connectStart": 113,
+      "connectEnd": 113,
+      "secureConnectionStart": 0,
+      "requestStart": 114,
+      "finalResponseHeadersStart": 118.00000000000001,
+      "firstInterimResponseStart": 0,
+      "responseStart": 118.00000000000001,
+      "responseEnd": 119.00000000000001,
+      "transferSize": 1127,
+      "encodedBodySize": 827,
+      "decodedBodySize": 2927,
+      "workerRouterEvaluationStart": 0,
+      "workerCacheLookupStart": 0,
+      "workerMatchedRouterSource": "",
+      "workerFinalRouterSource": "",
+      "deliveryType": "",
+      "serverTiming": [],
+      "unloadEventStart": 0,
+      "unloadEventEnd": 0,
+      "domInteractive": 199,
+      "domContentLoadedEventStart": 709,
+      "domContentLoadedEventEnd": 709,
+      "domComplete": 720,
+      "loadEventStart": 721,
+      "loadEventEnd": 721,
+      "type": "navigate",
+      "redirectCount": 0
+    }
+  ],
+  "paints": [
+    {
+      "name": "first-contentful-paint",
+      "entryType": "paint",
+      "startTime": 1853,
+      "duration": 0
+    }
+  ]
+}

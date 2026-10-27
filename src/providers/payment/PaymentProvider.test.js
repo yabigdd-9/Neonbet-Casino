@@ -1,46 +1,20 @@
-import { describe, it, expect } from 'vitest';
-import { MockPaymentProvider, PaymentProvider } from './PaymentProvider.js';
-
-describe('MockPaymentProvider', () => {
-  it('creates a simulated deposit and stores it', () => {
-    const provider = new MockPaymentProvider();
-    const record = provider.createDeposit({ amount: 100, asset: 'USDT' });
-    expect(record.status).toBe('simulated');
-    expect(record.id).toMatch(/^mock-deposit-/);
-    expect(record.amount).toBe(100);
+import { it, expect } from "vitest";
+import { MockPaymentProvider } from "./PaymentProvider";
+const request = { amountCents: 100, currency: "USD", idempotencyKey: "test-deposit" };
+it("creates asynchronous simulated transactions idempotently", async () => {
+  const provider = new MockPaymentProvider();
+  const first = await provider.createDeposit(request);
+  expect(await provider.createDeposit(request)).toEqual(first);
+  expect(await provider.getTransaction(first.id)).toEqual(first);
+  expect(await provider.getTransaction("missing")).toBeNull();
+  expect(first.status).toBe("simulated");
+  await expect(provider.createDeposit({ ...request, amountCents: 101 })).rejects.toMatchObject({
+    code: "CONFLICT",
   });
-
-  it('creates a simulated withdrawal and stores it', () => {
-    const provider = new MockPaymentProvider();
-    const record = provider.createWithdrawal({ amount: 50, address: '0xabc' });
-    expect(record.status).toBe('simulated');
-    expect(record.id).toMatch(/^mock-withdrawal-/);
-    expect(record.address).toBe('0xabc');
+  await expect(provider.createDeposit({ ...request, amountCents: 1.5 })).rejects.toMatchObject({
+    code: "INVALID_REQUEST",
   });
-
-  it('retrieves a created transaction by id', () => {
-    const provider = new MockPaymentProvider();
-    const record = provider.createDeposit({ amount: 25 });
-    expect(provider.getTransaction(record.id)).toBe(record);
-  });
-
-  it('returns null for an unknown transaction id', () => {
-    const provider = new MockPaymentProvider();
-    expect(provider.getTransaction('does-not-exist')).toBeNull();
-  });
-
-  it('throws on webhook verification', () => {
-    const provider = new MockPaymentProvider();
-    expect(() => provider.verifyWebhook()).toThrow();
-  });
-});
-
-describe('PaymentProvider base class', () => {
-  it('throws on unimplemented methods', () => {
-    const base = new PaymentProvider();
-    expect(() => base.createDeposit({})).toThrow();
-    expect(() => base.createWithdrawal({})).toThrow();
-    expect(() => base.getTransaction('x')).toThrow();
-    expect(() => base.verifyWebhook()).toThrow();
-  });
+  await expect(provider.verifyWebhook()).rejects.toMatchObject({ code: "UNAVAILABLE" });
+  const withdrawal = await provider.createWithdrawal({ ...request, idempotencyKey: "test-withdrawal" });
+  expect(withdrawal.kind).toBe("withdrawal");
 });
