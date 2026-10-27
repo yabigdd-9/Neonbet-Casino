@@ -39,7 +39,7 @@ export default function AccountStatusPanel({
           <p className="mt-2 text-slate-400">
             {IS_SUPABASE
               ? "Synced with Supabase accounts and verification records."
-              : "Local browser account. Add Supabase env vars for real backend accounts."}
+              : "Browser-only session. Simulated balance and progress reset when you refresh."}
           </p>
         </div>
         <StatusBadge status={status} />

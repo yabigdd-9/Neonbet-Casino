@@ -52,8 +52,9 @@ export default function WithdrawalRequestPanel({
           </div>
           <h2 className="mt-2 text-2xl font-semibold md:text-3xl">Withdrawal Request</h2>
           <p className="mt-2 max-w-3xl text-slate-400">
-            Submit a manual request after verification and rollover review. Admin approval is required before
-            any payout.
+            {IS_SUPABASE
+              ? "Submit a manual request for account review."
+              : "This form demonstrates a withdrawal request. Simulated credits cannot be withdrawn."}
           </p>
           {!IS_SUPABASE && (
             <p className="mt-2 text-sm text-cyan-200">Demo request only. No cryptocurrency is sent.</p>
@@ -90,8 +91,9 @@ export default function WithdrawalRequestPanel({
             </div>
           </div>
           <p className="mt-4 text-xs leading-5 text-slate-400">
-            Requests can be submitted before final approval, but admin may reject requests that do not meet
-            verification, rollover, or account review rules.
+            {IS_SUPABASE
+              ? "Requests are subject to account review."
+              : "Completing the simulated target does not unlock a cash payout."}
           </p>
         </div>
 

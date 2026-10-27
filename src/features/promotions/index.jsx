@@ -86,11 +86,10 @@ export function TermsSection({ onOpenPolicy }) {
 
       <div className="mt-6 rounded-3xl border border-cyan-300/20 bg-cyan-400/10 p-5">
         <div className="flex items-center gap-2 font-semibold text-cyan-100">
-          <MessageCircle size={18} /> Questions or verification proof
+          <MessageCircle size={18} /> Questions about the demo
         </div>
         <p className="mt-2 text-sm leading-6 text-slate-300">
-          Use Telegram or WhatsApp to send your username, selected asset/network, and transaction hash. Keep
-          screenshots and hashes until verification is complete.
+          Contact support with general questions. Do not send funds or share private keys or recovery phrases.
         </p>
         {contact.telegramUrl && (
           <a

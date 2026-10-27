@@ -28,19 +28,16 @@ export const terms = [
     detail: "The $1,500 target tracks simulated wagers only and does not unlock cash withdrawals.",
   },
   {
-    title: "Verification Fee",
-    detail:
-      "The $75 verification payment is reviewed manually. It does not create an instant deposit, automatic approval, casino credit, or guaranteed withdrawal.",
+    title: "Verification",
+    detail: "Real-money verification and payments are not available. Do not send funds.",
   },
   {
     title: "Crypto Networks",
-    detail:
-      "Only send the selected asset on the displayed network. Wrong-network, wrong-asset, NFT, or unsupported smart-contract transfers may be unrecoverable.",
+    detail: "Crypto deposits are not enabled. Do not send cryptocurrency.",
   },
   {
     title: "Proof Required",
-    detail:
-      "After payment, send your Telegram or WhatsApp username plus the transaction hash so verification can be checked against the selected wallet and network.",
+    detail: "No payment is required for the simulated arcade.",
   },
   {
     title: "Account Approval",
@@ -49,8 +46,7 @@ export const terms = [
   },
   {
     title: "Withdrawals",
-    detail:
-      "Any withdrawal review requires completed verification, completed rollover, matching account details, and compliance with the published account rules.",
+    detail: "Simulated balances cannot be withdrawn and have no cash value.",
   },
   {
     title: "Availability",
@@ -70,12 +66,9 @@ export const policyPages = {
       ],
       [
         "Verification",
-        "The $75 verification fee is reviewed manually and does not create an instant deposit, casino credit, withdrawal approval, or automated payment confirmation.",
+        "Real-money verification and deposits are not available. No payment is required for demo play.",
       ],
-      [
-        "Withdrawals",
-        "Withdrawal requests require admin review, completed verification, matching account details, and completion of any applicable rollover requirement.",
-      ],
+      ["Withdrawals", "Real-money withdrawals are not available."],
       [
         "Game Access",
         "Game access, provider availability, bonus eligibility, and account access can be limited, delayed, or rejected after review.",
