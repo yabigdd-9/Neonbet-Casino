@@ -128,7 +128,7 @@ export default function VerificationPanel({ user, latestSubmission, onSubmitVeri
                 <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">{selectedMethod.label}</div>
                 <h3 className="mt-2 text-2xl font-black">Payment details</h3>
               </div>
-              <img src={selectedMethod.qrCodeSrc} alt={`${selectedMethod.name} ${selectedMethod.network} verification QR code`} className="h-20 w-20 rounded-2xl border border-white/10 bg-white p-1" />
+
             </div>
 
             <div className="mt-6 space-y-4">
@@ -153,7 +153,7 @@ export default function VerificationPanel({ user, latestSubmission, onSubmitVeri
           </>
         ) : (
           <div className="rounded-3xl border border-amber-300/20 bg-amber-400/10 p-4 text-sm text-amber-100">
-            No wallet address configured for {selectedMethod.name}. Add it in src/config/verification.js before distribution.
+            This payment method is currently unavailable.
           </div>
         )}
 
