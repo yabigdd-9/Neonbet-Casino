@@ -1,6 +1,9 @@
 // Local simulated arcade game player (Dice / Plinko / Crash).
 import React, { useState } from "react";
 import { Play } from "lucide-react";
+import { useGameSound } from "../../hooks/useGameSound";
+import GameSoundButton from "../../components/ui/GameSoundButton";
+import RoundHistory from "../../components/ui/RoundHistory";
 import Modal from "../../components/ui/Modal";
 import { formatMoney } from "../../lib/storage";
 import { betOptions } from "../../lib/gameEngine";
@@ -8,6 +11,7 @@ import { betOptions } from "../../lib/gameEngine";
 const PLINKO_LANES = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 
 export default function ArcadeGameModal({ game, wallet, onClose }) {
+  const sound = useGameSound();
   const [bet, setBet] = useState(0.5);
   const [cashOutTarget, setCashOutTarget] = useState(2);
   const { balance, busy, start } = wallet;
@@ -18,7 +22,7 @@ export default function ArcadeGameModal({ game, wallet, onClose }) {
       : { title: "Ready", detail: game?.rule || "", win: 0, visual: [4] };
   if (!game) return null;
   function playRound() {
-    start(game, bet, Number(cashOutTarget));
+    if (start(game, bet, Number(cashOutTarget))) sound.play();
   }
 
   return (
@@ -194,6 +198,7 @@ export default function ArcadeGameModal({ game, wallet, onClose }) {
                   key={amount}
                   type="button"
                   disabled={busy}
+                  aria-pressed={bet === amount}
                   onClick={() => setBet(amount)}
                   className={`rounded-2xl border px-3 py-3 text-sm font-semibold transition ${
                     bet === amount
@@ -214,6 +219,8 @@ export default function ArcadeGameModal({ game, wallet, onClose }) {
               <Play size={18} />
               {busy ? "Playing..." : `Play ${formatMoney(bet)}`}
             </button>
+            <GameSoundButton sound={sound} />
+            <RoundHistory rounds={wallet.history} />
             {balance < bet && <p className="mt-3 text-sm text-amber-200">Balance is too low for this bet.</p>}
           </div>
 

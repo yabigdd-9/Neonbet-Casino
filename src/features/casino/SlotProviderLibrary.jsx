@@ -53,7 +53,7 @@ export default function SlotProviderLibrary({
       <div className="surface mb-6 p-4 md:p-5">
         <GameSearch
           onResult={(value) => {
-            setSearchTerm(value);
+            setSearchTerm(value.trim());
             setPage(0);
           }}
         />

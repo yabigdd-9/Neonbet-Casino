@@ -87,3 +87,22 @@ it("awards the daily demo reward only once per UTC day and handles storage failu
   expect(wallet.getSnapshot().cents).toBe(7000);
   localStorage.removeItem("neonbet:daily-demo-reward");
 });
+
+it("records settled rounds once and bounds the session history", () => {
+  vi.useFakeTimers();
+  vi.spyOn(Math, "random").mockReturnValue(0);
+  const wallet = new RoundController();
+  for (let index = 0; index < 12; index++) {
+    wallet.start({ id: "coin-flip", title: "Neon Coin Flip" }, 0.25);
+    vi.runAllTimers();
+  }
+  expect(wallet.getSnapshot().history).toHaveLength(10);
+  expect(new Set(wallet.getSnapshot().history.map((round) => round.id)).size).toBe(10);
+  expect(wallet.getSnapshot().history[0]).toMatchObject({
+    gameTitle: "Neon Coin Flip",
+    stakeCents: 25,
+    winCents: 50,
+  });
+  vi.runAllTimers();
+  expect(wallet.getSnapshot().history).toHaveLength(10);
+});
