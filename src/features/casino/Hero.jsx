@@ -35,7 +35,7 @@ export default function Hero({ onClaim, onOpenGame }) {
         <div className="hero-seven">
           7<span>7</span>7
         </div>
-        <span className="hero-art-label">NEON ORIGINALS / DEMO EDITION</span>
+        <span className="hero-art-label">NEON ORIGINALS / PRACTICE EDITION</span>
       </div>
       <div className="relative z-10 mt-8 flex flex-wrap gap-2 md:col-span-2">
         {arcadeGames.map((game) => (

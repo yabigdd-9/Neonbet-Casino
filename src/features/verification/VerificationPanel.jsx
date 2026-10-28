@@ -57,18 +57,18 @@ export default function VerificationPanel({
             role="status"
             className="mb-5 rounded-2xl border border-amber-300/30 bg-amber-400/10 p-4 text-sm text-amber-100"
           >
-            Real-money deposits are not available. Do not send cryptocurrency for this demo.
+            Real-money deposits are not available. Do not send cryptocurrency for this simulated experience.
           </p>
           <div className="flex flex-wrap items-center gap-3 text-cyan-200">
             <ShieldCheck />{" "}
             <span className="text-sm font-semibold uppercase tracking-[0.2em]">
-              Demo account verification
+              Practice account verification
             </span>
           </div>
           <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
               <h2 className="text-3xl font-semibold leading-tight md:text-5xl">
-                Explore the <span className="text-cyan-300">demo</span> verification flow.
+                Explore the <span className="text-cyan-300">practice</span> verification flow.
               </h2>
               <p className="mt-4 max-w-2xl text-slate-300">
                 This section demonstrates manual account verification. Payment instructions and real-money
@@ -104,7 +104,7 @@ export default function VerificationPanel({
                 <Check size={18} /> Account badge
               </div>
               <p className="mt-3 text-sm text-slate-400">
-                Demo status does not grant real-money account verification or cash rewards.
+                Practice status does not grant real-money account verification or cash rewards.
               </p>
             </div>
           </div>
@@ -226,7 +226,7 @@ export default function VerificationPanel({
         ) : (
           <div className="rounded-3xl border border-amber-300/20 bg-amber-400/10 p-4 text-sm text-amber-100">
             {selectedMethod.name} payment instructions are currently unavailable. No funds are required to
-            play the demo.
+            play the simulated games.
           </div>
         )}
 

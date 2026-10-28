@@ -12,9 +12,9 @@ export function PromotionsSection({ onClaimDaily }) {
     const result = onClaimDaily();
     setClaimMessage(
       result === "claimed"
-        ? "5 demo credits added for this session."
+        ? "5 bonus practice credits added for this session."
         : result === "claimed-weekend"
-          ? "10 weekend demo credits added for this session."
+          ? "10 weekend bonus practice credits added for this session."
           : result === "already-claimed"
             ? "Already claimed today. Try again after 00:00 UTC."
             : "Could not save your claim. Enable browser storage and try again.",
@@ -38,10 +38,10 @@ export function PromotionsSection({ onClaimDaily }) {
                   onClick={claim}
                   className="mt-4 rounded-xl bg-cyan-400 px-4 py-3 font-semibold text-slate-950"
                 >
-                  Claim daily demo credits
+                  Claim daily bonus practice credits
                 </button>
                 <p className="mt-2 text-xs text-slate-400">
-                  Once per browser per UTC day. Demo balance resets on refresh; no cash value.
+                  Once per browser per UTC day. Practice balance resets on refresh; no cash value.
                 </p>
                 <p role="status" className="mt-2 text-sm text-cyan-200">
                   {claimMessage}
@@ -86,7 +86,7 @@ export function TermsSection({ onOpenPolicy }) {
 
       <div className="mt-6 rounded-3xl border border-cyan-300/20 bg-cyan-400/10 p-5">
         <div className="flex items-center gap-2 font-semibold text-cyan-100">
-          <MessageCircle size={18} /> Questions about the demo
+          <MessageCircle size={18} /> Questions about practice play
         </div>
         <p className="mt-2 text-sm leading-6 text-slate-300">
           Contact support with general questions. Do not send funds or share private keys or recovery phrases.

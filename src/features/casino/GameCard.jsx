@@ -10,7 +10,7 @@ export default function GameCard({ game, onPlay, isFavorite, onToggleFavorite })
         className={`game-art relative grid h-32 md:h-40 place-items-center bg-gradient-to-br ${game.gradient}`}
       >
         <div className="absolute right-3 top-3 rounded-full bg-black/35 px-3 py-1 text-xs font-semibold">
-          DEMO
+          PRACTICE
         </div>
         <img
           src={`${import.meta.env.BASE_URL}game-art.svg`}
@@ -42,12 +42,12 @@ export default function GameCard({ game, onPlay, isFavorite, onToggleFavorite })
         <div className="text-xs text-cyan-300">{game.type}</div>
         <div className="font-semibold text-base leading-tight min-h-10">{game.title}</div>
         <button
-          aria-label={`Play demo: ${game.title}`}
+          aria-label={`Play practice game: ${game.title}`}
           type="button"
           onClick={() => onPlay(game)}
           className="mt-auto w-full rounded-2xl bg-white/10 py-3 font-semibold text-white transition hover:bg-cyan-400 hover:text-slate-950"
         >
-          <Play size={14} className="mr-2 inline" /> Play demo
+          <Play size={14} className="mr-2 inline" /> Play practice
         </button>
       </div>
     </Card>

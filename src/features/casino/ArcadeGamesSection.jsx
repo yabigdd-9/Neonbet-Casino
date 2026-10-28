@@ -19,7 +19,7 @@ export default function ArcadeGamesSection({ onPlay }) {
           </p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm font-bold text-slate-300">
-          All arcade games are local demos only.
+          All arcade games are simulated and played locally.
         </div>
       </div>
       <div className="grid gap-5 lg:grid-cols-3">

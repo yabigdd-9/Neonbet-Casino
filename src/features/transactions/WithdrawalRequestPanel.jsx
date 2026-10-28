@@ -57,7 +57,7 @@ export default function WithdrawalRequestPanel({
               : "This form demonstrates a withdrawal request. Simulated credits cannot be withdrawn."}
           </p>
           {!IS_SUPABASE && (
-            <p className="mt-2 text-sm text-cyan-200">Demo request only. No cryptocurrency is sent.</p>
+            <p className="mt-2 text-sm text-cyan-200">Practice request only. No cryptocurrency is sent.</p>
           )}
         </div>
         {latestWithdrawal && (

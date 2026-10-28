@@ -4,9 +4,9 @@ import { mkdirSync, writeFileSync } from "node:fs";
 const widths = [360, 390, 768, 1440];
 test("daily demo reward credits the wallet once per day", async ({ page }) => {
   await page.goto("./");
-  const claim = page.getByRole("button", { name: "Claim daily demo credits" });
+  const claim = page.getByRole("button", { name: "Claim daily bonus practice credits" });
   await claim.click();
-  await expect(page.getByText(/demo credits added for this session/)).toBeVisible();
+  await expect(page.getByText(/bonus practice credits added for this session/)).toBeVisible();
   await claim.click();
   await expect(page.getByText(/Already claimed today/)).toBeVisible();
 });
@@ -42,7 +42,7 @@ for (const width of widths) {
     await expect(page.getByText("No matching games")).toBeVisible();
     await page.getByRole("button", { name: "Clear search", exact: true }).click();
     await expect(page.getByText("No matching games")).toHaveCount(0);
-    await page.getByRole("button", { name: "Play demo: Neon Fruits", exact: true }).click();
+    await page.getByRole("button", { name: "Play practice game: Neon Fruits", exact: true }).click();
     await expect(page.getByRole("dialog")).toBeVisible();
     await page.getByRole("button", { name: "Launch Game", exact: true }).click();
     await expect(page.getByRole("dialog", { name: "Neon Fruits" })).toBeVisible();
@@ -52,7 +52,7 @@ for (const width of widths) {
     await expect
       .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth))
       .toBe(true);
-    await page.getByRole("button", { name: "Play demo: Neon Fruits", exact: true }).click();
+    await page.getByRole("button", { name: "Play practice game: Neon Fruits", exact: true }).click();
     await page.getByRole("button", { name: "Launch Game", exact: true }).click();
     await expect(page.getByRole("button", { name: "Spin $0.50", exact: true })).toBeEnabled();
     await page.keyboard.press("Escape");

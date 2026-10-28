@@ -12,7 +12,7 @@ export const promos = [
   },
   {
     title: "Weekend Boost",
-    detail: "The daily demo reward doubles to 10 credits on Saturday and Sunday UTC.",
+    detail: "The daily bonus reward doubles to 10 credits on Saturday and Sunday UTC.",
     icon: "Trophy",
   },
 ];
@@ -66,7 +66,7 @@ export const policyPages = {
       ],
       [
         "Verification",
-        "Real-money verification and deposits are not available. No payment is required for demo play.",
+        "Real-money verification and deposits are not available. No payment is required for simulated play.",
       ],
       ["Withdrawals", "Real-money withdrawals are not available."],
       [
