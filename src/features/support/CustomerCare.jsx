@@ -5,13 +5,13 @@ import { contact } from "../../config/contact";
 function reply(message) {
   const text = message.toLowerCase();
   if (/withdraw|cash out|payout/.test(text))
-    return "I can help with withdrawals. Open Withdrawals to submit a request; requests are reviewed manually. I can't check its status here.";
+    return "Withdrawals are not available. Practice credits have no cash value and cannot be withdrawn. I can't check account status here.";
   if (/deposit|payment|crypto|bitcoin|usdt|wallet/.test(text))
     return "Real-money deposits are not available. Please do not send cryptocurrency. I cannot confirm transactions or credit a balance.";
   if (/password|sign in|log in|login/.test(text))
     return "Having trouble signing in? Use the password reset option on the sign-in screen. Please don't share your password or recovery codes here.";
   if (/verif/.test(text))
-    return "You can submit your transaction details on the Verification page for manual review. I can't see your account or confirm its status.";
+    return "The verification page demonstrates a review process; it does not verify real payments or grant real-money access. Please do not send cryptocurrency.";
   if (/human|agent|person|contact/.test(text))
     return "I can't transfer this chat to a person. Please use the contact options below if they are available.";
   if (/gambl|addict|limit|self.exclu/.test(text))
