@@ -32,7 +32,7 @@ export default function GameCard({ game, onPlay, isFavorite, onToggleFavorite })
             }}
             aria-label={`${isFavorite ? "Remove favorite" : "Add favorite"}: ${game.title}`}
             aria-pressed={Boolean(isFavorite)}
-            className="absolute left-3 top-3 rounded-full bg-black/35 p-2 text-white hover:bg-black/55"
+            className="absolute left-3 top-3 min-h-11 min-w-11 rounded-full bg-black/35 p-2 text-white hover:bg-black/55"
           >
             <Star size={16} className={isFavorite ? "fill-amber-300 text-amber-300" : ""} />
           </button>

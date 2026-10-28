@@ -5,7 +5,22 @@ import { DEMO_START_CENTS } from "../config/demoBonus";
 export class RoundController {
   listeners = new Set();
   timer = null;
-  snapshot = { cents: DEMO_START_CENTS, wageredCents: 0, busy: false, round: null, history: [] };
+  snapshot = {
+    cents: DEMO_START_CENTS,
+    referralCents: 0,
+    wageredCents: 0,
+    busy: false,
+    round: null,
+    history: [],
+  };
+  applyReferralCredits = (credits) => {
+    if (!Number.isSafeInteger(credits) || credits < 0 || credits > 100) return false;
+    const total = credits * 100;
+    const increase = total - this.snapshot.referralCents;
+    if (increase <= 0) return false;
+    this.publish({ cents: this.snapshot.cents + increase, referralCents: total });
+    return true;
+  };
   subscribe = (listener) => {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);

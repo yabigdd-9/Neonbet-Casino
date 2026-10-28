@@ -44,10 +44,15 @@ begin
   select created_at into signup_at from auth.users where id = caller and email_confirmed_at is not null;
   if caller is null or signup_at is null then raise exception 'A verified account is required'; end if;
   if invite_code is null or invite_code !~ '^LO-[a-f0-9]{32}$' then raise exception 'Invalid invitation'; end if;
-  select owner_id,created_at into inviter,code_created from private.practice_referral_codes where code = substring(invite_code from 4)::uuid;
+  -- Lock the inviter's code so concurrent new claims cannot exceed the account cap.
+  select owner_id,created_at into inviter,code_created from private.practice_referral_codes where code = substring(invite_code from 4)::uuid for update;
   if inviter is null or inviter = caller then raise exception 'Invalid invitation'; end if;
   -- Rewards are for new signups after the invitation code was created, claimed within 7 days.
   if signup_at < code_created or signup_at < now() - interval '7 days' then raise exception 'Signup is not eligible'; end if;
+  select referrer_id into existing from private.practice_referral_awards where referred_id = caller;
+  if existing = inviter then return jsonb_build_object('claimed',true,'rewardCredits',5); end if;
+  if existing is not null then raise exception 'Invitation already attributed'; end if;
+  if (select count(*) from private.practice_referral_awards where referrer_id = inviter) >= 20 then raise exception 'Referral account limit reached'; end if;
   insert into private.practice_referral_awards(referred_id,referrer_id) values(caller,inviter) on conflict do nothing;
   select referrer_id into existing from private.practice_referral_awards where referred_id = caller;
   if existing <> inviter then raise exception 'Invitation already attributed'; end if;

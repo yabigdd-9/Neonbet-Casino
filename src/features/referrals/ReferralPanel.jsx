@@ -2,17 +2,18 @@ import React, { useEffect, useRef, useState } from "react";
 import { getReferralStatus, claimReferral } from "../../services/referrals.service";
 import { hasSupabaseConfig } from "../../services/supabaseClient";
 import { invitationCode, invitationLink, receivedInvitation } from "./invitations";
-export default function ReferralPanel({ user }) {
+export default function ReferralPanel({ user, onCreditsVerified }) {
   const sharedEnabled = hasSupabaseConfig && import.meta.env.VITE_ENABLE_SHARED_REFERRALS === "true";
   return (
     <ReferralAccountPanel
       key={`${sharedEnabled}:${user?.id || "guest"}`}
       user={user}
       sharedEnabled={sharedEnabled}
+      onCreditsVerified={onCreditsVerified}
     />
   );
 }
-function ReferralAccountPanel({ user, sharedEnabled }) {
+function ReferralAccountPanel({ user, sharedEnabled, onCreditsVerified }) {
   const [code] = useState(invitationCode);
   const [received] = useState(() => receivedInvitation(code));
   const [status, setStatus] = useState("");
@@ -22,6 +23,9 @@ function ReferralAccountPanel({ user, sharedEnabled }) {
   const [loading, setLoading] = useState(sharedEnabled && Boolean(user?.id));
   const [retry, setRetry] = useState(0);
   const mounted = useRef(false);
+  useEffect(() => {
+    if (shared) onCreditsVerified?.(shared.credits);
+  }, [shared, onCreditsVerified]);
   useEffect(() => {
     mounted.current = true;
     return () => {
@@ -100,7 +104,8 @@ function ReferralAccountPanel({ user, sharedEnabled }) {
       {shared && (
         <p className="mt-4 text-sm text-cyan-200">
           {shared.credits} non-cash practice credits earned from {shared.count} verified referrals. These are
-          not cash or withdrawable funds.
+          not cash or withdrawable funds. Earned credits are included once in this browser session's practice
+          balance; refreshing status does not add them again.
         </p>
       )}
       {shared && received && received !== shared.code && !shared.claimed && (
@@ -150,6 +155,31 @@ function ReferralAccountPanel({ user, sharedEnabled }) {
           : "The planned reward is 5 non-cash practice credits, pending shared signup verification."}{" "}
         There is no deposit requirement or withdrawal value.
       </p>
+      <details className="mt-4 text-sm text-slate-300">
+        <summary className="cursor-pointer py-3">Practice referral terms and account limits</summary>
+        <ul className="list-disc space-y-2 pl-5">
+          <li>
+            The inviter receives 5 non-cash credits per eligible new confirmed-email account, up to 20
+            referrals (100 credits) per inviter account.
+          </li>
+          <li>
+            One invitation per new account, applied within 7 days of signup. The invitation code must exist
+            before signup.
+          </li>
+          <li>
+            Self-referrals and changing an already applied invitation are not allowed. Repeating a claim does
+            not earn another reward.
+          </li>
+          <li>
+            Credits have no purchase, transfer, redemption or withdrawal value. No deposit or wagering payment
+            is required.
+          </li>
+          <li>
+            Each new browser session starts with a fresh practice balance that includes verified earned
+            referral credits. Public rewards remain inactive unless shared account referrals are enabled.
+          </li>
+        </ul>
+      </details>
     </section>
   );
 }

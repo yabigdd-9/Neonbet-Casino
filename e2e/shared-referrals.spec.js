@@ -157,7 +157,9 @@ test("pending confirmation, explicit claim, separate inviter account and session
     await expect(host.locator("#referrals")).toContainText(
       "5 non-cash practice credits earned from 1 verified referrals",
     );
-    await expect(host.locator("header").first()).toContainText("50.00");
+    await expect(host.locator("header").first()).toContainText("55.00");
+    await host.reload();
+    await expect(host.locator("header").first()).toContainText("55.00");
     await guest.getByRole("button", { name: "Logout", exact: true }).click();
     await expect(guest.getByLabel("Your invitation link", { exact: true })).toHaveValue("");
   } finally {

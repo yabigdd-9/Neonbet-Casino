@@ -1,10 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import { MessageCircle, Send, X } from "lucide-react";
 import { contact } from "../../config/contact";
+import SupportRequests from "./SupportRequests";
 
 function reply(message) {
   const text = message.toLowerCase();
-  if (/gambl|addict|limit|self.exclu/.test(text))
+  if (/referr|invit/.test(text))
+    return "An eligible new confirmed-email account can apply one invitation within 7 days. The inviter earns 5 non-cash credits, up to 20 referrals per account. No deposit is needed. Public rewards may be inactive; check the referral panel.";
+  if (/game|load|freez|stuck|crash/.test(text))
+    return "If a game will not load, try its loading retry, then reload if needed. For a round that cannot start, choose a bet within your practice balance. Use Ask a person below to report the game title and what happened.";
+  if (/gambl|addict|self.exclu|responsible|spending limit/.test(text))
     return "If gambling is causing concern, please take a break and seek support from a trusted person or a local gambling support service. Use the contact options below to ask about your account.";
 
   if (/practice|cash value|bonus credit/.test(text))
@@ -22,7 +27,8 @@ function reply(message) {
   return "Thanks for getting in touch. I can help with common questions about sign-in, verification, deposits and withdrawals. For an account-specific issue, please use the contact options below if available.";
 }
 
-export default function CustomerCare() {
+export default function CustomerCare({ user }) {
+  const [requestsOpen, setRequestsOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const triggerRef = useRef(null);
   const inputRef = useRef(null);
@@ -34,6 +40,14 @@ export default function CustomerCare() {
   useEffect(() => {
     if (open) inputRef.current?.focus();
   }, [open]);
+  useEffect(() => {
+    const show = () => {
+      setOpen(true);
+      setRequestsOpen(true);
+    };
+    window.addEventListener("luckyOrbit:open-support", show);
+    return () => window.removeEventListener("luckyOrbit:open-support", show);
+  }, []);
   useEffect(() => {
     if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
   }, [messages, open]);
@@ -79,7 +93,12 @@ export default function CustomerCare() {
               <X size={20} />
             </button>
           </header>
-          <div ref={logRef} role="log" aria-live="polite" className="flex-1 space-y-3 overflow-y-auto p-4">
+          <div
+            ref={logRef}
+            role="log"
+            aria-live="polite"
+            className={`${requestsOpen ? "hidden" : "flex-1 min-h-0 space-y-3 overflow-y-auto p-4"}`}
+          >
             {messages.map((message, index) => (
               <p
                 key={index}
@@ -102,60 +121,79 @@ export default function CustomerCare() {
               </a>
             )}
           </div>
-          <div className="flex flex-wrap gap-2 px-4 pb-3" aria-label="Common support questions">
-            {["Signing in", "Practice credits", "Responsible play"].map((topic) => (
-              <button
-                key={topic}
-                type="button"
-                className="rounded-full border border-white/15 px-3 py-1 text-xs text-cyan-200"
-                onClick={() =>
-                  respond(
-                    topic === "Signing in"
-                      ? "How do I sign in?"
-                      : topic === "Responsible play"
-                        ? "I need help with gambling limits"
-                        : "Do practice credits have cash value?",
-                  )
-                }
-              >
-                {topic}
-              </button>
-            ))}
-            <button
-              type="button"
-              className="rounded-full border border-white/15 px-3 py-1 text-xs text-slate-300"
-              onClick={() => {
-                setMessages([
-                  {
-                    role: "support",
-                    text: "Hi! I'm Lucky Orbit's automated assistant. How can I help today?",
-                  },
-                ]);
-                setInput("");
-                inputRef.current?.focus();
-              }}
-            >
-              Clear conversation
-            </button>
-          </div>
-          <form onSubmit={send} className="flex gap-2 border-t border-white/10 p-3">
-            <input
-              ref={inputRef}
-              aria-label="Your message"
-              maxLength={1000}
-              value={input}
-              onChange={(event) => setInput(event.target.value)}
-              placeholder="Type your message..."
-              className="min-w-0 flex-1 rounded-xl bg-slate-800 px-3 py-2 text-sm"
-            />
-            <button
-              type="submit"
-              aria-label="Send message"
-              className="rounded-xl bg-cyan-500 p-2 text-slate-950"
-            >
-              <Send size={20} />
-            </button>
-          </form>
+          <button
+            type="button"
+            className="secondary-button mx-4 mb-2 min-h-11"
+            aria-expanded={requestsOpen}
+            onClick={() => setRequestsOpen((value) => !value)}
+          >
+            Ask a person / support requests
+          </button>
+          {requestsOpen && <SupportRequests key={user?.id || "guest"} user={user} />}
+          {!requestsOpen && (
+            <>
+              <div className="flex flex-wrap gap-2 px-4 pb-3" aria-label="Common support questions">
+                {["Signing in", "Practice credits", "Responsible play", "Referrals", "Game help"].map(
+                  (topic) => (
+                    <button
+                      key={topic}
+                      type="button"
+                      className="rounded-full border border-white/15 px-3 py-1 text-xs text-cyan-200"
+                      onClick={() =>
+                        respond(
+                          topic === "Signing in"
+                            ? "How do I sign in?"
+                            : topic === "Responsible play"
+                              ? "I need help with gambling limits"
+                              : topic === "Referrals"
+                                ? "How do referrals work?"
+                                : topic === "Game help"
+                                  ? "My game will not load"
+                                  : "Do practice credits have cash value?",
+                        )
+                      }
+                    >
+                      {topic}
+                    </button>
+                  ),
+                )}
+                <button
+                  type="button"
+                  className="rounded-full border border-white/15 px-3 py-1 text-xs text-slate-300"
+                  onClick={() => {
+                    setMessages([
+                      {
+                        role: "support",
+                        text: "Hi! I'm Lucky Orbit's automated assistant. How can I help today?",
+                      },
+                    ]);
+                    setInput("");
+                    inputRef.current?.focus();
+                  }}
+                >
+                  Clear conversation
+                </button>
+              </div>
+              <form onSubmit={send} className="flex gap-2 border-t border-white/10 p-3">
+                <input
+                  ref={inputRef}
+                  aria-label="Your message"
+                  maxLength={1000}
+                  value={input}
+                  onChange={(event) => setInput(event.target.value)}
+                  placeholder="Type your message..."
+                  className="min-w-0 flex-1 rounded-xl bg-slate-800 px-3 py-2 text-sm"
+                />
+                <button
+                  type="submit"
+                  aria-label="Send message"
+                  className="rounded-xl bg-cyan-500 p-2 text-slate-950"
+                >
+                  <Send size={20} />
+                </button>
+              </form>
+            </>
+          )}
         </section>
       )}
       <button

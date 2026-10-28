@@ -5,7 +5,7 @@
 export const contact = {
   telegramUrl: import.meta.env.VITE_TELEGRAM_URL || "",
   whatsappUrl: import.meta.env.VITE_WHATSAPP_URL || "",
-  supportEmail: import.meta.env.VITE_SUPPORT_EMAIL || "support@example.com",
+  supportEmail: import.meta.env.VITE_SUPPORT_EMAIL || "yabigdd@gmail.com",
 };
 
 // Build a deep link for contact. Falls back to empty string when not configured.

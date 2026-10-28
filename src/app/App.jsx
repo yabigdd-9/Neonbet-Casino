@@ -49,9 +49,19 @@ function lazyPanel(loader) {
       <ErrorBoundary
         fallback={
           <div role="alert" className="surface fixed bottom-24 right-4 z-50 max-w-xs p-4">
-            <p>This panel could not load. Reload to try again.</p>
+            <p>
+              This panel could not load. Reload the lobby, then open the panel again. Your current practice
+              session will restart.
+            </p>
             <button type="button" className="filter-chip mt-3" onClick={() => window.location.reload()}>
-              Reload
+              Reload lobby
+            </button>
+            <button
+              type="button"
+              className="filter-chip mt-3"
+              onClick={() => window.dispatchEvent(new window.Event("luckyOrbit:open-support"))}
+            >
+              Report loading issue
             </button>
           </div>
         }
@@ -419,12 +429,16 @@ function AppContent() {
 
         <TermsSection onOpenPolicy={setPolicyPage} />
 
-        <ReferralPanel key={user?.id || "guest"} user={user} />
+        <ReferralPanel
+          key={user?.id || "guest"}
+          user={user}
+          onCreditsVerified={wallet.applyReferralCredits}
+        />
         <Footer onOpenPolicy={setPolicyPage} />
       </main>
 
       <MobileNav user={user} onOpenAuth={openAuth} />
-      <CustomerCare />
+      <CustomerCare user={user} />
 
       {policyPage && (
         <Modal title={policyPage.title} eyebrow={policyPage.eyebrow} onClose={() => setPolicyPage(null)}>
@@ -456,6 +470,9 @@ function AppContent() {
           onToggleFavorite={toggleFavorite}
           onClose={() => setLaunchGame(null)}
           onLaunch={handleLaunchGame}
+          onPrepare={() => {
+            void import("../features/casino/SlotGameModal").catch(() => {});
+          }}
         />
       )}
       {activeGame && <SlotGameModal game={activeGame} wallet={wallet} onClose={() => setActiveGame(null)} />}

@@ -8,8 +8,11 @@ export async function getReferralStatus(): Promise<ReferralStatus> {
     !/^LO-[a-f0-9]{32}$/.test(data.code) ||
     !Number.isSafeInteger(data.credits) ||
     data.credits < 0 ||
+    data.credits > 100 ||
     !Number.isSafeInteger(data.count) ||
     data.count < 0 ||
+    data.count > 20 ||
+    data.credits !== data.count * 5 ||
     typeof data.claimed !== "boolean"
   )
     throw new Error("Shared referral status could not be verified.");

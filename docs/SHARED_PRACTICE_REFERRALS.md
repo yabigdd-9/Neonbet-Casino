@@ -22,4 +22,6 @@ The repeatable `e2e/shared-referrals.spec.js` tests run the real client against 
 
 Before public activation, verify the full password-recovery flow with a controlled inbox and review anti-abuse and privacy/retention rules for the planned programme. A confirmed email is not evidence that multiple accounts belong to different people. Do not enable shared referrals until these checks are complete.
 
-The SQL tests use isolated PGlite with minimal Auth fixtures; they do not emulate live Supabase Auth or HTTP APIs. Earned credits are displayed separately; they are not yet added to the game session balance. No real-money capability is enabled.
+The SQL tests use isolated PGlite with minimal Auth fixtures; they do not emulate live Supabase Auth or HTTP APIs. The current programme caps each inviter at 20 referrals / 100 non-cash credits. Claims lock the inviter's code row before counting awards, so concurrent claimants cannot exceed the cap. A repeated eligible claim remains idempotent at the cap.
+
+Verified earned totals are now included in each browser session's practice balance. The round controller imports only the increase in the verified total, so refreshing status does not repeatedly add the same credits. A fresh session starts with a fresh practice balance plus the earned total. This is a non-cash game session, not redemption or a real-money wallet. Public shared referrals remain off; the protected account preview enables them for testing.
