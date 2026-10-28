@@ -164,6 +164,26 @@ export default {
 
 export const PLINKO_MULTIPLIERS = [0, 0.4, 0.8, 1.5, 9, 1.5, 0.8, 0.4, 0];
 export function playArcade(id, target = 2, random = Math.random) {
+  if (id === "lucky-seven") {
+    const visual = [1 + Math.floor(random() * 6), 1 + Math.floor(random() * 6)];
+    const total = visual[0] + visual[1];
+    return {
+      title: total === 7 ? "Lucky seven!" : "Try another roll",
+      detail: `Rolled ${total}. ${total === 7 ? "Seven pays 5x." : "This roll pays 0x."}`,
+      multiplier: total === 7 ? 5 : 0,
+      visual,
+    };
+  }
+  if (id === "neon-draw") {
+    const rank = 1 + Math.floor(random() * 13);
+    const multiplier = rank === 1 ? 5 : rank >= 11 ? 2 : 0;
+    return {
+      title: rank === 1 ? "Ace!" : rank >= 11 ? "Face card!" : "Number card",
+      detail: `Drew ${["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"][rank - 1]}. Pays ${multiplier}x.`,
+      multiplier,
+      visual: [rank],
+    };
+  }
   if (id === "coin-flip") {
     const heads = random() < 0.5;
     return {

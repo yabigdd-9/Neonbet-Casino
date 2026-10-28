@@ -175,3 +175,23 @@ it("scores the symbols actually shown, including incidental higher matches", () 
   expect(evaluateReels(["💎", "⭐", "7", "🍒", "🍋"]).multiplier).toBe(2);
   expect(evaluateReels(["A", "B", "C", "D", "E"]).multiplier).toBe(0);
 });
+
+it("settles every Lucky Seven combination and all Neon Draw ranks", () => {
+  let sevens = 0;
+  for (let first = 1; first <= 6; first++) {
+    for (let second = 1; second <= 6; second++) {
+      const draws = [(first - 0.5) / 6, (second - 0.5) / 6];
+      const round = playArcade("lucky-seven", 2, () => draws.shift());
+      expect(round.visual).toEqual([first, second]);
+      expect(round.multiplier).toBe(first + second === 7 ? 5 : 0);
+      if (round.multiplier) sevens++;
+    }
+  }
+  expect(sevens).toBe(6);
+  for (let rank = 1; rank <= 13; rank++) {
+    expect(playArcade("neon-draw", 2, () => (rank - 0.5) / 13)).toMatchObject({
+      visual: [rank],
+      multiplier: rank === 1 ? 5 : rank >= 11 ? 2 : 0,
+    });
+  }
+});

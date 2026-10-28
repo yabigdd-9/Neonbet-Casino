@@ -45,6 +45,24 @@ export const arcadeGames = [
     gradient: "from-emerald-400 via-teal-600 to-indigo-800",
     rule: "Spin one of six equal segments for up to 5x.",
   },
+  {
+    id: "lucky-seven",
+    title: "Lucky Seven",
+    type: "Dice game",
+    tag: "New",
+    emoji: "🎲",
+    gradient: "from-rose-400 via-red-600 to-purple-900",
+    rule: "Roll two dice: a total of seven pays 5x, other totals pay zero.",
+  },
+  {
+    id: "neon-draw",
+    title: "Neon Draw",
+    type: "Card draw",
+    tag: "New",
+    emoji: "🃏",
+    gradient: "from-sky-400 via-indigo-600 to-slate-900",
+    rule: "Draw one of 13 ranks: an ace pays 5x, a face card pays 2x, other ranks pay zero.",
+  },
 ];
 
 export default arcadeGames;

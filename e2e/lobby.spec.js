@@ -10,9 +10,17 @@ test("daily demo reward credits the wallet once per day", async ({ page }) => {
   await claim.click();
   await expect(page.getByText(/Already claimed today/)).toBeVisible();
 });
-test("new arcade games settle a simulated round", async ({ page }) => {
+test("every arcade play button loads and settles a simulated round", async ({ page }) => {
   await page.goto("./");
-  for (const title of ["Neon Coin Flip", "Lucky Wheel"]) {
+  for (const title of [
+    "Dice Duel",
+    "Plinko Drop",
+    "Neon Crash",
+    "Neon Coin Flip",
+    "Lucky Wheel",
+    "Lucky Seven",
+    "Neon Draw",
+  ]) {
     await page.getByRole("button", { name: `Play ${title}`, exact: true }).click();
     const dialog = page.getByRole("dialog", { name: title });
     await expect(dialog).toBeVisible();
@@ -42,7 +50,10 @@ for (const width of widths) {
     await expect(page.getByText("No matching games")).toBeVisible();
     await page.getByRole("button", { name: "Clear search", exact: true }).click();
     await expect(page.getByText("No matching games")).toHaveCount(0);
-    await page.getByRole("button", { name: "Play practice game: Neon Fruits", exact: true }).click();
+    await page
+      .locator("#featured-games")
+      .getByRole("button", { name: "Play practice game: Neon Fruits", exact: true })
+      .click();
     await expect(page.getByRole("dialog")).toBeVisible();
     await page.getByRole("button", { name: "Launch Game", exact: true }).click();
     await expect(page.getByRole("dialog", { name: "Neon Fruits" })).toBeVisible();
@@ -52,7 +63,10 @@ for (const width of widths) {
     await expect
       .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth))
       .toBe(true);
-    await page.getByRole("button", { name: "Play practice game: Neon Fruits", exact: true }).click();
+    await page
+      .locator("#featured-games")
+      .getByRole("button", { name: "Play practice game: Neon Fruits", exact: true })
+      .click();
     await page.getByRole("button", { name: "Launch Game", exact: true }).click();
     await expect(page.getByRole("button", { name: "Spin $0.50", exact: true })).toBeEnabled();
     await page.keyboard.press("Escape");
@@ -133,4 +147,68 @@ test("a failed feature download keeps the lobby usable", async ({ page }) => {
   await page.getByRole("button", { name: "Register", exact: true }).click();
   await expect(page.getByRole("alert").filter({ hasText: "This panel could not load" })).toBeVisible();
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+});
+
+test("every featured game launches and plays, and policy buttons load content", async ({ page }) => {
+  test.setTimeout(180000);
+  await page.goto("./");
+  const buttons = page.locator('#featured-games button[aria-label^="Play practice game:"]');
+  const count = await buttons.count();
+  expect(count).toBeGreaterThanOrEqual(12);
+  for (let index = 0; index < count; index++) {
+    await buttons.nth(index).click();
+    await page.getByRole("button", { name: "Launch Game", exact: true }).click();
+    const dialog = page.getByRole("dialog");
+    const spin = dialog.getByRole("button", { name: "Spin $0.50", exact: true });
+    await spin.click();
+    await expect(spin).toBeEnabled();
+    await page.keyboard.press("Escape");
+    await expect(dialog).toHaveCount(0);
+  }
+  const policies = page.locator("#footer button");
+  for (let index = 0; index < (await policies.count()); index++) {
+    const title = await policies.nth(index).innerText();
+    await policies.nth(index).click();
+    await expect(page.getByRole("dialog", { name: title })).toBeVisible();
+    await page.keyboard.press("Escape");
+  }
+});
+
+test("mobile menu and navigation buttons reach their destinations", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("./");
+  const nav = page.getByRole("navigation", { name: "Mobile navigation" });
+  for (const [label, id] of [
+    ["Arcade", "arcade-games"],
+    ["Promos", "promotions"],
+    ["Home", "lobby"],
+  ]) {
+    await nav.getByRole("button", { name: label, exact: true }).click();
+    await expect
+      .poll(() => page.locator(`#${id}`).evaluate((el) => el.getBoundingClientRect().top))
+      .toBeLessThan(200);
+  }
+  await nav.getByRole("button", { name: "Search", exact: true }).click();
+  await expect(page.getByRole("textbox", { name: "Search games", exact: true })).toBeFocused();
+  await nav.getByRole("button", { name: "Account", exact: true }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "Open menu" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Featured games", exact: true }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+});
+
+test("more slots load and original themes are searchable", async ({ page }) => {
+  await page.goto("./");
+  const cards = page.locator('#featured-games button[aria-label^="Play practice game:"]');
+  await expect(cards).toHaveCount(12);
+  await page.getByRole("button", { name: /Load more games/ }).click();
+  await expect(cards).toHaveCount(24);
+  const input = page.getByRole("textbox", { name: "Search games", exact: true });
+  await input.fill("Basketball Blitz");
+  const play = page
+    .locator("#providers")
+    .getByRole("button", { name: "Play practice game: Basketball Blitz", exact: true });
+  await play.click();
+  await expect(page.getByRole("dialog", { name: "Basketball Blitz" })).toBeVisible();
 });

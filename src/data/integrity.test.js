@@ -4,8 +4,16 @@ import { slotProviders } from "../data/slotProviders";
 import { promos, terms, policyPages } from "../data/promotions";
 
 describe("data integrity", () => {
-  it("has 8 featured games", () => {
-    expect(games.length).toBe(8);
+  it("has at least 72 featured games", () => {
+    expect(games.length).toBeGreaterThanOrEqual(72);
+  });
+
+  it("has searchable, uniquely identified and playable slot themes", () => {
+    expect(new Set(games.map((game) => game.title)).size).toBe(games.length);
+    games.forEach((game) => {
+      expect(game.symbols.length).toBeGreaterThanOrEqual(5);
+      expect(game.tags.length).toBeGreaterThan(0);
+    });
   });
 
   it("has uniquely identified arcade games", () => {

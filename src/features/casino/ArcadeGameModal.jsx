@@ -43,6 +43,26 @@ export default function ArcadeGameModal({ game, wallet, onClose }) {
           </div>
 
           <div className="mt-6 rounded-[2rem] border border-white/10 bg-black/30 p-5">
+            {["lucky-seven", "neon-draw"].includes(game.id) && (
+              <div className="grid min-h-52 place-items-center rounded-3xl bg-indigo-400/10 text-center">
+                <div>
+                  <div className="text-6xl" aria-label="Game result">
+                    {busy
+                      ? "…"
+                      : !hasResult
+                        ? game.emoji
+                        : game.id === "lucky-seven"
+                          ? round.visual.join(" + ")
+                          : ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"][
+                              round.visual[0] - 1
+                            ]}
+                  </div>
+                  <p className="mt-4 text-sm text-slate-300">
+                    {busy ? "Playing…" : hasResult ? round.detail : game.rule}
+                  </p>
+                </div>
+              </div>
+            )}
             {game.id === "coin-flip" && (
               <div className="grid min-h-52 place-items-center rounded-3xl bg-amber-400/10 text-center">
                 <div>
@@ -219,6 +239,26 @@ export default function ArcadeGameModal({ game, wallet, onClose }) {
                     If the crash point is below target, the round loses.
                   </p>
                 </>
+              )}
+              {["lucky-seven", "neon-draw"].includes(game.id) && (
+                <div className="grid min-h-52 place-items-center rounded-3xl bg-indigo-400/10 text-center">
+                  <div>
+                    <div className="text-6xl" aria-label="Game result">
+                      {busy
+                        ? "…"
+                        : !hasResult
+                          ? game.emoji
+                          : game.id === "lucky-seven"
+                            ? round.visual.join(" + ")
+                            : ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"][
+                                round.visual[0] - 1
+                              ]}
+                    </div>
+                    <p className="mt-4 text-sm text-slate-300">
+                      {busy ? "Playing…" : hasResult ? round.detail : game.rule}
+                    </p>
+                  </div>
+                </div>
               )}
               {game.id === "coin-flip" && (
                 <p className="rounded-2xl bg-black/20 px-3 py-2">
