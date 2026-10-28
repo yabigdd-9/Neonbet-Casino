@@ -5,7 +5,14 @@ import Modal from "../../components/ui/Modal";
 import { betOptions, slotRules } from "../../lib/gameEngine";
 import { formatMoney } from "../../lib/storage";
 
-export default function GameLaunchModal({ game, isFavorite, onToggleFavorite, onClose, onLaunch }) {
+export default function GameLaunchModal({
+  game,
+  isFavorite,
+  onToggleFavorite,
+  onClose,
+  onLaunch,
+  onPrepare,
+}) {
   if (!game) return null;
   const tags = game.tags || [game.tag].filter(Boolean);
 
@@ -57,6 +64,8 @@ export default function GameLaunchModal({ game, isFavorite, onToggleFavorite, on
           <button
             type="button"
             onClick={onLaunch}
+            onPointerEnter={onPrepare}
+            onFocus={onPrepare}
             className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-cyan-400 px-5 py-4 font-semibold text-slate-950 shadow-neon transition hover:scale-[1.02]"
           >
             <Play size={18} /> Launch Game

@@ -49,7 +49,10 @@ export async function signUp({
   const { data, error } = await requireSupabase().auth.signUp({
     email,
     password,
-    options: { data: { username, phone, contact_method: contactMethod } },
+    options: {
+      emailRedirectTo: window.location.origin + window.location.pathname,
+      data: { username, phone, contact_method: contactMethod },
+    },
   });
   if (error) throw error;
   return data;

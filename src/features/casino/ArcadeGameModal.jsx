@@ -13,6 +13,7 @@ const PLINKO_LANES = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 export default function ArcadeGameModal({ game, wallet, onClose }) {
   const sound = useGameSound();
   const [bet, setBet] = useState(0.5);
+  const [playError, setPlayError] = useState("");
   const [cashOutTarget, setCashOutTarget] = useState(2);
   const { balance, busy, start } = wallet;
   const hasResult = wallet.round?.gameId === game?.id;
@@ -22,7 +23,10 @@ export default function ArcadeGameModal({ game, wallet, onClose }) {
       : { title: "Ready", detail: game?.rule || "", win: 0, visual: [4] };
   if (!game) return null;
   function playRound() {
+    setPlayError("");
     if (start(game, bet, Number(cashOutTarget))) sound.play();
+    else
+      setPlayError("The round could not start. No credits were used. Choose an affordable bet or try again.");
   }
 
   return (
@@ -219,9 +223,21 @@ export default function ArcadeGameModal({ game, wallet, onClose }) {
               <Play size={18} />
               {busy ? "Playing..." : `Play ${formatMoney(bet)}`}
             </button>
+            {playError && (
+              <p role="alert" className="mt-3 text-sm text-amber-200">
+                {playError}
+              </p>
+            )}
             <GameSoundButton sound={sound} />
             <RoundHistory rounds={wallet.history} />
-            {balance < bet && <p className="mt-3 text-sm text-amber-200">Balance is too low for this bet.</p>}
+            {balance < bet && (
+              <p className="mt-3 text-sm text-amber-200">
+                Balance is too low for this bet. Choose a lower bet or return to your practice balance.
+              </p>
+            )}
+            <button type="button" className="secondary-button mt-3 min-h-11" onClick={onClose}>
+              Back to lobby
+            </button>
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">

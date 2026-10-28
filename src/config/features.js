@@ -17,7 +17,7 @@ export const features = {
   casinoProviders: false, // real provider aggregation, not yet implemented
   payments: false, // real payment processing, not yet implemented
   liveWallet: false, // real-money wallet, not yet implemented
-  withdrawals: true, // manual withdrawal request flow
+  withdrawals: envBool("VITE_ENABLE_WITHDRAWALS", true), // manual request fixture; never payment processing
   account: true,
 };
 

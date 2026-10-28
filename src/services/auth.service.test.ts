@@ -35,6 +35,9 @@ it("returns user and session directly for login and registration", async () => {
       contactMethod: "",
     }),
   ).toEqual(data);
+  expect(mocks.auth.signUp.mock.calls[0][0].options.emailRedirectTo).toBe(
+    window.location.origin + window.location.pathname,
+  );
 });
 it("validates a new password before sending it and hides provider error details", async () => {
   await expect(updatePassword("short")).rejects.toThrow("8 characters");

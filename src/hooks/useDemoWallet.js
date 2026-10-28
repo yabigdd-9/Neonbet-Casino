@@ -11,5 +11,6 @@ export function useDemoWallet(userId) {
     balance: snapshot.cents / 100,
     start: controller.start,
     claimDaily: controller.claimDaily,
+    applyReferralCredits: controller.applyReferralCredits,
   };
 }

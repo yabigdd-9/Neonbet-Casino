@@ -5,6 +5,16 @@ afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
 });
+it("imports only new earned practice referral credits once per session", () => {
+  const wallet = new RoundController();
+  expect(wallet.applyReferralCredits(5)).toBe(true);
+  expect(wallet.getSnapshot().cents).toBe(5500);
+  expect(wallet.applyReferralCredits(5)).toBe(false);
+  expect(wallet.applyReferralCredits(10)).toBe(true);
+  expect(wallet.getSnapshot().cents).toBe(6000);
+  for (const invalid of [-1, 0.5, 101, NaN]) expect(wallet.applyReferralCredits(invalid)).toBe(false);
+  expect(wallet.getSnapshot().cents).toBe(6000);
+});
 it("debits and settles once while rejecting overlapping rounds and preserving a snapshotted stake", () => {
   vi.useFakeTimers();
   vi.spyOn(Math, "random").mockReturnValue(0);

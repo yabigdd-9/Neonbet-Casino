@@ -297,3 +297,43 @@ test("invitation links are token-free and attribution does not award credits", a
   await page.getByRole("button", { name: "Copy invitation link", exact: true }).click();
   await expect(page.locator("#referrals [role=status]")).not.toBeEmpty();
 });
+test("support requests work on mobile and hand off to the configured inbox", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("./");
+  await page.getByRole("button", { name: "Customer Care", exact: true }).click();
+  await page.getByRole("button", { name: "Referrals", exact: true }).click();
+  await expect(page.getByRole("log")).toContainText("20 referrals");
+  await page.getByRole("button", { name: "Ask a person / support requests" }).click();
+  const panel = page.getByRole("region", { name: "Support requests" });
+  await panel.getByLabel("Describe the issue").fill("The game did not start on my phone.");
+  await panel.getByRole("button", { name: "Save support request" }).click();
+  await expect(panel.getByRole("status")).toContainText("saved on this device only");
+  await expect(panel.getByRole("link", { name: "Email this request" })).toHaveAttribute(
+    "href",
+    /^mailto:yabigdd@gmail.com\?subject=/,
+  );
+  const control = panel.getByRole("button", { name: "Clear saved requests" });
+  await control.scrollIntoViewIfNeeded();
+  await expect(control).toBeInViewport();
+  await control.click();
+  await expect(panel.getByText("Recent requests", { exact: true })).toHaveCount(0);
+});
+test("a transient panel download can be retried", async ({ page }) => {
+  let failed = false;
+  await page.route("**/assets/AuthModal-*.js", (route) => {
+    if (!failed) {
+      failed = true;
+      return route.abort();
+    }
+    return route.continue();
+  });
+  await page.goto("./");
+  await page.getByRole("button", { name: "Register", exact: true }).click();
+  await page.getByRole("button", { name: "Report loading issue" }).click();
+  await expect(page.getByRole("region", { name: "Support requests" })).toBeVisible();
+  await Promise.all([page.waitForEvent("load"), page.getByRole("button", { name: "Reload lobby" }).click()]);
+  await expect(page).toHaveURL(/retryModules=1/);
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await page.getByRole("button", { name: "Register", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "Create account" })).toBeVisible();
+});
