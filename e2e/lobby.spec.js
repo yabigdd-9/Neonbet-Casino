@@ -243,3 +243,32 @@ test("game styles and sorting show playable games with matching rules", async ({
   await expect(page.getByRole("dialog")).toContainText("3 bonus spins included");
   await expect(page.getByRole("dialog")).toContainText("Bonus 3:");
 });
+
+test("sound is opt-in and practice history follows completed rounds", async ({ page }) => {
+  await page.goto("./");
+  const launch = async () => {
+    await page
+      .locator("#featured-games")
+      .getByRole("button", { name: "Play practice game: Neon Fruits", exact: true })
+      .click();
+    await page.getByRole("button", { name: "Launch Game", exact: true }).click();
+  };
+  await launch();
+  const sound = page.getByRole("button", { name: "Sound off", exact: true });
+  await expect(sound).toHaveAttribute("aria-pressed", "false");
+  await sound.click();
+  await expect(page.getByRole("button", { name: "Sound on", exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  const spin = page.getByRole("button", { name: "Spin $0.50", exact: true });
+  await spin.click();
+  await expect(spin).toBeEnabled();
+  await page.getByText("Recent practice rounds", { exact: true }).click();
+  await expect(page.getByRole("list", { name: "Recent practice rounds" }).getByRole("listitem")).toHaveCount(
+    1,
+  );
+  await page.keyboard.press("Escape");
+  await launch();
+  await expect(page.getByRole("button", { name: "Sound on", exact: true })).toBeVisible();
+});

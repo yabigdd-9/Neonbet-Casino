@@ -5,7 +5,7 @@ import { DEMO_START_CENTS } from "../config/demoBonus";
 export class RoundController {
   listeners = new Set();
   timer = null;
-  snapshot = { cents: DEMO_START_CENTS, wageredCents: 0, busy: false, round: null };
+  snapshot = { cents: DEMO_START_CENTS, wageredCents: 0, busy: false, round: null, history: [] };
   subscribe = (listener) => {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
@@ -52,6 +52,7 @@ export class RoundController {
         ...result,
         id: crypto.randomUUID(),
         gameId: arcade ? game.id : game.title,
+        gameTitle: game.title || game.id,
         stakeCents: cents,
         winCents,
         win: winCents / 100,
@@ -67,7 +68,12 @@ export class RoundController {
     });
     this.timer = setTimeout(() => {
       this.timer = null;
-      this.publish({ cents: this.snapshot.cents + winCents, busy: false, round });
+      this.publish({
+        cents: this.snapshot.cents + winCents,
+        busy: false,
+        round,
+        history: [round, ...this.snapshot.history].slice(0, 10),
+      });
     }, 650);
     return true;
   };

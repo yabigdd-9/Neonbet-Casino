@@ -26,8 +26,8 @@ export default function Footer({ onOpenPolicy }) {
         <div>
           <div className="font-semibold uppercase tracking-[0.18em] text-slate-300">Payments</div>
           <p className="mt-2">
-            The $75 crypto verification fee is reviewed manually and is not an instant deposit, wagering
-            balance, withdrawal approval, casino credit, or automated payment confirmation.
+            No payment is required to play. Credits are simulated, have no cash value, and cannot be
+            withdrawn. Deposits and real-money payouts are not available.
           </p>
         </div>
       </div>

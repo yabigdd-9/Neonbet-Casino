@@ -1,11 +1,15 @@
 // Local simulated slot player. Balance + session state are passed in.
 import React, { useState } from "react";
 import { Play } from "lucide-react";
+import { useGameSound } from "../../hooks/useGameSound";
+import GameSoundButton from "../../components/ui/GameSoundButton";
+import RoundHistory from "../../components/ui/RoundHistory";
 import Modal from "../../components/ui/Modal";
 import { betOptions, slotRules } from "../../lib/gameEngine";
 import { formatMoney } from "../../lib/storage";
 
 export default function SlotGameModal({ game, wallet, onClose }) {
+  const sound = useGameSound();
   const [bet, setBet] = useState(0.5);
   const { balance, busy: spinning, start } = wallet;
   const settled = wallet.round?.gameId === game?.title ? wallet.round : null;
@@ -13,7 +17,7 @@ export default function SlotGameModal({ game, wallet, onClose }) {
   const result = settled || { label: "Ready", win: 0 };
   if (!game) return null;
   function spin() {
-    start(game, bet);
+    if (start(game, bet)) sound.play();
   }
 
   return (
@@ -97,6 +101,7 @@ export default function SlotGameModal({ game, wallet, onClose }) {
                   key={amount}
                   type="button"
                   disabled={spinning}
+                  aria-pressed={bet === amount}
                   onClick={() => setBet(amount)}
                   className={`rounded-2xl border px-3 py-3 text-sm font-semibold transition ${
                     bet === amount
@@ -117,6 +122,8 @@ export default function SlotGameModal({ game, wallet, onClose }) {
               <Play size={18} />
               {spinning ? "Spinning..." : `Spin ${formatMoney(bet)}`}
             </button>
+            <GameSoundButton sound={sound} />
+            <RoundHistory rounds={wallet.history} />
             {balance < bet && <p className="mt-3 text-sm text-amber-200">Balance is too low for this bet.</p>}
           </div>
 
@@ -134,9 +141,7 @@ export default function SlotGameModal({ game, wallet, onClose }) {
               ))}
             </div>
             <p className="mt-4 text-xs leading-5 text-slate-400">
-              Payouts follow the largest matching group. A mix containing the jackpot, diamond and star
-              symbols pays 2x when no group has three or more matches. This is a simulated browser game. It is
-              not connected to deposits, withdrawals, or provider game servers.
+              {slotRules(game).detail} This is a simulated browser game with no cash value.
               {game.provider ? ` ${game.provider} is shown as a lobby theme only.` : ""}
             </p>
           </div>

@@ -4,6 +4,11 @@ import { contact } from "../../config/contact";
 
 function reply(message) {
   const text = message.toLowerCase();
+  if (/gambl|addict|limit|self.exclu/.test(text))
+    return "If gambling is causing concern, please take a break and seek support from a trusted person or a local gambling support service. Use the contact options below to ask about your account.";
+
+  if (/practice|cash value|bonus credit/.test(text))
+    return "Practice credits are for free-play games only. They have no cash value, cannot be withdrawn, and require no deposit.";
   if (/withdraw|cash out|payout/.test(text))
     return "Withdrawals are not available. Practice credits have no cash value and cannot be withdrawn. I can't check account status here.";
   if (/deposit|payment|crypto|bitcoin|usdt|wallet/.test(text))
@@ -14,8 +19,6 @@ function reply(message) {
     return "The verification page demonstrates a review process; it does not verify real payments or grant real-money access. Please do not send cryptocurrency.";
   if (/human|agent|person|contact/.test(text))
     return "I can't transfer this chat to a person. Please use the contact options below if they are available.";
-  if (/gambl|addict|limit|self.exclu/.test(text))
-    return "If gambling is causing concern, please take a break and seek support from a trusted person or a local gambling support service. Use the contact options below to ask about your account.";
   return "Thanks for getting in touch. I can help with common questions about sign-in, verification, deposits and withdrawals. For an account-specific issue, please use the contact options below if available.";
 }
 
@@ -23,6 +26,7 @@ export default function CustomerCare() {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef(null);
   const inputRef = useRef(null);
+  const logRef = useRef(null);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([
     { role: "support", text: "Hi! I'm NeonBet's automated assistant. How can I help today?" },
@@ -30,6 +34,9 @@ export default function CustomerCare() {
   useEffect(() => {
     if (open) inputRef.current?.focus();
   }, [open]);
+  useEffect(() => {
+    if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
+  }, [messages, open]);
   function close() {
     setOpen(false);
     triggerRef.current?.focus();
@@ -38,8 +45,15 @@ export default function CustomerCare() {
     event.preventDefault();
     const text = input.trim();
     if (!text) return;
-    setMessages((previous) => [...previous, { role: "user", text }, { role: "support", text: reply(text) }]);
+    respond(text);
     setInput("");
+  }
+  function respond(text) {
+    setMessages((previous) => [
+      ...previous.slice(-38),
+      { role: "user", text },
+      { role: "support", text: reply(text) },
+    ]);
   }
   return (
     <div
@@ -65,7 +79,7 @@ export default function CustomerCare() {
               <X size={20} />
             </button>
           </header>
-          <div role="log" aria-live="polite" className="flex-1 space-y-3 overflow-y-auto p-4">
+          <div ref={logRef} role="log" aria-live="polite" className="flex-1 space-y-3 overflow-y-auto p-4">
             {messages.map((message, index) => (
               <p
                 key={index}
@@ -87,6 +101,39 @@ export default function CustomerCare() {
                 WhatsApp
               </a>
             )}
+          </div>
+          <div className="flex flex-wrap gap-2 px-4 pb-3" aria-label="Common support questions">
+            {["Signing in", "Practice credits", "Responsible play"].map((topic) => (
+              <button
+                key={topic}
+                type="button"
+                className="rounded-full border border-white/15 px-3 py-1 text-xs text-cyan-200"
+                onClick={() =>
+                  respond(
+                    topic === "Signing in"
+                      ? "How do I sign in?"
+                      : topic === "Responsible play"
+                        ? "I need help with gambling limits"
+                        : "Do practice credits have cash value?",
+                  )
+                }
+              >
+                {topic}
+              </button>
+            ))}
+            <button
+              type="button"
+              className="rounded-full border border-white/15 px-3 py-1 text-xs text-slate-300"
+              onClick={() => {
+                setMessages([
+                  { role: "support", text: "Hi! I'm NeonBet's automated assistant. How can I help today?" },
+                ]);
+                setInput("");
+                inputRef.current?.focus();
+              }}
+            >
+              Clear conversation
+            </button>
           </div>
           <form onSubmit={send} className="flex gap-2 border-t border-white/10 p-3">
             <input

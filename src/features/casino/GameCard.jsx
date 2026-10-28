@@ -21,7 +21,7 @@ export default function GameCard({ game, onPlay, isFavorite, onToggleFavorite })
           className="absolute inset-0 h-full w-full object-cover opacity-30"
         />
         <div aria-hidden="true" className="relative text-5xl font-bold tracking-tighter text-white/90">
-          {game.title.slice(0, 2).toUpperCase()}
+          {game.emoji || game.title.slice(0, 2).toUpperCase()}
         </div>
         {onToggleFavorite && (
           <button
