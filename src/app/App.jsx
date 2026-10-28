@@ -475,7 +475,7 @@ function VIPSection() {
   return (
     <section id="vip" className="scroll-mt-24 grid gap-5 xl:grid-cols-3">
       <div className="xl:col-span-2 rounded-3xl border border-white/10 bg-white/[0.06] p-6">
-        <h2 className="mb-5 text-2xl font-semibold">Demo leaderboard</h2>
+        <h2 className="mb-5 text-2xl font-semibold">Practice leaderboard</h2>
         {["LuckyDion", "NeonWolf", "KiwiJackpot", "SpinQueen"].map((name, i) => (
           <div key={name} className="flex items-center gap-4 border-b border-white/10 py-4 last:border-none">
             <div className="grid h-10 w-10 place-items-center rounded-2xl bg-white/10 font-semibold">

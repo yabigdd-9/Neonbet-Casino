@@ -10,7 +10,7 @@ export default function GameLaunchModal({ game, isFavorite, onToggleFavorite, on
   const tags = game.tags || [game.tag].filter(Boolean);
 
   return (
-    <Modal title={game.title} eyebrow="Demo preview" onClose={onClose} maxWidth="max-w-4xl">
+    <Modal title={game.title} eyebrow="Practice preview" onClose={onClose} maxWidth="max-w-4xl">
       <div className={`relative grid h-44 place-items-center bg-gradient-to-br ${game.gradient}`}>
         <button
           type="button"

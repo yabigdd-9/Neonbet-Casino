@@ -29,7 +29,8 @@ export default function Header({ setOpen, balance, user, onOpenAuth, onLogout })
             <Search size={18} />
           </button>
           <span className="hidden rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-400 sm:block">
-            Demo <span className="ml-2 tabular-nums font-semibold text-white">{balance.toFixed(2)}</span>
+            Practice credits{" "}
+            <span className="ml-2 tabular-nums font-semibold text-white">{balance.toFixed(2)}</span>
           </span>
           {user ? (
             <>
