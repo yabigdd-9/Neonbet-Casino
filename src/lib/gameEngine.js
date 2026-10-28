@@ -200,7 +200,9 @@ export function buildProviderGame(provider, title, index) {
 }
 
 export function getGameId(game) {
-  return `${game.provider || game.type}-${game.title}`;
+  // Retain existing saved favorite/recent IDs when the displayed brand changes.
+  const provider = game.provider === "Lucky Orbit Originals" ? "NeonBet Originals" : game.provider;
+  return `${provider || game.type}-${game.title}`;
 }
 
 export const betOptions = [0.25, 0.4, 0.5, 0.75, 0.8, 1.2];

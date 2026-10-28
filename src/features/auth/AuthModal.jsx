@@ -89,7 +89,7 @@ export default function AuthModal({
   return (
     <Modal
       title={isRegister ? "Create account" : "Login"}
-      eyebrow="NeonBet account"
+      eyebrow="Lucky Orbit account"
       onClose={onClose}
       maxWidth="max-w-3xl"
     >

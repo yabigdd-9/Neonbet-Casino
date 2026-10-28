@@ -32,8 +32,8 @@ export default function Footer({ onOpenPolicy }) {
         </div>
       </div>
       <div className="mt-5 border-t border-white/10 pt-5 text-center">
-        NeonBet bonuses, provider availability, verification, account access, and game access are subject to
-        account approval, local rules, and published terms.
+        Lucky Orbit bonuses, provider availability, verification, account access, and game access are subject
+        to account approval, local rules, and published terms.
       </div>
       <div className="mt-4 flex flex-wrap justify-center gap-2">
         {Object.entries(policyPages).map(([key, page]) => (

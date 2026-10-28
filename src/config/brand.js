@@ -6,9 +6,9 @@ const envBrandName = import.meta.env.VITE_BRAND_NAME;
 const envSupportEmail = import.meta.env.VITE_SUPPORT_EMAIL;
 
 export const brand = {
-  name: envBrandName || "NeonBet",
-  shortName: "NB",
-  tagline: "Play in the neon.",
+  name: envBrandName || "Lucky Orbit",
+  shortName: "LO",
+  tagline: "A little luck. A new orbit.",
   logo: `${import.meta.env.BASE_URL}favicon.svg`,
   favicon: `${import.meta.env.BASE_URL}favicon.svg`,
   supportEmail: envSupportEmail || "support@example.com",

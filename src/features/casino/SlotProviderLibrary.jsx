@@ -26,7 +26,7 @@ export default function SlotProviderLibrary({
             (!searchTerm || text.includes(searchTerm.toLowerCase())) &&
             (category === "all" ||
               (category === "originals"
-                ? game.provider === "NeonBet Originals"
+                ? game.provider === "Lucky Orbit Originals"
                 : (game.mechanic || "classic") === category)) &&
             (activeFilter === "All" ||
               (activeFilter === "Favorites"
@@ -86,7 +86,7 @@ export default function SlotProviderLibrary({
               }}
             >
               <option value="all">All styles</option>
-              <option value="originals">NeonBet Originals</option>
+              <option value="originals">Lucky Orbit Originals</option>
               <option value="classic">Classic matches</option>
               <option value="line">Left-to-right</option>
               <option value="scatter">Star scatter</option>

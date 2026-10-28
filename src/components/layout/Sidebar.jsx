@@ -58,7 +58,7 @@ export default function Sidebar({ open, setOpen, user }) {
         </div>
       </aside>
       {open && (
-        <Modal title="Explore NeonBet" onClose={() => setOpen(false)} maxWidth="max-w-md">
+        <Modal title="Explore Lucky Orbit" onClose={() => setOpen(false)} maxWidth="max-w-md">
           <div className="p-4">
             <Navigation user={user} close={() => setOpen(false)} />
           </div>
