@@ -212,3 +212,34 @@ test("more slots load and original themes are searchable", async ({ page }) => {
   await play.click();
   await expect(page.getByRole("dialog", { name: "Basketball Blitz" })).toBeVisible();
 });
+
+test("game styles and sorting show playable games with matching rules", async ({ page }) => {
+  await page.goto("./");
+  await page.getByLabel("Game style", { exact: true }).selectOption("line");
+  const library = page.locator("#providers");
+  await expect(library.getByRole("button", { name: /Play practice game:/ }).first()).toBeVisible();
+  await page.getByLabel("Sort games", { exact: true }).selectOption("az");
+  await library
+    .getByRole("button", { name: /Play practice game:/ })
+    .first()
+    .click();
+  await expect(page.getByRole("dialog")).toContainText("Left-to-right");
+  await page.getByRole("button", { name: "Launch Game", exact: true }).click();
+  await expect(page.getByRole("dialog")).toContainText("First 3 match");
+  await page.keyboard.press("Escape");
+  await page.getByLabel("Game style", { exact: true }).selectOption("scatter");
+  await library
+    .getByRole("button", { name: /Play practice game:/ })
+    .first()
+    .click();
+  await expect(page.getByRole("dialog")).toContainText("Star scatter");
+  await page.getByRole("button", { name: "Launch Game", exact: true }).click();
+  await page.evaluate(() => {
+    Math.random = () => 0.65;
+  });
+  const spin = page.getByRole("button", { name: "Spin $0.50", exact: true });
+  await spin.click();
+  await expect(spin).toBeEnabled();
+  await expect(page.getByRole("dialog")).toContainText("3 bonus spins included");
+  await expect(page.getByRole("dialog")).toContainText("Bonus 3:");
+});

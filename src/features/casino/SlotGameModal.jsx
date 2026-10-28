@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Play } from "lucide-react";
 import Modal from "../../components/ui/Modal";
-import { betOptions, payoutRows } from "../../lib/gameEngine";
+import { betOptions, slotRules } from "../../lib/gameEngine";
 import { formatMoney } from "../../lib/storage";
 
 export default function SlotGameModal({ game, wallet, onClose }) {
@@ -61,6 +61,17 @@ export default function SlotGameModal({ game, wallet, onClose }) {
               <div className="text-sm font-bold uppercase tracking-[0.18em] text-slate-400">
                 {result.label}
               </div>
+              {result.bonusRounds && (
+                <div className="mt-3 space-y-2 text-sm text-slate-300">
+                  <p>Base spin: {result.baseMultiplier}x · 3 bonus spins included at no extra cost</p>
+                  {result.bonusRounds.map((bonus, index) => (
+                    <p key={index}>
+                      Bonus {index + 1}: {bonus.reels.join(" ")} — {bonus.multiplier}x
+                    </p>
+                  ))}
+                  <p>Total payout includes the base spin and all bonus spins.</p>
+                </div>
+              )}
               <div
                 className={
                   result.win > 0
@@ -112,7 +123,7 @@ export default function SlotGameModal({ game, wallet, onClose }) {
           <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
             <h3 className="font-semibold">Payout Table</h3>
             <div className="mt-3 space-y-2">
-              {payoutRows.map(([label, payout]) => (
+              {slotRules(game).payouts.map(([label, payout]) => (
                 <div
                   key={label}
                   className="flex items-center justify-between rounded-2xl bg-black/20 px-3 py-2 text-sm"
