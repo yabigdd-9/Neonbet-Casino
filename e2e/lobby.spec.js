@@ -331,7 +331,7 @@ test("a transient panel download can be retried", async ({ page }) => {
   await page.getByRole("button", { name: "Register", exact: true }).click();
   await page.getByRole("button", { name: "Report loading issue" }).click();
   await expect(page.getByRole("region", { name: "Support requests" })).toBeVisible();
-  await page.getByRole("button", { name: "Reload lobby" }).click();
+  await Promise.all([page.waitForEvent("load"), page.getByRole("button", { name: "Reload lobby" }).click()]);
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await page.getByRole("button", { name: "Register", exact: true }).click();
   await expect(page.getByRole("dialog", { name: "Create account" })).toBeVisible();
