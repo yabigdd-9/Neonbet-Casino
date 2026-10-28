@@ -15,7 +15,13 @@ it("accepts only valid shared status and hides provider errors", async () => {
 it("rejects malformed invitations before calling the backend", async () => {
   await expect(claimReferral("invalid")).rejects.toThrow("Invalid invitation");
   expect(rpc).not.toHaveBeenCalled();
-  rpc.mockResolvedValueOnce({ error: null });
+  rpc.mockResolvedValueOnce({ data: { claimed: true, rewardCredits: 5 }, error: null });
   await claimReferral(`LO-${"a".repeat(32)}`);
   expect(rpc).toHaveBeenCalledWith("claim_practice_referral", { invite_code: `LO-${"a".repeat(32)}` });
+});
+it("does not report success for an invalid claim response or expose provider details", async () => {
+  rpc.mockResolvedValueOnce({ data: { claimed: false, rewardCredits: 50 }, error: null });
+  await expect(claimReferral(`LO-${"a".repeat(32)}`)).rejects.toThrow("response could not be verified");
+  rpc.mockResolvedValueOnce({ data: null, error: { message: "private provider detail" } });
+  await expect(claimReferral(`LO-${"a".repeat(32)}`)).rejects.toThrow("Refresh referral status");
 });
