@@ -26,6 +26,7 @@ const AdminProfileModal = lazyPanel(() => import("../features/admin/AdminProfile
 import { PromotionsSection, TermsSection } from "../features/promotions";
 
 import { hasSupabaseConfig, signIn, signUp, signOut, resetPassword } from "../services/auth.service";
+import { initialAuthRedirect } from "../services/supabaseClient";
 import { submitSubmission, reviewSubmission, validateTxHash } from "../services/verification.service";
 import { submitWithdrawal, reviewWithdrawal, validateWithdrawal } from "../services/transactions.service";
 import { updateProfileAdmin } from "../services/admin.service";
@@ -82,6 +83,7 @@ function AppContent() {
   const [authOpen, setAuthOpen] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
+  const [authLinkError, setAuthLinkError] = useState(initialAuthRedirect.error);
   const [verificationSaving, setVerificationSaving] = useState(false);
   const [withdrawalSaving, setWithdrawalSaving] = useState(false);
   const [adminSaving, setAdminSaving] = useState(false);
@@ -111,6 +113,7 @@ function AppContent() {
   const [withdrawalError, setWithdrawalError] = useState("");
 
   function openAuth(mode) {
+    setAuthLinkError("");
     setAuthError("");
     setAuthMode(mode);
     setAuthOpen(true);
@@ -173,8 +176,10 @@ function AppContent() {
     setAuthError("");
     try {
       await resetPassword(email, window.location.origin + window.location.pathname);
-      setAuthError("Password reset email sent. Check your inbox.");
-      toast.info("Reset email sent");
+      setAuthError(
+        "If an account uses that email, a password reset link will arrive shortly. Check your inbox and spam folder.",
+      );
+      toast.info("Password reset requested");
     } catch (error) {
       setAuthError(error.message || "Password reset failed.");
     } finally {
@@ -336,6 +341,14 @@ function AppContent() {
             </button>
           </div>
         )}
+        {authLinkError && !user && (
+          <div role="alert" className="surface p-4 text-amber-200">
+            <p>{authLinkError}</p>
+            <button type="button" className="secondary-button mt-3" onClick={() => openAuth("login")}>
+              Request another reset email
+            </button>
+          </div>
+        )}
         {features.account && (
           <AccountStatusPanel
             user={user}
@@ -451,6 +464,7 @@ function AppContent() {
       )}
       {(authOpen || recovery) && (
         <AuthModal
+          key={recovery ? `recovery:${user?.id}` : "auth"}
           mode={recovery ? "recovery" : authMode}
           setMode={setAuthMode}
           onClose={() => {
@@ -459,6 +473,10 @@ function AppContent() {
           }}
           onSubmit={handleAuthSubmit}
           onResetPassword={handleResetPassword}
+          onRequestReset={() => {
+            setRecovery(false);
+            openAuth("login");
+          }}
           onPasswordUpdated={() => {
             setRecovery(false);
             setAuthOpen(false);

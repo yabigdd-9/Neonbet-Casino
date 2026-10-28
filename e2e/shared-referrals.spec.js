@@ -14,9 +14,11 @@ const invitee = {
 };
 function session(account) {
   const payload = { sub: account.id, exp: Math.floor(Date.now() / 1000) + 3600 };
-  const access_token = ["header", Buffer.from(JSON.stringify(payload)).toString("base64url"), "fixture"].join(
-    ".",
-  );
+  const access_token = [
+    Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url"),
+    Buffer.from(JSON.stringify(payload)).toString("base64url"),
+    "fixture",
+  ].join(".");
   return {
     access_token,
     refresh_token: "isolated-fixture",
@@ -56,7 +58,15 @@ async function fixture(context, state) {
     const token = request.headers().authorization?.split(" ")[1];
     const id = token ? JSON.parse(Buffer.from(token.split(".")[1], "base64url").toString()).sub : null;
     const account = id === inviter.id ? inviter : invitee;
-    if (url.pathname === "/auth/v1/user") return reply(session(account).user);
+    if (url.pathname === "/auth/v1/user") {
+      if (request.method() === "PUT") {
+        state.passwordUpdates = (state.passwordUpdates || 0) + 1;
+        expect(body.password).toBe("new-isolated-password");
+        if (state.failPassword)
+          return reply({ code: "unexpected_failure", msg: "private-provider-detail" }, 500);
+      }
+      return reply(session(account).user);
+    }
     if (url.pathname === "/rest/v1/profiles")
       return reply({
         id: account.id,
@@ -154,6 +164,57 @@ test("pending confirmation, explicit claim, separate inviter account and session
     await inviterContext.close();
     await inviteeContext.close();
   }
+});
+test("recovery callbacks require matching passwords and support retry after an update fails", async ({
+  page,
+  context,
+}) => {
+  const state = { claimed: false, passwordUpdates: 0, failPassword: true };
+  await fixture(context, state);
+  const recovery = session(invitee);
+  const fragment = new URLSearchParams({
+    access_token: recovery.access_token,
+    refresh_token: recovery.refresh_token,
+    expires_in: "3600",
+    token_type: "bearer",
+    type: "recovery",
+  });
+  await page.goto(`./#${fragment}`);
+  const form = page.getByRole("dialog", { name: "Set a new password" });
+  await expect(form).toBeVisible();
+  await expect(page).not.toHaveURL(/access_token|refresh_token/);
+  await form.getByLabel("New password", { exact: true }).fill("new-isolated-password");
+  await form.getByLabel("Confirm new password", { exact: true }).fill("does-not-match");
+  await expect(form.getByRole("button", { name: "Update password", exact: true })).toBeDisabled();
+  expect(state.passwordUpdates).toBe(0);
+  await form.getByLabel("Confirm new password", { exact: true }).fill("new-isolated-password");
+  await form.getByRole("button", { name: "Update password", exact: true }).click();
+  await expect(form.getByRole("alert")).toContainText("Password could not be updated");
+  await expect(form).not.toContainText("private-provider-detail");
+  state.failPassword = false;
+  await form.getByRole("button", { name: "Update password", exact: true }).click();
+  await expect(form).toHaveCount(0);
+  await expect(page.getByText("Password updated", { exact: true })).toBeVisible();
+  expect(state.passwordUpdates).toBe(2);
+});
+test("expired email links show a safe retry path and reset requests do not reveal account existence", async ({
+  page,
+  context,
+}) => {
+  const state = { recoveries: 0 };
+  await fixture(context, state);
+  await page.goto("./#error=access_denied&error_code=otp_expired&error_description=private-provider-detail");
+  await expect(
+    page.getByRole("alert").filter({ hasText: "This email link is invalid or has expired" }),
+  ).toBeVisible();
+  await expect(page).not.toHaveURL(/error_description|otp_expired/);
+  await expect(page.locator("body")).not.toContainText("private-provider-detail");
+  await page.getByRole("button", { name: "Request another reset email", exact: true }).click();
+  const form = page.getByRole("dialog", { name: "Login", exact: true });
+  await form.getByLabel("Email", { exact: true }).fill("missing@example.invalid");
+  await form.getByRole("button", { name: "Send password reset email" }).click();
+  await expect(form.getByRole("alert")).toContainText("If an account uses that email");
+  expect(state.recoveries).toBe(1);
 });
 test("status errors can be retried and a late claim does not change a different account", async ({
   page,
