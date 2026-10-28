@@ -283,3 +283,17 @@ test("Lucky Orbit branding is consistent across the lobby and customer care", as
     page.getByText("Hi! I'm Lucky Orbit's automated assistant. How can I help today?"),
   ).toBeVisible();
 });
+
+test("invitation links are token-free and attribution does not award credits", async ({ page }) => {
+  await page.goto(`./?ref=LO-${"a".repeat(32)}&token=do-not-share#private`);
+  await expect(page.getByText("Invitation received on this browser.", { exact: false })).toBeVisible();
+  const input = page.getByLabel("Your invitation link", { exact: true });
+  const url = new URL(await input.inputValue());
+  expect([...url.searchParams.keys()]).toEqual(["ref"]);
+  expect(url.hash).toBe("");
+  expect(url.searchParams.get("ref")).not.toBe(`LO-${"a".repeat(32)}`);
+  await expect(page.getByText(/Referral rewards are not active yet/)).toBeVisible();
+  await expect(page.locator("header").first()).toContainText("50.00");
+  await page.getByRole("button", { name: "Copy invitation link", exact: true }).click();
+  await expect(page.locator("#referrals [role=status]")).not.toBeEmpty();
+});
