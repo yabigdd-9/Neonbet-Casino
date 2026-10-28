@@ -12,17 +12,41 @@ import Hero from "../features/casino/Hero";
 import FeaturedGames from "../features/casino/FeaturedGames";
 import ArcadeGamesSection from "../features/casino/ArcadeGamesSection";
 import SlotProviderLibrary from "../features/casino/SlotProviderLibrary";
-const GameLaunchModal = lazyPanel(() => import("../features/casino/GameLaunchModal"));
-const SlotGameModal = lazyPanel(() => import("../features/casino/SlotGameModal"));
-const ArcadeGameModal = lazyPanel(() => import("../features/casino/ArcadeGameModal"));
+// WebKit can retain a failed module fetch across a reload. The explicit recovery
+// path uses separately compiled module URLs; ordinary visits do not download both.
+const RETRY_MODULES = new window.URLSearchParams(window.location.search).get("retryModules") === "1";
+const GameLaunchModal = lazyPanel(
+  () => import("../features/casino/GameLaunchModal"),
+  () => import("../features/casino/GameLaunchModal.jsx?retry"),
+);
+const SlotGameModal = lazyPanel(
+  () => import("../features/casino/SlotGameModal"),
+  () => import("../features/casino/SlotGameModal.jsx?retry"),
+);
+const ArcadeGameModal = lazyPanel(
+  () => import("../features/casino/ArcadeGameModal"),
+  () => import("../features/casino/ArcadeGameModal.jsx?retry"),
+);
 
-const AuthModal = lazyPanel(() => import("../features/auth/AuthModal"));
+const AuthModal = lazyPanel(
+  () => import("../features/auth/AuthModal"),
+  () => import("../features/auth/AuthModal.jsx?retry"),
+);
 import AccountStatusPanel from "../features/account/AccountStatusPanel";
 import VerificationPanel from "../features/verification/VerificationPanel";
 import WithdrawalRequestPanel from "../features/transactions/WithdrawalRequestPanel";
-const AdminDashboard = lazyPanel(() => import("../features/admin/AdminDashboard"));
-const AdminReviewModal = lazyPanel(() => import("../features/admin/AdminReviewModal"));
-const AdminProfileModal = lazyPanel(() => import("../features/admin/AdminProfileModal"));
+const AdminDashboard = lazyPanel(
+  () => import("../features/admin/AdminDashboard"),
+  () => import("../features/admin/AdminDashboard.jsx?retry"),
+);
+const AdminReviewModal = lazyPanel(
+  () => import("../features/admin/AdminReviewModal"),
+  () => import("../features/admin/AdminReviewModal.jsx?retry"),
+);
+const AdminProfileModal = lazyPanel(
+  () => import("../features/admin/AdminProfileModal"),
+  () => import("../features/admin/AdminProfileModal.jsx?retry"),
+);
 import { PromotionsSection, TermsSection } from "../features/promotions";
 
 import { hasSupabaseConfig, signIn, signUp, signOut, resetPassword } from "../services/auth.service";
@@ -40,10 +64,13 @@ import { useDemoWallet } from "../hooks/useDemoWallet";
 import { useAccount } from "../hooks/useAccount";
 import { scrollToSection } from "../lib/navigation";
 
-const PolicyModalContent = lazyPanel(() => import("../features/promotions/PolicyModalContent"));
+const PolicyModalContent = lazyPanel(
+  () => import("../features/promotions/PolicyModalContent"),
+  () => import("../features/promotions/PolicyModalContent.jsx?retry"),
+);
 
-function lazyPanel(loader) {
-  const Component = lazy(loader);
+function lazyPanel(loader, freshLoader) {
+  const Component = lazy(RETRY_MODULES ? freshLoader : loader);
   return function FeaturePanel(props) {
     return (
       <ErrorBoundary
@@ -53,7 +80,15 @@ function lazyPanel(loader) {
               This panel could not load. Reload the lobby, then open the panel again. Your current practice
               session will restart.
             </p>
-            <button type="button" className="filter-chip mt-3" onClick={() => window.location.reload()}>
+            <button
+              type="button"
+              className="filter-chip mt-3"
+              onClick={() => {
+                const url = new window.URL(window.location.href);
+                url.searchParams.set("retryModules", RETRY_MODULES ? "0" : "1");
+                window.location.assign(url.href);
+              }}
+            >
               Reload lobby
             </button>
             <button
@@ -471,7 +506,11 @@ function AppContent() {
           onClose={() => setLaunchGame(null)}
           onLaunch={handleLaunchGame}
           onPrepare={() => {
-            void import("../features/casino/SlotGameModal").catch(() => {});
+            void (
+              RETRY_MODULES
+                ? import("../features/casino/SlotGameModal.jsx?retry")
+                : import("../features/casino/SlotGameModal")
+            ).catch(() => {});
           }}
         />
       )}
