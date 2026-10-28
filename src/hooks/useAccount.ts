@@ -1,6 +1,6 @@
 import type { AccountUser, AccountState } from "../types/account";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { hasSupabaseConfig, getSession, onAuthChange } from "../services/auth.service";
+import { hasSupabaseConfig, getSession, onAuthChange, initialAuthRedirect } from "../services/auth.service";
 import { getProfile, getAdminProfiles, buildDemoProfile } from "../services/profiles.service";
 import { getSubmissions } from "../services/verification.service";
 import { getWithdrawals } from "../services/transactions.service";
@@ -98,8 +98,13 @@ export function useAccount() {
       if (!active) return;
       authChanged = true;
       const next = session?.user || null;
+      if (next?.id !== userRef.current?.id) setRecovery(false);
       if (!next) setRecovery(false);
-      if (event === "PASSWORD_RECOVERY") setRecovery(true);
+      if (
+        next &&
+        (event === "PASSWORD_RECOVERY" || (event === "INITIAL_SESSION" && initialAuthRedirect.recovery))
+      )
+        setRecovery(true);
       if (next?.id !== userRef.current?.id || event === "INITIAL_SESSION" || event === "USER_UPDATED") {
         setUser(next);
         // Fetch outside the synchronous Supabase auth callback.
@@ -112,6 +117,7 @@ export function useAccount() {
       .then((session) => {
         if (active && !authChanged) {
           setUser(session?.user || null);
+          if (session?.user && initialAuthRedirect.recovery) setRecovery(true);
           void loadAccount(session?.user || null);
         }
       })

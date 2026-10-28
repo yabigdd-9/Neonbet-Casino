@@ -9,9 +9,11 @@ const mocks = vi.hoisted(() => ({
   getAdminProfiles: vi.fn(),
   getSubmissions: vi.fn(),
   getWithdrawals: vi.fn(),
+  redirect: { error: "", recovery: false },
 }));
 vi.mock("../services/auth.service", () => ({
   hasSupabaseConfig: true,
+  initialAuthRedirect: mocks.redirect,
   getSession: mocks.getSession,
   onAuthChange: (callback) => {
     mocks.callback = callback;
@@ -29,6 +31,7 @@ import { useAccount } from "./useAccount";
 beforeEach(() => {
   cleanup();
   vi.clearAllMocks();
+  mocks.redirect.recovery = false;
   mocks.getSession.mockResolvedValue(null);
   mocks.getProfile.mockImplementation(async (id) => ({ id, role: "user", username: id }));
   mocks.getAdminProfiles.mockResolvedValue([]);
@@ -83,6 +86,17 @@ it("keeps recovery events and avoids reloading on token refresh", async () => {
   expect(mocks.getProfile).not.toHaveBeenCalled();
   await act(async () => event("alice", "PASSWORD_RECOVERY"));
   expect(result.current.recovery).toBe(true);
+  await act(async () => event("bob", "SIGNED_IN"));
+  expect(result.current.recovery).toBe(false);
+});
+it("opens recovery for the initial restored callback even if the SDK event preceded subscription", async () => {
+  mocks.redirect.recovery = true;
+  mocks.getSession.mockResolvedValueOnce({ user: { id: "alice" } });
+  const { result } = renderHook(() => useAccount());
+  await waitFor(() => expect(result.current.recovery).toBe(true));
+  await act(async () => result.current.setRecovery(false));
+  await act(async () => event("alice", "USER_UPDATED"));
+  expect(result.current.recovery).toBe(false);
 });
 it("surfaces session and account failures with retry", async () => {
   mocks.getSession.mockRejectedValue(new Error("Session unavailable"));

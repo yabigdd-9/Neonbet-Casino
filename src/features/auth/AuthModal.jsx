@@ -1,5 +1,5 @@
 // Authentication modal (login / register / reset). Uses the auth service.
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Send, MessageCircle, ExternalLink } from "lucide-react";
 import Modal from "../../components/ui/Modal";
 import Input from "../../components/ui/Input";
@@ -17,6 +17,7 @@ export default function AuthModal({
   authLoading,
   authError,
   onPasswordUpdated,
+  onRequestReset,
 }) {
   const [username, setUsername] = useState("");
   const [phone, setPhone] = useState("");
@@ -25,41 +26,13 @@ export default function AuthModal({
   const [contactMethod, setContactMethod] = useState("telegram");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
-  const [recoveryError, setRecoveryError] = useState("");
-  const [recoverySaving, setRecoverySaving] = useState(false);
   if (mode === "recovery")
     return (
-      <Modal title="Set a new password" onClose={onClose}>
-        <form
-          className="space-y-4 p-6"
-          onSubmit={async (event) => {
-            event.preventDefault();
-            setRecoverySaving(true);
-            try {
-              await updatePassword(password);
-              onPasswordUpdated();
-            } catch (error) {
-              setRecoveryError(error.message);
-            } finally {
-              setRecoverySaving(false);
-            }
-          }}
-        >
-          <Input
-            label="New password"
-            type="password"
-            autoComplete="new-password"
-            minLength={8}
-            required
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-          />
-          <Button type="submit" disabled={recoverySaving || password.length < 8}>
-            Update password
-          </Button>
-          {recoveryError && <p role="alert">{recoveryError}</p>}
-        </form>
-      </Modal>
+      <RecoveryPasswordModal
+        onClose={onClose}
+        onPasswordUpdated={onPasswordUpdated}
+        onRequestReset={onRequestReset}
+      />
     );
   const isRegister = mode === "register";
   const canSubmit = hasSupabaseConfig
@@ -234,6 +207,76 @@ export default function AuthModal({
           )}
         </form>
       </div>
+    </Modal>
+  );
+}
+
+function RecoveryPasswordModal({ onClose, onPasswordUpdated, onRequestReset }) {
+  const [password, setPassword] = useState("");
+  const [confirmation, setConfirmation] = useState("");
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const submitting = useRef(false);
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+  const matches = password === confirmation;
+  return (
+    <Modal title="Set a new password" onClose={onClose}>
+      <form
+        className="space-y-4 p-6"
+        aria-busy={saving}
+        onSubmit={async (event) => {
+          event.preventDefault();
+          if (submitting.current || password.length < 8 || !matches) return;
+          submitting.current = true;
+          setSaving(true);
+          setError("");
+          try {
+            await updatePassword(password);
+            if (mounted.current) onPasswordUpdated();
+          } catch (caught) {
+            if (mounted.current) setError(caught.message);
+          } finally {
+            submitting.current = false;
+            if (mounted.current) setSaving(false);
+          }
+        }}
+      >
+        <p className="text-sm text-slate-300">Choose a new password with at least 8 characters.</p>
+        <Input
+          label="New password"
+          type="password"
+          autoComplete="new-password"
+          minLength={8}
+          required
+          disabled={saving}
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+        />
+        <Input
+          label="Confirm new password"
+          type="password"
+          autoComplete="new-password"
+          minLength={8}
+          required
+          disabled={saving}
+          value={confirmation}
+          onChange={(event) => setConfirmation(event.target.value)}
+        />
+        {confirmation && !matches && <p role="alert">Passwords do not match.</p>}
+        <Button type="submit" disabled={saving || password.length < 8 || !matches}>
+          {saving ? "Updating password…" : "Update password"}
+        </Button>
+        {error && <p role="alert">{error}</p>}
+        <Button type="button" variant="secondary" disabled={saving} onClick={onRequestReset}>
+          Request another reset email
+        </Button>
+      </form>
     </Modal>
   );
 }

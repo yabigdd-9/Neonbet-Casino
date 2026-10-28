@@ -6,10 +6,20 @@ const mocks = vi.hoisted(() => ({
     signOut: vi.fn(),
     onAuthStateChange: vi.fn(),
     getSession: vi.fn(),
+    updateUser: vi.fn(),
+    resetPasswordForEmail: vi.fn(),
   },
 }));
 vi.mock("./supabaseClient", () => ({ hasSupabaseConfig: true, requireSupabase: () => mocks }));
-import { signIn, signUp, signOut, onAuthChange, getSession } from "./auth.service";
+import {
+  signIn,
+  signUp,
+  signOut,
+  onAuthChange,
+  getSession,
+  updatePassword,
+  resetPassword,
+} from "./auth.service";
 beforeEach(() => vi.clearAllMocks());
 it("returns user and session directly for login and registration", async () => {
   const data = { user: { id: "one" }, session: null };
@@ -25,6 +35,27 @@ it("returns user and session directly for login and registration", async () => {
       contactMethod: "",
     }),
   ).toEqual(data);
+});
+it("validates a new password before sending it and hides provider error details", async () => {
+  await expect(updatePassword("short")).rejects.toThrow("8 characters");
+  expect(mocks.auth.updateUser).not.toHaveBeenCalled();
+  mocks.auth.updateUser.mockResolvedValueOnce({ error: { status: 401, message: "private token detail" } });
+  await expect(updatePassword("long-enough-password")).rejects.toThrow("session has expired");
+  mocks.auth.updateUser.mockResolvedValueOnce({ error: { code: "same_password" } });
+  await expect(updatePassword("long-enough-password")).rejects.toThrow("not used before");
+  mocks.auth.updateUser.mockRejectedValueOnce(new Error("private transport detail"));
+  await expect(updatePassword("long-enough-password")).rejects.toThrow("Password could not be updated");
+});
+it("passes a clean reset destination and handles throttling without revealing account existence", async () => {
+  mocks.auth.resetPasswordForEmail.mockResolvedValueOnce({ data: {}, error: null });
+  await resetPassword("synthetic@example.invalid", "https://example.test/account");
+  expect(mocks.auth.resetPasswordForEmail).toHaveBeenCalledWith("synthetic@example.invalid", {
+    redirectTo: "https://example.test/account",
+  });
+  mocks.auth.resetPasswordForEmail.mockResolvedValueOnce({ error: { status: 429 } });
+  await expect(resetPassword("synthetic@example.invalid", "https://example.test/account")).rejects.toThrow(
+    "Too many reset requests",
+  );
 });
 it("throws logout and session errors", async () => {
   mocks.auth.signOut.mockResolvedValue({ error: new Error("Logout unavailable") });
