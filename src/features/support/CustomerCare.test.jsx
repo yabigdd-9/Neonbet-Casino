@@ -16,3 +16,15 @@ it("supports keyboard focus, safe deposit guidance, and returning focus on escap
   expect(document.activeElement).toBe(trigger);
   expect(trigger.getAttribute("aria-expanded")).toBe("false");
 });
+
+it("does not imply that verification or withdrawals process real funds", () => {
+  render(<CustomerCare />);
+  fireEvent.click(screen.getByRole("button", { name: "Customer Care" }));
+  const input = screen.getByRole("textbox", { name: "Your message" });
+  for (const question of ["How do I withdraw?", "How do I verify?"]) {
+    fireEvent.change(input, { target: { value: question } });
+    fireEvent.click(screen.getByRole("button", { name: "Send message" }));
+  }
+  expect(screen.getByText(/Practice credits have no cash value/)).toBeTruthy();
+  expect(screen.getByText(/does not verify real payments/)).toBeTruthy();
+});
