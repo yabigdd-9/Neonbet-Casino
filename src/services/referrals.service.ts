@@ -17,7 +17,11 @@ export async function getReferralStatus(): Promise<ReferralStatus> {
 }
 export async function claimReferral(code: string) {
   if (!/^LO-[a-f0-9]{32}$/.test(code)) throw new Error("Invalid invitation code.");
-  const { error } = await requireSupabase().rpc("claim_practice_referral", { invite_code: code });
+  const { data, error } = await requireSupabase().rpc("claim_practice_referral", { invite_code: code });
   if (error)
-    throw new Error("This invitation could not be verified for your account. No reward was awarded.");
+    throw new Error("This invitation could not be verified. Refresh referral status before trying again.");
+  if (data?.claimed !== true || data?.rewardCredits !== 5)
+    throw new Error(
+      "The invitation response could not be verified. Refresh referral status before trying again.",
+    );
 }
