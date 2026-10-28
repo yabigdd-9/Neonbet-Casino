@@ -19,6 +19,56 @@ export function shuffle(items) {
   return result;
 }
 
+export function slotRules(game) {
+  if (game?.mechanic === "line")
+    return {
+      name: "Left-to-right",
+      detail: "Match the first 3, 4 or 5 symbols from the left. Other matches do not pay.",
+      payouts: [
+        ["First 3 match", "3x"],
+        ["First 4 match", "8x"],
+        ["First 5 match", "20x"],
+      ],
+    };
+  if (game?.mechanic === "scatter")
+    return {
+      name: "Star scatter",
+      detail:
+        "Collect stars anywhere: 3 stars pay 3x, 4 pay 10x and 5 pay 30x. Other symbols do not pay. Three or more stars also award 3 automatic bonus spins at the same stake, with no extra debit or retriggers.",
+      payouts: [
+        ["3 stars anywhere", "3x"],
+        ["4 stars anywhere", "10x"],
+        ["5 stars anywhere", "30x"],
+      ],
+    };
+  return {
+    name: "Classic matches",
+    detail: "Match symbols anywhere on five reels. Only the highest qualifying payout applies.",
+    payouts: payoutRows,
+  };
+}
+
+export function evaluateSlot(game, reels) {
+  if (game?.mechanic === "line") {
+    let count = 1;
+    while (count < reels.length && reels[count] === reels[0]) count++;
+    return {
+      reels,
+      multiplier: { 3: 3, 4: 8, 5: 20 }[count] || 0,
+      label: count >= 3 ? `${count} from the left` : "No line match",
+    };
+  }
+  if (game?.mechanic === "scatter") {
+    const count = reels.filter((symbol) => symbol === "⭐").length;
+    return {
+      reels,
+      multiplier: { 3: 3, 4: 10, 5: 30 }[count] || 0,
+      label: count >= 3 ? `${count} star scatter` : "Not enough stars",
+    };
+  }
+  return evaluateReels(reels);
+}
+
 // Build a single spin result for a local simulated slot.
 export function evaluateReels(reels, jackpot = "7", premium = "💎", star = "⭐") {
   const counts = new Map();
@@ -42,8 +92,21 @@ export function evaluateReels(reels, jackpot = "7", premium = "💎", star = "�
 }
 
 // Browser-only demonstration math. Payout is derived from the displayed reels.
-export function buildSpin(game) {
+export function buildSpin(game, random = Math.random) {
   const symbols = game.symbols?.length ? game.symbols : ["🍒", "🍋", "💎", "⭐", "7"];
+  if (["line", "scatter"].includes(game.mechanic)) {
+    const draw = () => Array.from({ length: 5 }, () => symbols[Math.floor(random() * symbols.length)]);
+    const base = evaluateSlot(game, draw());
+    if (game.mechanic !== "scatter" || base.multiplier === 0) return base;
+    const bonusRounds = Array.from({ length: 3 }, () => evaluateSlot(game, draw()));
+    return {
+      ...base,
+      baseMultiplier: base.multiplier,
+      bonusRounds,
+      multiplier: base.multiplier + bonusRounds.reduce((sum, round) => sum + round.multiplier, 0),
+      label: `${base.label} + 3 bonus spins`,
+    };
+  }
   const seven = symbols.includes("7") ? "7" : symbols[0];
   const premium = symbols.includes("💎") ? "💎" : symbols[1] || symbols[0];
   const star = symbols.includes("⭐") ? "⭐" : symbols[2] || symbols[0];

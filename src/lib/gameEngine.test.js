@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  evaluateSlot,
   buildSpin,
   buildProviderGame,
   getGameId,
@@ -194,4 +195,24 @@ it("settles every Lucky Seven combination and all Neon Draw ranks", () => {
       multiplier: rank === 1 ? 5 : rank >= 11 ? 2 : 0,
     });
   }
+});
+
+it("evaluates line and scatter mechanics from the visible symbols", () => {
+  const line = { mechanic: "line" };
+  expect(evaluateSlot(line, ["A", "A", "A", "B", "B"]).multiplier).toBe(3);
+  expect(evaluateSlot(line, ["B", "A", "A", "A", "A"]).multiplier).toBe(0);
+  expect(evaluateSlot(line, ["A", "A", "A", "A", "A"]).multiplier).toBe(20);
+  expect(evaluateSlot({ mechanic: "scatter" }, ["⭐", "A", "⭐", "B", "⭐"]).multiplier).toBe(3);
+  expect(evaluateSlot({ mechanic: "scatter" }, ["⭐", "⭐", "⭐", "⭐", "⭐"]).multiplier).toBe(30);
+  expect(evaluateSlot({ mechanic: "scatter" }, ["A", "A", "A", "A", "A"]).multiplier).toBe(0);
+});
+
+it("settles scatter bonus spins once with payouts derived from all visible reels", () => {
+  const result = buildSpin({ mechanic: "scatter", symbols: ["A", "⭐"] }, () => 0.75);
+  expect(result.reels).toEqual(Array(5).fill("⭐"));
+  expect(result.baseMultiplier).toBe(30);
+  expect(result.bonusRounds).toHaveLength(3);
+  expect(result.multiplier).toBe(120);
+  expect(result.bonusRounds.every((round) => !round.bonusRounds)).toBe(true);
+  expect(buildSpin({ mechanic: "scatter", symbols: ["A", "⭐"] }, () => 0).bonusRounds).toBeUndefined();
 });

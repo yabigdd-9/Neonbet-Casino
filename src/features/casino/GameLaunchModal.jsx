@@ -2,7 +2,7 @@
 import React from "react";
 import { Play, Star } from "lucide-react";
 import Modal from "../../components/ui/Modal";
-import { betOptions } from "../../lib/gameEngine";
+import { betOptions, slotRules } from "../../lib/gameEngine";
 import { formatMoney } from "../../lib/storage";
 
 export default function GameLaunchModal({ game, isFavorite, onToggleFavorite, onClose, onLaunch }) {
@@ -29,8 +29,7 @@ export default function GameLaunchModal({ game, isFavorite, onToggleFavorite, on
           </div>
           <h2 className="mt-2 text-3xl font-semibold md:text-5xl">{game.title}</h2>
           <p className="mt-4 text-slate-400">
-            Launch a fast simulated session with NeonBet balance controls, frequent local wins, and quick bet
-            presets.
+            {slotRules(game).name}: {slotRules(game).detail} Practice credits only.
           </p>
           <div className="mt-5 flex flex-wrap gap-2">
             {tags.map((tag) => (

@@ -170,6 +170,7 @@ const themeGradients = [
 ];
 const expandedGames = extraThemes.map(([title, emoji, accent], index) => ({
   title,
+  mechanic: index % 3 === 0 ? "line" : index % 3 === 1 ? "scatter" : "classic",
   type: "Slots",
   tag: "New",
   emoji,
