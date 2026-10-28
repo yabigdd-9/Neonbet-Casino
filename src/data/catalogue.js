@@ -6,7 +6,7 @@ export const providerGames = slotProviders.flatMap((provider) =>
 );
 export const catalogue = [...games, ...providerGames];
 export const gamesById = new Map(catalogue.map((game) => [getGameId(game), game]));
-export const searchIndex = providerGames.map((game) => ({
+export const searchIndex = catalogue.map((game) => ({
   game,
   text: `${game.title} ${game.provider}`.toLowerCase(),
 }));
