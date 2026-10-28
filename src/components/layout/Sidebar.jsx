@@ -45,7 +45,7 @@ export default function Sidebar({ open, setOpen, user }) {
           <img src={brand.logo} alt="" width="40" height="40" />
           <div>
             <span className="text-xl font-bold tracking-tight">{brand.name}</span>
-            <p className="text-[10px] uppercase tracking-[.2em] text-slate-400">The demo collection</p>
+            <p className="text-[10px] uppercase tracking-[.2em] text-slate-400">The bonus collection</p>
           </div>
         </a>
         <p className="eyebrow mb-3">Discover</p>
