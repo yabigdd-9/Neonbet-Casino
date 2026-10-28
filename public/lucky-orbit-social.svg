@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1730" height="909" viewBox="0 0 1730 909">
+  <defs><radialGradient id="glow"><stop stop-color="#164e63"/><stop offset="1" stop-color="#080f1e"/></radialGradient></defs>
+  <rect width="1730" height="909" fill="url(#glow)"/>
+  <circle cx="1310" cy="420" r="155" fill="#22d3ee"/>
+  <circle cx="1365" cy="370" r="125" fill="#a855f7" opacity=".6"/>
+  <ellipse cx="1310" cy="420" rx="270" ry="85" transform="rotate(-30 1310 420)" fill="none" stroke="#a5f3fc" stroke-width="12"/>
+  <g fill="#fde68a"><circle cx="1530" cy="155" r="10"/><circle cx="1120" cy="210" r="6"/><circle cx="1470" cy="690" r="7"/></g>
+  <text x="120" y="280" fill="#a5f3fc" font-family="sans-serif" font-size="32" letter-spacing="8">THE FREE-PLAY ARCADE</text>
+  <text x="110" y="435" fill="white" font-family="sans-serif" font-size="130" font-weight="700">Lucky Orbit</text>
+  <text x="120" y="535" fill="#22d3ee" font-family="sans-serif" font-size="48">A little luck. A new orbit.</text>
+  <text x="120" y="740" fill="#cbd5e1" font-family="sans-serif" font-size="30">Practice credits · No cash value · No deposits or cash payouts</text>
+</svg>

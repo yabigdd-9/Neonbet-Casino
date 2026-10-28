@@ -29,7 +29,7 @@ export default function CustomerCare() {
   const logRef = useRef(null);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([
-    { role: "support", text: "Hi! I'm NeonBet's automated assistant. How can I help today?" },
+    { role: "support", text: "Hi! I'm Lucky Orbit's automated assistant. How can I help today?" },
   ]);
   useEffect(() => {
     if (open) inputRef.current?.focus();
@@ -67,12 +67,12 @@ export default function CustomerCare() {
     >
       {open && (
         <section
-          aria-label="NeonBet Customer Care"
+          aria-label="Lucky Orbit Customer Care"
           className="mb-3 flex h-[min(32rem,70vh)] w-[min(22rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-white/20 bg-slate-950 text-white shadow-2xl"
         >
           <header className="flex items-center justify-between bg-slate-900 p-4">
             <div>
-              <h2 className="font-bold">NeonBet Customer Care</h2>
+              <h2 className="font-bold">Lucky Orbit Customer Care</h2>
               <p className="text-xs text-slate-400">Automated assistant</p>
             </div>
             <button type="button" onClick={close} aria-label="Close customer care">
@@ -126,7 +126,10 @@ export default function CustomerCare() {
               className="rounded-full border border-white/15 px-3 py-1 text-xs text-slate-300"
               onClick={() => {
                 setMessages([
-                  { role: "support", text: "Hi! I'm NeonBet's automated assistant. How can I help today?" },
+                  {
+                    role: "support",
+                    text: "Hi! I'm Lucky Orbit's automated assistant. How can I help today?",
+                  },
                 ]);
                 setInput("");
                 inputRef.current?.focus();

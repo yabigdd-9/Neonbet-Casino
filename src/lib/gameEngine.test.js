@@ -216,3 +216,9 @@ it("settles scatter bonus spins once with payouts derived from all visible reels
   expect(result.bonusRounds.every((round) => !round.bonusRounds)).toBe(true);
   expect(buildSpin({ mechanic: "scatter", symbols: ["A", "⭐"] }, () => 0).bonusRounds).toBeUndefined();
 });
+
+it("preserves saved original-game identities through the Lucky Orbit rebrand", () => {
+  expect(getGameId({ provider: "Lucky Orbit Originals", title: "Neon Fruits" })).toBe(
+    getGameId({ provider: "NeonBet Originals", title: "Neon Fruits" }),
+  );
+});

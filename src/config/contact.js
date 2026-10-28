@@ -29,7 +29,7 @@ export function buildContactUrl(channel, username = "", phone = "") {
 
 function brandName() {
   // Local import to avoid a circular dependency at module init.
-  return import.meta.env.VITE_BRAND_NAME || "NeonBet";
+  return import.meta.env.VITE_BRAND_NAME || "Lucky Orbit";
 }
 
 export default contact;

@@ -179,7 +179,7 @@ const expandedGames = extraThemes.map(([title, emoji, accent], index) => ({
 }));
 games.push(...expandedGames);
 games.forEach((game) => {
-  game.provider = "NeonBet Originals";
+  game.provider = "Lucky Orbit Originals";
   game.tags = [game.tag, game.type];
 });
 

@@ -41,7 +41,7 @@ for (const width of widths) {
       if (response.status() >= 400) failed.push(response.url());
     });
     await page.goto("./");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("A little escape.");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("A little luck.");
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     mkdirSync("test-results/screenshots", { recursive: true });
     await page.screenshot({ path: `test-results/screenshots/${info.project.name}-${width}.png` });
@@ -271,4 +271,15 @@ test("sound is opt-in and practice history follows completed rounds", async ({ p
   await page.keyboard.press("Escape");
   await launch();
   await expect(page.getByRole("button", { name: "Sound on", exact: true })).toBeVisible();
+});
+
+test("Lucky Orbit branding is consistent across the lobby and customer care", async ({ page }) => {
+  await page.goto("./");
+  await expect(page).toHaveTitle(/Lucky Orbit/);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("A little luck.");
+  await page.getByRole("button", { name: "Customer Care", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Lucky Orbit Customer Care" })).toBeVisible();
+  await expect(
+    page.getByText("Hi! I'm Lucky Orbit's automated assistant. How can I help today?"),
+  ).toBeVisible();
 });

@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
         transformIndexHtml: {
           order: "pre",
           handler(html) {
-            const name = (env.VITE_BRAND_NAME || "NeonBet").replace(
+            const name = (env.VITE_BRAND_NAME || "Lucky Orbit").replace(
               /[&<>"']/g,
               (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char],
             );

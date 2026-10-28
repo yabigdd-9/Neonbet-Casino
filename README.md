@@ -1,4 +1,4 @@
-# NeonBet
+# Lucky Orbit
 
 A mobile-first React casino **demo** with local simulated slot/arcade games, a searchable themed catalogue, and optional Supabase accounts and manual review workflows. No real payments, custody, external game sessions, or real-money wagering are enabled.
 
