@@ -20,6 +20,13 @@ test("every arcade play button loads and settles a simulated round", async ({ pa
     "Lucky Wheel",
     "Lucky Seven",
     "Neon Draw",
+    "High Card Orbit",
+    "Meteor Six",
+    "Prism Pairs",
+    "Orbit Sprint",
+    "Treasure Chests",
+    "Odd Orbit",
+    "Orbit Keno",
   ]) {
     await page.getByRole("button", { name: `Play ${title}`, exact: true }).click();
     const dialog = page.getByRole("dialog", { name: title });
@@ -201,9 +208,9 @@ test("mobile menu and navigation buttons reach their destinations", async ({ pag
 test("more slots load and original themes are searchable", async ({ page }) => {
   await page.goto("./");
   const cards = page.locator('#featured-games button[aria-label^="Play practice game:"]');
-  await expect(cards).toHaveCount(12);
-  await page.getByRole("button", { name: /Load more games/ }).click();
   await expect(cards).toHaveCount(24);
+  await page.getByRole("button", { name: /Load more games/ }).click();
+  await expect(cards).toHaveCount(48);
   const input = page.getByRole("textbox", { name: "Search games", exact: true });
   await input.fill("Basketball Blitz");
   const play = page
@@ -211,6 +218,44 @@ test("more slots load and original themes are searchable", async ({ page }) => {
     .getByRole("button", { name: "Play practice game: Basketball Blitz", exact: true });
   await play.click();
   await expect(page.getByRole("dialog", { name: "Basketball Blitz" })).toBeVisible();
+});
+
+test("larger catalogue pages, final page and illustrated covers work on mobile", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("./");
+  const library = page.locator("#providers");
+  const cards = library.locator(".game-card");
+  await expect(cards).toHaveCount(48);
+  await expect(library.getByRole("status")).toHaveText("Showing 1–48 of 528 games");
+  await page.getByLabel("Games per page", { exact: true }).selectOption("96");
+  await expect(cards).toHaveCount(96);
+  for (let pageNumber = 0; pageNumber < 5; pageNumber++) {
+    await library.getByRole("button", { name: "Next", exact: true }).click();
+  }
+  await expect(cards).toHaveCount(48);
+  await expect(library.getByRole("status")).toHaveText("Showing 481–528 of 528 games");
+  await expect(library.getByRole("button", { name: "Next", exact: true })).toBeDisabled();
+  await cards.last().scrollIntoViewIfNeeded();
+  await expect
+    .poll(() =>
+      cards
+        .last()
+        .locator("img")
+        .evaluate((image) => image.complete && image.naturalWidth > 0),
+    )
+    .toBe(true);
+  await cards
+    .last()
+    .getByRole("button", { name: /Play practice game:/ })
+    .click();
+  await page.getByRole("button", { name: "Launch Game", exact: true }).click();
+  await page.getByRole("button", { name: "Spin $0.50", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Spin $0.50", exact: true })).toBeEnabled();
+  await page.keyboard.press("Escape");
+  await page.getByLabel("Game style", { exact: true }).selectOption("scatter");
+  await expect(library.getByRole("navigation", { name: "Catalogue pages" })).toContainText("Page 1 of");
+  await expect(library.getByRole("button", { name: "Previous", exact: true })).toBeDisabled();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
 
 test("game styles and sorting show playable games with matching rules", async ({ page }) => {

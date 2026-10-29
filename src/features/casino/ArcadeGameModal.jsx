@@ -7,6 +7,7 @@ import RoundHistory from "../../components/ui/RoundHistory";
 import Modal from "../../components/ui/Modal";
 import { formatMoney } from "../../lib/storage";
 import { betOptions } from "../../lib/gameEngine";
+import GameArtwork from "./GameArtwork";
 
 const PLINKO_LANES = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 
@@ -51,6 +52,32 @@ export default function ArcadeGameModal({ game, wallet, onClose }) {
           </div>
 
           <div className="mt-6 rounded-[2rem] border border-white/10 bg-black/30 p-5">
+            {game.artwork && (
+              <div className="overflow-hidden rounded-2xl border border-white/10">
+                <div className="relative mx-auto aspect-[4/3] max-h-60 overflow-hidden">
+                  <GameArtwork game={game} />
+                </div>
+                <div
+                  className="flex min-h-20 flex-wrap items-center justify-center gap-3 p-4"
+                  aria-label="Game result"
+                >
+                  {busy ? (
+                    <span>Playing…</span>
+                  ) : hasResult ? (
+                    round.visual.map((value, index) => (
+                      <span
+                        key={index}
+                        className="rounded-xl border border-cyan-200/25 bg-cyan-200/10 px-4 py-3 text-xl font-bold text-cyan-100"
+                      >
+                        {value}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-sm text-slate-300">Ready for your first round</span>
+                  )}
+                </div>
+              </div>
+            )}
             {["lucky-seven", "neon-draw"].includes(game.id) && (
               <div className="grid min-h-52 place-items-center rounded-3xl bg-indigo-400/10 text-center">
                 <div>
@@ -243,6 +270,11 @@ export default function ArcadeGameModal({ game, wallet, onClose }) {
           <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-5">
             <h3 className="font-semibold">Game Rules</h3>
             <div className="mt-3 space-y-2 text-sm text-slate-300">
+              {game.artwork && (
+                <p className="rounded-2xl bg-black/20 px-3 py-2">
+                  {game.rule} All multipliers include the returned stake.
+                </p>
+              )}
               {game.id === "dice-duel" && (
                 <>
                   <p className="rounded-2xl bg-black/20 px-3 py-2">Beat the house total to win 2x.</p>
@@ -264,24 +296,7 @@ export default function ArcadeGameModal({ game, wallet, onClose }) {
                 </>
               )}
               {["lucky-seven", "neon-draw"].includes(game.id) && (
-                <div className="grid min-h-52 place-items-center rounded-3xl bg-indigo-400/10 text-center">
-                  <div>
-                    <div className="text-6xl" aria-label="Game result">
-                      {busy
-                        ? "…"
-                        : !hasResult
-                          ? game.emoji
-                          : game.id === "lucky-seven"
-                            ? round.visual.join(" + ")
-                            : ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"][
-                                round.visual[0] - 1
-                              ]}
-                    </div>
-                    <p className="mt-4 text-sm text-slate-300">
-                      {busy ? "Playing…" : hasResult ? round.detail : game.rule}
-                    </p>
-                  </div>
-                </div>
+                <p className="rounded-2xl bg-black/20 px-3 py-2">{game.rule}</p>
               )}
               {game.id === "coin-flip" && (
                 <p className="rounded-2xl bg-black/20 px-3 py-2">

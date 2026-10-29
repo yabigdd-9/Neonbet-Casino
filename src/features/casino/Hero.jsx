@@ -2,6 +2,7 @@ import React from "react";
 import { ArrowUpRight, Play } from "lucide-react";
 import { scrollToSection } from "../../lib/navigation";
 import { arcadeGames } from "../../data/arcadeGames";
+import { games } from "../../data/games";
 export default function Hero({ onClaim, onOpenGame }) {
   return (
     <section id="lobby" className="hero-panel scroll-mt-24">
@@ -29,6 +30,17 @@ export default function Hero({ onClaim, onOpenGame }) {
         <p className="mt-5 text-xs text-slate-400">
           $50 simulated to start · No cash value or real-money wagering
         </p>
+        <div className="mt-6 flex flex-wrap gap-5 border-t border-white/10 pt-5 text-xs text-slate-400">
+          <span>
+            <strong className="mr-1 text-base text-white">{games.length}</strong> original slot themes
+          </span>
+          <span>
+            <strong className="mr-1 text-base text-white">{arcadeGames.length}</strong> arcade games
+          </span>
+          <span>
+            <strong className="mr-1 text-base text-white">48</strong> games per catalogue page
+          </span>
+        </div>
       </div>
       <div className="hero-art" aria-hidden="true">
         <div className="hero-orbit" />
@@ -38,7 +50,7 @@ export default function Hero({ onClaim, onOpenGame }) {
         <span className="hero-art-label">LUCKY ORBIT / PRACTICE EDITION</span>
       </div>
       <div className="relative z-10 mt-8 flex flex-wrap gap-2 md:col-span-2">
-        {arcadeGames.map((game) => (
+        {arcadeGames.slice(0, 4).map((game) => (
           <button key={game.id} type="button" className="filter-chip" onClick={() => onOpenGame(game)}>
             {game.title}
             <ArrowUpRight size={13} />

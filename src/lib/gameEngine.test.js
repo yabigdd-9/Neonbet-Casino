@@ -222,3 +222,49 @@ it("preserves saved original-game identities through the Lucky Orbit rebrand", (
     getGameId({ provider: "NeonBet Originals", title: "Neon Fruits" }),
   );
 });
+
+it("settles new card, dice, color and race rounds from the displayed outcomes", () => {
+  for (let player = 1; player <= 13; player++) {
+    for (let house = 1; house <= 13; house++) {
+      const draws = [(player - 0.5) / 13, (house - 0.5) / 13];
+      const round = playArcade("high-card", 2, () => draws.shift());
+      expect(round.visual).toEqual([player, house]);
+      expect(round.multiplier).toBe(player > house ? 1.8 : player === house ? 1 : 0);
+    }
+  }
+  for (let first = 1; first <= 6; first++) {
+    expect(playArcade("meteor-six", 2, () => (first - 0.5) / 6).multiplier).toBe(first === 6 ? 5 : 0);
+    for (let second = 1; second <= 6; second++) {
+      const draws = [(first - 0.5) / 6, (second - 0.5) / 6];
+      const round = playArcade("odd-orbit", 2, () => draws.shift());
+      expect(round.visual).toEqual([first, second]);
+      expect(round.multiplier).toBe((first + second) % 2 ? 1.8 : 0);
+    }
+  }
+  for (let first = 0; first < 4; first++) {
+    expect(playArcade("orbit-race", 2, () => (first + 0.5) / 4).multiplier).toBe(first === 0 ? 3 : 0);
+    expect(playArcade("treasure-chests", 2, () => (first + 0.5) / 4).multiplier).toBe([0, 0.5, 1, 2][first]);
+    for (let second = 0; second < 4; second++) {
+      const draws = [(first + 0.5) / 4, (second + 0.5) / 4];
+      expect(playArcade("color-pair", 2, () => draws.shift()).multiplier).toBe(first === second ? 3 : 0);
+    }
+  }
+});
+
+it("keno draws distinct numbers without replacement and pays the visible matches", () => {
+  const payouts = new Set();
+  // Every ordered three-number draw is possible, including every match count.
+  for (let first = 0; first < 12; first++) {
+    for (let second = 0; second < 11; second++) {
+      for (let third = 0; third < 10; third++) {
+        const draws = [(first + 0.5) / 12, (second + 0.5) / 11, (third + 0.5) / 10];
+        const round = playArcade("orbit-keno", 2, () => draws.shift());
+        expect(new Set(round.visual).size).toBe(3);
+        expect(round.visual.every((number) => number >= 1 && number <= 12)).toBe(true);
+        expect(round.multiplier).toBe([0, 0.5, 2, 8][round.visual.filter((number) => number <= 3).length]);
+        payouts.add(round.multiplier);
+      }
+    }
+  }
+  expect([...payouts].sort((a, b) => a - b)).toEqual([0, 0.5, 2, 8]);
+});

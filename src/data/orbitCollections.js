@@ -1,0 +1,61 @@
+// Original practice themes. These collections share the three documented slot rules.
+const destinations = [
+  ["Astral Harbor", "space", "🪐", "🌙"],
+  ["Velvet Citadel", "castle", "🏰", "👑"],
+  ["Sunken Atlas", "ocean", "🐙", "🐚"],
+  ["Jade Expedition", "jungle", "🐯", "🌿"],
+  ["Ruby Observatory", "gem", "💎", "🔭"],
+  ["Amber Frontier", "treasure", "🪙", "⛏️"],
+  ["Frostbound Isles", "winter", "❄️", "🧊"],
+  ["Electric Avenue", "neon", "⚡", "🤖"],
+  ["Sugarboard Bay", "candy", "🍭", "🍬"],
+  ["Dragon Summit", "dragon", "🐉", "🔥"],
+  ["Moonstone Grove", "forest", "🌲", "🍄"],
+  ["Crimson Corsair", "pirate", "⚓", "🏴‍☠️"],
+  ["Solar Dynasty", "egypt", "🏺", "☀️"],
+  ["Northern Sagas", "viking", "🛡️", "⛵"],
+  ["Silk Lantern", "lantern", "🏮", "🌸"],
+  ["Starlit Academy", "magic", "🔮", "🪄"],
+  ["Cherry Circuit", "fruit", "🍒", "🍋"],
+  ["Coral Riviera", "ocean", "🪸", "🐠"],
+  ["Sapphire Speedway", "racing", "🏎️", "🏁"],
+  ["Victory Arena", "sports", "🏆", "⚽"],
+  ["Prism Pavilion", "gem", "💠", "🌈"],
+  ["Golden Orchard", "fruit", "🍊", "🍓"],
+  ["Midnight Masquerade", "cards", "🃏", "🎭"],
+  ["Celestial Express", "space", "🚀", "☄️"],
+];
+const chapters = [
+  "First Light",
+  "Hidden Path",
+  "Crystal Echo",
+  "Golden Hour",
+  "Midnight Trail",
+  "Wild Horizon",
+  "Secret Garden",
+  "Silver Dawn",
+  "Prism Quest",
+  "Crown Jewel",
+  "Final Frontier",
+];
+const gradients = [
+  "from-cyan-400 to-blue-800",
+  "from-violet-500 to-fuchsia-800",
+  "from-amber-400 to-orange-800",
+  "from-emerald-400 to-teal-900",
+  "from-rose-400 to-purple-800",
+];
+
+export const orbitCollections = destinations.flatMap(([collection, artwork, emoji, accent], group) =>
+  chapters.map((chapter, index) => ({
+    title: `${collection}: ${chapter}`,
+    collection,
+    artwork,
+    type: "Slots",
+    tag: "New",
+    emoji,
+    gradient: gradients[group % gradients.length],
+    mechanic: ["classic", "line", "scatter"][(group + index) % 3],
+    symbols: [emoji, accent, "🪙", "🎁", "⭐", "💎", "7"],
+  })),
+);

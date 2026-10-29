@@ -1,7 +1,7 @@
 // Arcade tables section.
 import React from "react";
-import { Play } from "lucide-react";
 import { arcadeGames } from "../../data/arcadeGames";
+import GameCard from "./GameCard";
 
 export default function ArcadeGamesSection({ onPlay }) {
   return (
@@ -22,36 +22,9 @@ export default function ArcadeGamesSection({ onPlay }) {
           All arcade games are simulated and played locally.
         </div>
       </div>
-      <div className="grid gap-5 lg:grid-cols-3">
+      <div className="lobby-game-grid">
         {arcadeGames.map((game) => (
-          <article
-            key={game.id}
-            className="group relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.06] p-5 transition hover:-translate-y-1 hover:border-cyan-300/40 hover:shadow-neon"
-          >
-            <div className={`absolute inset-x-0 top-0 h-28 bg-gradient-to-br ${game.gradient} opacity-90`} />
-            <div className="relative">
-              <div className="flex items-start justify-between gap-4">
-                <div className="grid h-16 w-16 place-items-center rounded-3xl border border-white/20 bg-black/30 text-4xl shadow-neon transition group-hover:scale-105">
-                  {game.emoji}
-                </div>
-                <span className="rounded-full bg-black/35 px-3 py-1 text-xs font-semibold text-white">
-                  {game.tag}
-                </span>
-              </div>
-              <div className="mt-10 text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">
-                {game.type}
-              </div>
-              <h3 className="mt-2 text-2xl font-semibold">{game.title}</h3>
-              <p className="mt-3 min-h-12 text-sm leading-6 text-slate-400">{game.rule}</p>
-              <button
-                type="button"
-                onClick={() => onPlay(game)}
-                className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-cyan-400 px-5 py-4 font-semibold text-slate-950 shadow-neon transition hover:scale-[1.02]"
-              >
-                <Play size={18} /> Play {game.title}
-              </button>
-            </div>
-          </article>
+          <GameCard key={game.id} game={game} onPlay={onPlay} arcade />
         ))}
       </div>
     </section>

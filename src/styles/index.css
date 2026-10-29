@@ -183,11 +183,70 @@ main > section {
   color: #99b0bd;
 }
 .game-art {
-  background-blend-mode: luminosity;
-  filter: saturate(0.65);
+  isolation: isolate;
 }
 .game-art img {
   pointer-events: none;
+}
+.game-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 250ms ease;
+}
+.game-card:hover .game-cover {
+  transform: scale(1.04);
+}
+.game-cover-caption {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 1.5rem 0.8rem 0.6rem;
+  background: linear-gradient(transparent, #050b1ee6);
+  color: #f0e5ca;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+.lobby-game-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.catalogue-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.catalogue-controls label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+}
+.catalogue-count {
+  padding: 0.6rem 0.85rem;
+  border: 1px solid #67e8f930;
+  border-radius: 0.75rem;
+  color: #a5f3fc;
+  font-size: 0.75rem;
+}
+@media (min-width: 768px) {
+  .lobby-game-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+}
+@media (min-width: 1280px) {
+  .lobby-game-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1536px) {
+  .lobby-game-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
 }
 @media (max-width: 767px) {
   .hero-panel {

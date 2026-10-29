@@ -1,11 +1,10 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { searchIndex } from "../../data/catalogue";
 import { getGameId, gameFilters } from "../../lib/gameEngine";
 import GameCard from "./GameCard";
 import GameSearch from "./GameSearch";
 import EmptyState from "../../components/ui/EmptyState";
 
-const PAGE_SIZE = 12;
 export default function SlotProviderLibrary({
   onPlay,
   favorites,
@@ -18,6 +17,8 @@ export default function SlotProviderLibrary({
   const [category, setCategory] = useState("all");
   const [sort, setSort] = useState("default");
   const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(48);
+  const heading = useRef(null);
   const results = useMemo(
     () =>
       searchIndex
@@ -39,16 +40,22 @@ export default function SlotProviderLibrary({
         ),
     [searchTerm, activeFilter, favorites, category, sort],
   );
-  const lastPage = Math.max(0, Math.ceil(results.length / PAGE_SIZE) - 1);
+  const lastPage = Math.max(0, Math.ceil(results.length / pageSize) - 1);
   const currentPage = Math.min(page, lastPage);
+  function changePage(nextPage) {
+    setPage(nextPage);
+    heading.current?.focus();
+  }
   return (
     <section id="providers" className="scroll-mt-24">
       <div className="section-heading">
         <div>
           <p className="eyebrow">Find your next favorite</p>
-          <h2>Explore the catalogue</h2>
+          <h2 ref={heading} tabIndex={-1} className="scroll-mt-24">
+            Explore the catalogue
+          </h2>
         </div>
-        <span className="text-sm text-slate-400">Local simulations · provider themes only</span>
+        <span className="catalogue-count">{searchIndex.length} practice slot themes</span>
       </div>
       <div className="surface mb-6 p-4 md:p-5">
         <GameSearch
@@ -73,7 +80,7 @@ export default function SlotProviderLibrary({
             </button>
           ))}
         </div>
-        <div className="mt-4 flex flex-wrap gap-4">
+        <div className="catalogue-controls">
           <label className="text-sm">
             Game style
             <select
@@ -108,9 +115,33 @@ export default function SlotProviderLibrary({
               <option value="za">Title Z–A</option>
             </select>
           </label>
+          <label className="text-sm">
+            Games per page
+            <select
+              aria-label="Games per page"
+              className="ml-2 rounded-xl bg-slate-800 p-2"
+              value={pageSize}
+              onChange={(event) => {
+                setPageSize(Number(event.target.value));
+                setPage(0);
+              }}
+            >
+              {[24, 48, 96].map((size) => (
+                <option key={size} value={size}>
+                  {size} games
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
         <p className="mt-4 text-sm text-slate-400" role="status">
-          {results.length} games found
+          {results.length
+            ? `Showing ${currentPage * pageSize + 1}–${Math.min((currentPage + 1) * pageSize, results.length)} of ${results.length} games`
+            : "0 games found"}
+        </p>
+        <p className="mt-2 text-xs leading-5 text-slate-400">
+          Originals and provider-inspired themes use local practice rules. Official provider games are not
+          connected.
         </p>
       </div>
       {recentGames.length > 0 && (
@@ -130,8 +161,8 @@ export default function SlotProviderLibrary({
           </div>
         </div>
       )}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4 md:gap-5">
-        {results.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE).map((game) => (
+      <div className="lobby-game-grid">
+        {results.slice(currentPage * pageSize, (currentPage + 1) * pageSize).map((game) => (
           <GameCard
             key={getGameId(game)}
             game={game}
@@ -148,7 +179,7 @@ export default function SlotProviderLibrary({
           <button
             className="filter-chip"
             disabled={currentPage === 0}
-            onClick={() => setPage(currentPage - 1)}
+            onClick={() => changePage(currentPage - 1)}
           >
             Previous
           </button>
@@ -158,7 +189,7 @@ export default function SlotProviderLibrary({
           <button
             className="filter-chip"
             disabled={currentPage >= lastPage}
-            onClick={() => setPage(currentPage + 1)}
+            onClick={() => changePage(currentPage + 1)}
           >
             Next
           </button>
