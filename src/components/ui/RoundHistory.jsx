@@ -4,8 +4,8 @@ export default function RoundHistory({ rounds = [] }) {
   if (!rounds.length) return null;
   return (
     <details className="mt-4 rounded-2xl border border-white/10 p-4 text-sm">
-      <summary className="cursor-pointer font-semibold text-slate-200">Recent practice rounds</summary>
-      <ol className="mt-3 space-y-2" aria-label="Recent practice rounds">
+      <summary className="cursor-pointer font-semibold text-slate-200">Recent rounds</summary>
+      <ol className="mt-3 space-y-2" aria-label="Recent rounds">
         {rounds.slice(0, 5).map((round) => (
           <li
             key={round.id}

@@ -52,11 +52,13 @@ export default function Header({ setOpen, balance, user, onOpenAuth, onLogout })
         </div>
       </div>
       <div
-        className="border-t border-white/5 px-4 py-1.5 text-center text-[11px] text-slate-400 sm:hidden"
+        className="lobby-mode-notice border-t border-cyan-200/10 bg-cyan-200/[0.04] px-4 py-2 text-center text-[11px] text-cyan-100"
         role="status"
       >
-        Simulated USD <span className="tabular-nums text-cyan-200">${balance.toFixed(2)}</span> · No cash
-        value credits only
+        <span className="sm:hidden">
+          Simulated USD <span className="tabular-nums">${balance.toFixed(2)}</span> ·{" "}
+        </span>
+        Simulated games · No cash value · Provider-inspired themes
       </div>
     </header>
   );

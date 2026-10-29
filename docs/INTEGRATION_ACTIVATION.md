@@ -2,6 +2,8 @@
 
 The user selected SOFTSWISS as the provider candidate. No contract, sandbox access, payment/custody arrangement, launch country or licensed operator has been verified. The server-side candidate placeholder advertises no enabled capabilities and makes no network calls; the existing synthetic provider is not SOFTSWISS. No live adapter is implemented.
 
+On 2026-10-29 the user reported approved SOFTSWISS access and requested a catalogue of at least 1,000 mainstream games. The access environment (sandbox or live) and contracted developer documentation are still needed. Do not count local themes as official provider sessions or invent API endpoints from the public marketing website. Authenticate to the approved catalogue server-side after receiving the actual supplier specification, then report the available game count from that feed.
+
 ## SOFTSWISS onboarding
 
 - [ ] Confirm whether the operator needs the Casino Platform, the standalone Game Aggregator, or both; review integration ownership, pricing, supported markets and the existing site's compatibility.

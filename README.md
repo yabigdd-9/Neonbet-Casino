@@ -19,7 +19,7 @@ For optional Supabase accounts, select `VITE_APP_MODE=supabase`, set `VITE_SUPAB
 ## What works
 
 - Responsive illustrated lobby with 528 practice slot themes and 14 arcade games (542 selections total), search, filters, favorites and recent games. Slot themes share three documented rule sets; provider titles are local themes, not official provider sessions.
-- Longer catalogue pages show 48 games by default, with 24/48/96 choices and 24 featured games before loading more. The 23 original local SVG covers are reproducible with `node scripts/generate-game-covers.mjs` and require no external image service.
+- Longer catalogue pages show 48 games by default, with 24/48/96 choices and 24 featured games before loading more. A theme-collection filter separates originals and provider-inspired local themes. Original illustrated covers are bundled as one 24-tile PNG atlas with no external image service; the earlier SVG set remains available through `node scripts/generate-game-covers.mjs`.
 - Local slot simulations and arcade rounds with integer-cent balances. A started round settles once even if its modal closes. New arcade games include High Card Orbit, Meteor Six, Prism Pairs, Orbit Sprint, Treasure Chests, Odd Orbit and Orbit Keno.
 - Local demo identities and user-scoped manual records. Demo identities are browser fixtures, not secure authenticated accounts.
 - Supabase sign-in, registration, session restoration, recovery form and server-authorized admin review. These are tested with mocks and isolated SQL fixtures, not a live project.

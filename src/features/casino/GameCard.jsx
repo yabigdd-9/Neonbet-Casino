@@ -10,7 +10,7 @@ export default function GameCard({ game, onPlay, isFavorite, onToggleFavorite, a
       <div className="game-art relative aspect-[4/3] overflow-hidden bg-slate-900">
         <GameArtwork game={game} />
         <div className="absolute right-2 top-2 rounded-full bg-slate-950/85 px-2 py-1 text-[10px] font-bold tracking-wider">
-          PRACTICE
+          {arcade ? "ARCADE" : game.provider === "Lucky Orbit Originals" ? "ORIGINAL" : "THEME"}
         </div>
         <div className="game-cover-caption" aria-hidden="true">
           {game.collection ||
@@ -18,7 +18,7 @@ export default function GameCard({ game, onPlay, isFavorite, onToggleFavorite, a
               ? "ORBIT ARCADE"
               : game.provider === "Lucky Orbit Originals"
                 ? "ORBIT ORIGINALS"
-                : "PRACTICE THEME")}
+                : "LOCAL THEME")}
         </div>
         {onToggleFavorite && (
           <button
@@ -40,12 +40,12 @@ export default function GameCard({ game, onPlay, isFavorite, onToggleFavorite, a
         <h3 className="min-h-11 text-sm font-semibold leading-snug md:text-base">{game.title}</h3>
         {arcade && <p className="mb-4 mt-2 text-xs leading-5 text-slate-400">{game.rule}</p>}
         <button
-          aria-label={arcade ? `Play ${game.title}` : `Play practice game: ${game.title}`}
+          aria-label={arcade ? `Play ${game.title}` : `Play game: ${game.title}`}
           type="button"
           onClick={() => onPlay(game)}
           className="mt-auto w-full rounded-2xl bg-white/10 py-3 font-semibold text-white transition hover:bg-cyan-400 hover:text-slate-950"
         >
-          <Play size={14} className="mr-2 inline" /> {arcade ? "Play" : "Play practice"}
+          <Play size={14} className="mr-2 inline" /> Play
         </button>
       </div>
     </Card>
