@@ -20,7 +20,7 @@ export const games = [
   {
     title: "Royal Blackjack",
     type: "Cards",
-    tag: "Live",
+    tag: "Classic",
     emoji: "🃏",
     gradient: "from-emerald-400 to-green-700",
     symbols: ["A", "K", "Q", "J", "♠️", "♥️", "7"],

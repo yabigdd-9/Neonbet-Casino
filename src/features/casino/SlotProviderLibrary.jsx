@@ -4,15 +4,19 @@ import { getGameId, gameFilters } from "../../lib/gameEngine";
 import GameCard from "./GameCard";
 import GameSearch from "./GameSearch";
 import EmptyState from "../../components/ui/EmptyState";
+import { catalogueEmptyState, discoverGames, indexCatalogue } from "./catalogueDiscovery";
 const collections = [...new Set(searchIndex.map(({ game }) => game.provider))];
+const discoveryIndex = indexCatalogue(searchIndex.map(({ game }) => game));
+const filters = [...gameFilters, "Recent"];
 
 export default function SlotProviderLibrary({
   onPlay,
-  favorites,
+  favorites = [],
   isFavorite,
   onToggleFavorite,
-  recentGames,
+  recentGames = [],
 }) {
+  const [query, setQuery] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
   const [category, setCategory] = useState("all");
@@ -23,28 +27,37 @@ export default function SlotProviderLibrary({
   const heading = useRef(null);
   const results = useMemo(
     () =>
-      searchIndex
-        .filter(
-          ({ game, text }) =>
-            (!searchTerm || text.includes(searchTerm.toLowerCase())) &&
-            (provider === "all" || game.provider === provider) &&
-            (category === "all" ||
-              (category === "originals"
-                ? game.provider === "Lucky Orbit Originals"
-                : (game.mechanic || "classic") === category)) &&
-            (activeFilter === "All" ||
-              (activeFilter === "Favorites"
-                ? favorites.includes(getGameId(game))
-                : game.tags.includes(activeFilter))),
-        )
-        .map((row) => row.game)
-        .sort((a, b) =>
-          sort === "az" ? a.title.localeCompare(b.title) : sort === "za" ? b.title.localeCompare(a.title) : 0,
-        ),
-    [searchTerm, activeFilter, favorites, category, sort, provider],
+      discoverGames(discoveryIndex, {
+        searchTerm,
+        provider,
+        category,
+        activeFilter,
+        favorites,
+        recentGames,
+        sort,
+      }),
+    [searchTerm, activeFilter, favorites, recentGames, category, sort, provider],
   );
   const lastPage = Math.max(0, Math.ceil(results.length / pageSize) - 1);
   const currentPage = Math.min(page, lastPage);
+  const hasFilters = Boolean(
+    query ||
+    searchTerm ||
+    activeFilter !== "All" ||
+    category !== "all" ||
+    provider !== "all" ||
+    sort !== "default",
+  );
+  const emptyState = catalogueEmptyState(activeFilter, favorites, recentGames);
+  function resetFilters() {
+    setQuery("");
+    setSearchTerm("");
+    setActiveFilter("All");
+    setCategory("all");
+    setProvider("all");
+    setSort("default");
+    setPage(0);
+  }
   function changePage(nextPage) {
     setPage(nextPage);
     heading.current?.focus();
@@ -62,13 +75,15 @@ export default function SlotProviderLibrary({
       </div>
       <div className="surface mb-6 p-4 md:p-5">
         <GameSearch
+          value={query}
+          onValueChange={setQuery}
           onResult={(value) => {
             setSearchTerm(value.trim());
             setPage(0);
           }}
         />
         <div className="mt-4 flex flex-wrap gap-2" aria-label="Game filters">
-          {gameFilters.map((filter) => (
+          {filters.map((filter) => (
             <button
               key={filter}
               type="button"
@@ -155,6 +170,11 @@ export default function SlotProviderLibrary({
               ))}
             </select>
           </label>
+          {hasFilters && (
+            <button type="button" className="filter-chip" onClick={resetFilters}>
+              Reset filters
+            </button>
+          )}
         </div>
         <p className="mt-4 text-sm text-slate-400" role="status">
           {results.length
@@ -189,13 +209,20 @@ export default function SlotProviderLibrary({
             key={getGameId(game)}
             game={game}
             onPlay={onPlay}
-            isFavorite={isFavorite(game)}
+            isFavorite={isFavorite?.(game)}
             onToggleFavorite={onToggleFavorite}
           />
         ))}
       </div>
       {!results.length ? (
-        <EmptyState title="No matching games" description="Try a different search or choose All." />
+        <EmptyState
+          {...emptyState}
+          action={
+            <button type="button" className="primary-button" onClick={resetFilters}>
+              Show all games
+            </button>
+          }
+        />
       ) : (
         <nav aria-label="Catalogue pages" className="mt-6 flex items-center justify-center gap-4">
           <button

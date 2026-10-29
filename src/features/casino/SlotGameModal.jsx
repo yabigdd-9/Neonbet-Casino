@@ -8,9 +8,9 @@ import Modal from "../../components/ui/Modal";
 import { betOptions, slotRules } from "../../lib/gameEngine";
 import { formatMoney } from "../../lib/storage";
 
-export default function SlotGameModal({ game, wallet, onClose }) {
+export default function SlotGameModal({ game, wallet, onClose, initialBet = 0.5 }) {
   const sound = useGameSound();
-  const [bet, setBet] = useState(0.5);
+  const [bet, setBet] = useState(() => (betOptions.includes(initialBet) ? initialBet : 0.5));
   const [playError, setPlayError] = useState("");
   const { balance, busy: spinning, start } = wallet;
   const settled = wallet.round?.gameId === game?.title ? wallet.round : null;
@@ -31,7 +31,9 @@ export default function SlotGameModal({ game, wallet, onClose }) {
         <div>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">{game.type}</div>
+              <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">
+                {slotRules(game).name}
+              </div>
               <h2 className="mt-2 text-3xl font-semibold">{game.title}</h2>
               <p className="mt-2 text-sm text-slate-400">
                 {game.provider

@@ -396,3 +396,95 @@ test("a transient panel download can be retried", async ({ page }) => {
   await page.getByRole("button", { name: "Register", exact: true }).click();
   await expect(page.getByRole("dialog", { name: "Create account" })).toBeVisible();
 });
+
+test("opening stake presets carry through without charging the preview", async ({ page }) => {
+  await page.goto("./");
+  await page
+    .locator("#featured-games")
+    .getByRole("button", { name: "Play game: Neon Fruits", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Opening bet $0.25", exact: true }).click();
+  await expect(page.locator("header").first()).toContainText("50.00");
+  await page.getByRole("button", { name: "Launch Game", exact: true }).click();
+  await expect(page.locator("header").first()).toContainText("50.00");
+  const spin = page.getByRole("button", { name: "Spin $0.25", exact: true });
+  await spin.click();
+  await expect(spin).toBeEnabled();
+  await page.getByText("Recent rounds", { exact: true }).click();
+  await expect(page.getByRole("list", { name: "Recent rounds" })).toContainText("Stake $0.25");
+});
+
+test("a failed cover atlas falls back to local artwork and games still open", async ({ page }) => {
+  await page.route("**/game-covers/casino-atlas.png", (route) => route.abort());
+  await page.goto("./");
+  const card = page.locator("#featured-games .game-card").first();
+  await card.scrollIntoViewIfNeeded();
+  await expect(card.locator("img")).toHaveAttribute("src", /fruit\.svg$/);
+  await expect
+    .poll(() => card.locator("img").evaluate((image) => image.complete && image.naturalWidth > 0))
+    .toBe(true);
+  await card.getByRole("button", { name: "Play game: Neon Fruits", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "Neon Fruits", exact: true })).toBeVisible();
+});
+
+test("support stays clear of tablet navigation and short-screen controls remain reachable", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 768, height: 600 });
+  await page.goto("./");
+  const support = page.getByRole("button", { name: "Customer Care", exact: true });
+  const buttonBox = await support.boundingBox();
+  const navBox = await page.getByRole("navigation", { name: "Mobile navigation" }).boundingBox();
+  expect(buttonBox.y + buttonBox.height).toBeLessThanOrEqual(navBox.y);
+  await page.setViewportSize({ width: 390, height: 600 });
+  await expect(support).toHaveCSS("width", "48px");
+  await support.click();
+  await expect(page.getByRole("button", { name: "Close customer care", exact: true })).toBeInViewport();
+  await page.setViewportSize({ width: 600, height: 390 });
+  const send = page.getByRole("button", { name: "Send message", exact: true });
+  await send.scrollIntoViewIfNeeded();
+  await expect(send).toBeInViewport();
+  await page.getByRole("button", { name: "Ask a person / support requests" }).click();
+  await expect(page.getByRole("region", { name: "Support requests" })).toBeVisible();
+});
+
+test("support forms load on demand with an email fallback if the download fails", async ({ page }) => {
+  let requested = false;
+  await page.route("**/assets/SupportRequests-*.js", (route) => {
+    requested = true;
+    return route.abort();
+  });
+  await page.goto("./");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  expect(requested).toBe(false);
+  await page.getByRole("button", { name: "Customer Care", exact: true }).click();
+  expect(requested).toBe(false);
+  await page.getByRole("button", { name: "Ask a person / support requests" }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "request form could not load" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Email support", exact: true })).toHaveAttribute(
+    "href",
+    "mailto:yabigdd@gmail.com",
+  );
+});
+
+test("new worlds, recent games and filter recovery stay usable", async ({ page }) => {
+  await page.goto("./");
+  const featured = page.locator("#featured-games");
+  await featured.getByRole("button", { name: "New worlds", exact: true }).click();
+  await expect(featured.locator(".game-card")).toHaveCount(24);
+  await expect(featured.getByRole("button", { name: "Play game: Neon Fruits", exact: true })).toHaveCount(0);
+  await featured.getByRole("button", { name: "Featured picks", exact: true }).click();
+  await featured.getByRole("button", { name: "Play game: Neon Fruits", exact: true }).click();
+  await page.getByRole("button", { name: "Launch Game", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Spin $0.50", exact: true })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  const library = page.locator("#providers");
+  await library.getByRole("button", { name: "Recent", exact: true }).click();
+  await expect(library.locator(".game-card")).toHaveCount(1);
+  await page.getByRole("textbox", { name: "Search games", exact: true }).fill("missing game");
+  await expect(library.getByText("No matching recent games", { exact: true })).toBeVisible();
+  await library.getByRole("button", { name: "Show all games", exact: true }).click();
+  await expect(page.getByRole("textbox", { name: "Search games", exact: true })).toHaveValue("");
+  await expect(library.locator(".game-card")).toHaveCount(48);
+});

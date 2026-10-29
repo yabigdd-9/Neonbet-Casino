@@ -87,7 +87,7 @@ textarea {
     @apply mt-2 text-2xl font-semibold tracking-tight md:text-3xl;
   }
   .filter-chip {
-    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2 text-xs font-medium text-slate-300 transition-colors hover:border-cyan-300/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-40;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2 text-xs font-medium text-slate-300 transition-colors hover:border-cyan-300/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-40;
   }
   .filter-active {
     @apply border-cyan-300/40 bg-cyan-300/10 text-cyan-200;
@@ -201,6 +201,15 @@ main > section {
   height: 400%;
   max-width: none;
 }
+.game-cover-fallback {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.customer-care-panel {
+  height: min(32rem, calc(100vh - 12rem));
+  height: min(32rem, calc(100dvh - 12rem));
+}
 main .scroll-mt-24 {
   scroll-margin-top: 8rem;
 }
@@ -267,7 +276,8 @@ main .scroll-mt-24 {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .game-card:hover {
+  .game-card:hover,
+  .game-card:hover .game-cover {
     transform: none;
   }
 }
