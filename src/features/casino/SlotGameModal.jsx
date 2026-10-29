@@ -135,7 +135,7 @@ export default function SlotGameModal({ game, wallet, onClose }) {
             <RoundHistory rounds={wallet.history} />
             {balance < bet && (
               <p className="mt-3 text-sm text-amber-200">
-                Balance is too low for this bet. Choose a lower bet or return to your practice balance.
+                Balance is too low for this bet. Choose a lower bet or return to your session balance.
               </p>
             )}
             <button type="button" className="secondary-button mt-3 min-h-11" onClick={onClose}>

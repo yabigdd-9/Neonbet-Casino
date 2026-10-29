@@ -12,9 +12,7 @@ export default function FeaturedGames({ onPlay, isFavorite, onToggleFavorite }) 
         <div>
           <p className="eyebrow">Made for your next orbit</p>
           <h2 className="text-2xl font-semibold md:text-3xl">Featured Games</h2>
-          <p className="mt-2 text-sm text-slate-400">
-            {games.length} original practice themes · Three slot styles
-          </p>
+          <p className="mt-2 text-sm text-slate-400">{games.length} original themes · Three slot styles</p>
         </div>
         <button type="button" onClick={() => scrollToSection("providers")} className="secondary-button">
           Browse catalogue

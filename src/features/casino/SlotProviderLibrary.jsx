@@ -4,6 +4,7 @@ import { getGameId, gameFilters } from "../../lib/gameEngine";
 import GameCard from "./GameCard";
 import GameSearch from "./GameSearch";
 import EmptyState from "../../components/ui/EmptyState";
+const collections = [...new Set(searchIndex.map(({ game }) => game.provider))];
 
 export default function SlotProviderLibrary({
   onPlay,
@@ -18,6 +19,7 @@ export default function SlotProviderLibrary({
   const [sort, setSort] = useState("default");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(48);
+  const [provider, setProvider] = useState("all");
   const heading = useRef(null);
   const results = useMemo(
     () =>
@@ -25,6 +27,7 @@ export default function SlotProviderLibrary({
         .filter(
           ({ game, text }) =>
             (!searchTerm || text.includes(searchTerm.toLowerCase())) &&
+            (provider === "all" || game.provider === provider) &&
             (category === "all" ||
               (category === "originals"
                 ? game.provider === "Lucky Orbit Originals"
@@ -38,7 +41,7 @@ export default function SlotProviderLibrary({
         .sort((a, b) =>
           sort === "az" ? a.title.localeCompare(b.title) : sort === "za" ? b.title.localeCompare(a.title) : 0,
         ),
-    [searchTerm, activeFilter, favorites, category, sort],
+    [searchTerm, activeFilter, favorites, category, sort, provider],
   );
   const lastPage = Math.max(0, Math.ceil(results.length / pageSize) - 1);
   const currentPage = Math.min(page, lastPage);
@@ -55,7 +58,7 @@ export default function SlotProviderLibrary({
             Explore the catalogue
           </h2>
         </div>
-        <span className="catalogue-count">{searchIndex.length} practice slot themes</span>
+        <span className="catalogue-count">{searchIndex.length} slot themes</span>
       </div>
       <div className="surface mb-6 p-4 md:p-5">
         <GameSearch
@@ -81,6 +84,25 @@ export default function SlotProviderLibrary({
           ))}
         </div>
         <div className="catalogue-controls">
+          <label className="text-sm">
+            Theme collection
+            <select
+              aria-label="Theme collection"
+              className="ml-2 max-w-full rounded-xl bg-slate-800 p-2"
+              value={provider}
+              onChange={(event) => {
+                setProvider(event.target.value);
+                setPage(0);
+              }}
+            >
+              <option value="all">All collections</option>
+              {collections.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </label>
           <label className="text-sm">
             Game style
             <select
@@ -140,7 +162,7 @@ export default function SlotProviderLibrary({
             : "0 games found"}
         </p>
         <p className="mt-2 text-xs leading-5 text-slate-400">
-          Originals and provider-inspired themes use local practice rules. Official provider games are not
+          Originals and provider-inspired themes use local simulated rules. Official provider games are not
           connected.
         </p>
       </div>

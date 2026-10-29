@@ -4,6 +4,7 @@ import { Play, Star } from "lucide-react";
 import Modal from "../../components/ui/Modal";
 import { betOptions, slotRules } from "../../lib/gameEngine";
 import { formatMoney } from "../../lib/storage";
+import GameArtwork from "./GameArtwork";
 
 export default function GameLaunchModal({
   game,
@@ -17,8 +18,11 @@ export default function GameLaunchModal({
   const tags = game.tags || [game.tag].filter(Boolean);
 
   return (
-    <Modal title={game.title} eyebrow="Practice preview" onClose={onClose} maxWidth="max-w-4xl">
-      <div className={`relative grid h-44 place-items-center bg-gradient-to-br ${game.gradient}`}>
+    <Modal title={game.title} eyebrow="Simulated game preview" onClose={onClose} maxWidth="max-w-4xl">
+      <div className="relative aspect-[4/3] max-h-72 overflow-hidden bg-slate-950">
+        <div className="mx-auto aspect-[4/3] h-full max-h-72">
+          <GameArtwork game={game} />
+        </div>
         <button
           type="button"
           onClick={onClose}
@@ -27,7 +31,6 @@ export default function GameLaunchModal({
         >
           ✕
         </button>
-        <div className="text-7xl drop-shadow-2xl">{game.emoji}</div>
       </div>
       <div className="grid gap-6 p-6 md:grid-cols-[1.2fr_0.8fr] md:p-8">
         <div>
@@ -36,7 +39,7 @@ export default function GameLaunchModal({
           </div>
           <h2 className="mt-2 text-3xl font-semibold md:text-5xl">{game.title}</h2>
           <p className="mt-4 text-slate-400">
-            {slotRules(game).name}: {slotRules(game).detail} Practice credits only.
+            {slotRules(game).name}: {slotRules(game).detail} Simulated credits only.
           </p>
           <div className="mt-5 flex flex-wrap gap-2">
             {tags.map((tag) => (

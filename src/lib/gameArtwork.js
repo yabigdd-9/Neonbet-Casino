@@ -23,6 +23,33 @@ const themes = [
   ["space", /space|orbit|cosmic|astral|galactic|rocket|meteor|moon|star/],
   ["neon", /neon|cyber|disco|retro|electric|arcade/],
 ];
+// Rows follow the original generated atlas; no official provider art is used.
+const atlasThemes = [
+  "fruit",
+  "space",
+  "cards",
+  "wheel",
+  "dragon",
+  "treasure",
+  "ocean",
+  "crystal",
+  "jungle",
+  "candy",
+  "winter",
+  "pirate",
+  "egypt",
+  "viking",
+  "lantern",
+  "magic",
+  "forest",
+  "castle",
+  "racing",
+  "sports",
+  "dice",
+  "plinko",
+  "neon",
+  "gem",
+];
 
 export function gameArtwork(game) {
   const hash = [...game.title].reduce((value, char) => (value * 31 + char.charCodeAt(0)) >>> 0, 0);
@@ -30,5 +57,12 @@ export function gameArtwork(game) {
     game.artwork ||
     themes.find(([, pattern]) => pattern.test(game.title.toLowerCase()))?.[0] ||
     themes[hash % themes.length][0];
-  return { src: `${import.meta.env.BASE_URL}game-covers/${theme}.svg`, hue: ((hash % 5) - 2) * 8 };
+  const tile = atlasThemes.indexOf(
+    theme === "gem" && /cosmic|crystal|amethyst/i.test(game.title) ? "crystal" : theme,
+  );
+  return {
+    src: `${import.meta.env.BASE_URL}game-covers/casino-atlas.png`,
+    column: tile % 6,
+    row: Math.floor(tile / 6),
+  };
 }

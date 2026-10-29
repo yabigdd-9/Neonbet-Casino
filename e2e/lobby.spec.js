@@ -59,7 +59,7 @@ for (const width of widths) {
     await expect(page.getByText("No matching games")).toHaveCount(0);
     await page
       .locator("#featured-games")
-      .getByRole("button", { name: "Play practice game: Neon Fruits", exact: true })
+      .getByRole("button", { name: "Play game: Neon Fruits", exact: true })
       .click();
     await expect(page.getByRole("dialog")).toBeVisible();
     await page.getByRole("button", { name: "Launch Game", exact: true }).click();
@@ -72,7 +72,7 @@ for (const width of widths) {
       .toBe(true);
     await page
       .locator("#featured-games")
-      .getByRole("button", { name: "Play practice game: Neon Fruits", exact: true })
+      .getByRole("button", { name: "Play game: Neon Fruits", exact: true })
       .click();
     await page.getByRole("button", { name: "Launch Game", exact: true }).click();
     await expect(page.getByRole("button", { name: "Spin $0.50", exact: true })).toBeEnabled();
@@ -159,7 +159,7 @@ test("a failed feature download keeps the lobby usable", async ({ page }) => {
 test("every featured game launches and plays, and policy buttons load content", async ({ page }) => {
   test.setTimeout(180000);
   await page.goto("./");
-  const buttons = page.locator('#featured-games button[aria-label^="Play practice game:"]');
+  const buttons = page.locator('#featured-games button[aria-label^="Play game:"]');
   const count = await buttons.count();
   expect(count).toBeGreaterThanOrEqual(12);
   for (let index = 0; index < count; index++) {
@@ -207,7 +207,7 @@ test("mobile menu and navigation buttons reach their destinations", async ({ pag
 
 test("more slots load and original themes are searchable", async ({ page }) => {
   await page.goto("./");
-  const cards = page.locator('#featured-games button[aria-label^="Play practice game:"]');
+  const cards = page.locator('#featured-games button[aria-label^="Play game:"]');
   await expect(cards).toHaveCount(24);
   await page.getByRole("button", { name: /Load more games/ }).click();
   await expect(cards).toHaveCount(48);
@@ -215,7 +215,7 @@ test("more slots load and original themes are searchable", async ({ page }) => {
   await input.fill("Basketball Blitz");
   const play = page
     .locator("#providers")
-    .getByRole("button", { name: "Play practice game: Basketball Blitz", exact: true });
+    .getByRole("button", { name: "Play game: Basketball Blitz", exact: true });
   await play.click();
   await expect(page.getByRole("dialog", { name: "Basketball Blitz" })).toBeVisible();
 });
@@ -246,7 +246,7 @@ test("larger catalogue pages, final page and illustrated covers work on mobile",
     .toBe(true);
   await cards
     .last()
-    .getByRole("button", { name: /Play practice game:/ })
+    .getByRole("button", { name: /Play game:/ })
     .click();
   await page.getByRole("button", { name: "Launch Game", exact: true }).click();
   await page.getByRole("button", { name: "Spin $0.50", exact: true }).click();
@@ -262,10 +262,10 @@ test("game styles and sorting show playable games with matching rules", async ({
   await page.goto("./");
   await page.getByLabel("Game style", { exact: true }).selectOption("line");
   const library = page.locator("#providers");
-  await expect(library.getByRole("button", { name: /Play practice game:/ }).first()).toBeVisible();
+  await expect(library.getByRole("button", { name: /Play game:/ }).first()).toBeVisible();
   await page.getByLabel("Sort games", { exact: true }).selectOption("az");
   await library
-    .getByRole("button", { name: /Play practice game:/ })
+    .getByRole("button", { name: /Play game:/ })
     .first()
     .click();
   await expect(page.getByRole("dialog")).toContainText("Left-to-right");
@@ -274,7 +274,7 @@ test("game styles and sorting show playable games with matching rules", async ({
   await page.keyboard.press("Escape");
   await page.getByLabel("Game style", { exact: true }).selectOption("scatter");
   await library
-    .getByRole("button", { name: /Play practice game:/ })
+    .getByRole("button", { name: /Play game:/ })
     .first()
     .click();
   await expect(page.getByRole("dialog")).toContainText("Star scatter");
@@ -289,12 +289,28 @@ test("game styles and sorting show playable games with matching rules", async ({
   await expect(page.getByRole("dialog")).toContainText("Bonus 3:");
 });
 
+test("theme collections filter honestly while the simulation notice stays visible", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("./");
+  await page.getByLabel("Theme collection", { exact: true }).selectOption("Pragmatic Play");
+  const library = page.locator("#providers");
+  await expect(library.locator(".game-card")).toHaveCount(8);
+  await expect(library.getByRole("status")).toHaveText("Showing 1–8 of 8 games");
+  await expect(library.locator(".game-card").first()).not.toContainText(/practice/i);
+  await expect(page.locator("header")).toContainText("Simulated games · No cash value");
+  await library.getByRole("button", { name: "Play game: Gates of Olympus", exact: true }).click();
+  await expect(page.getByRole("dialog")).toContainText("Simulated browser game only");
+  await page.keyboard.press("Escape");
+  await page.getByLabel("Theme collection", { exact: true }).selectOption("Lucky Orbit Originals");
+  await expect(library.getByRole("status")).toHaveText("Showing 1–48 of 336 games");
+});
+
 test("sound is opt-in and practice history follows completed rounds", async ({ page }) => {
   await page.goto("./");
   const launch = async () => {
     await page
       .locator("#featured-games")
-      .getByRole("button", { name: "Play practice game: Neon Fruits", exact: true })
+      .getByRole("button", { name: "Play game: Neon Fruits", exact: true })
       .click();
     await page.getByRole("button", { name: "Launch Game", exact: true }).click();
   };
@@ -309,10 +325,8 @@ test("sound is opt-in and practice history follows completed rounds", async ({ p
   const spin = page.getByRole("button", { name: "Spin $0.50", exact: true });
   await spin.click();
   await expect(spin).toBeEnabled();
-  await page.getByText("Recent practice rounds", { exact: true }).click();
-  await expect(page.getByRole("list", { name: "Recent practice rounds" }).getByRole("listitem")).toHaveCount(
-    1,
-  );
+  await page.getByText("Recent rounds", { exact: true }).click();
+  await expect(page.getByRole("list", { name: "Recent rounds" }).getByRole("listitem")).toHaveCount(1);
   await page.keyboard.press("Escape");
   await launch();
   await expect(page.getByRole("button", { name: "Sound on", exact: true })).toBeVisible();

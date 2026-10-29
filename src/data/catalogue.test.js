@@ -11,13 +11,19 @@ it("doubles the playable catalogue without duplicate identities or missing cover
   expect(gamesById.size).toBe(528);
   expect(arcadeGames).toHaveLength(14);
   expect(new Set(arcadeGames.map((game) => game.id)).size).toBe(14);
+  const checkedAssets = new Set();
   for (const game of [...catalogue, ...arcadeGames]) {
     const art = gameArtwork(game);
     const path = `public/${art.src.replace(/^\//, "")}`;
     expect(existsSync(path), game.title).toBe(true);
-    const svg = readFileSync(path, "utf8");
-    expect(svg).toContain('viewBox="0 0 480 360"');
-    expect(svg).not.toMatch(/<script|<image|https?:\/\/(?!www.w3.org)/);
+    if (!checkedAssets.has(path)) {
+      expect(readFileSync(path).subarray(0, 8).toString("hex")).toBe("89504e470d0a1a0a");
+      checkedAssets.add(path);
+    }
+    expect(art.column).toBeGreaterThanOrEqual(0);
+    expect(art.column).toBeLessThan(6);
+    expect(art.row).toBeGreaterThanOrEqual(0);
+    expect(art.row).toBeLessThan(4);
     const result = game.id ? playArcade(game.id, 2, () => 0.3) : buildSpin(game, () => 0.3);
     expect(Number.isFinite(result.multiplier), game.title).toBe(true);
     expect(result.multiplier).toBeGreaterThanOrEqual(0);
