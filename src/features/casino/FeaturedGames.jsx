@@ -3,9 +3,19 @@ import React, { useState } from "react";
 import GameCard from "./GameCard";
 import { scrollToSection } from "../../lib/navigation";
 import { games } from "../../data/games";
+import { buildFeaturedCollections } from "./featuredCollections";
+
+const { featuredPicks, newWorlds, worldCount } = buildFeaturedCollections(games);
 
 export default function FeaturedGames({ onPlay, isFavorite, onToggleFavorite }) {
   const [visible, setVisible] = useState(24);
+  const [view, setView] = useState("picks");
+  const selection = view === "worlds" ? newWorlds : featuredPicks;
+  function selectView(nextView) {
+    if (view === nextView) return;
+    setView(nextView);
+    setVisible(24);
+  }
   return (
     <section id="featured-games" className="scroll-mt-24">
       <div className="section-heading">
@@ -18,8 +28,31 @@ export default function FeaturedGames({ onPlay, isFavorite, onToggleFavorite }) 
           Browse catalogue
         </button>
       </div>
+      <div className="mb-5 flex flex-wrap items-center gap-2" role="group" aria-label="Featured views">
+        <button
+          type="button"
+          className={`filter-chip ${view === "picks" ? "filter-active" : ""}`}
+          aria-pressed={view === "picks"}
+          onClick={() => selectView("picks")}
+        >
+          Featured picks
+        </button>
+        <button
+          type="button"
+          className={`filter-chip ${view === "worlds" ? "filter-active" : ""}`}
+          aria-pressed={view === "worlds"}
+          onClick={() => selectView("worlds")}
+        >
+          New worlds
+        </button>
+        <p className="basis-full pt-1 text-xs leading-5 text-slate-400" role="status">
+          {view === "worlds"
+            ? `${newWorlds.length} themes across ${worldCount} original worlds. One first look at every world.`
+            : "Familiar favorites and a fresh mix of original worlds."}
+        </p>
+      </div>
       <div className="lobby-game-grid">
-        {games.slice(0, visible).map((game) => (
+        {selection.slice(0, visible).map((game) => (
           <GameCard
             key={game.title}
             game={game}
@@ -29,13 +62,13 @@ export default function FeaturedGames({ onPlay, isFavorite, onToggleFavorite }) 
           />
         ))}
       </div>
-      {visible < games.length && (
+      {visible < selection.length && (
         <button
           type="button"
           className="mt-5 rounded-2xl bg-cyan-400 px-5 py-3 font-semibold text-slate-950"
           onClick={() => setVisible((count) => count + 24)}
         >
-          Load more games ({games.length - visible} remaining)
+          Load more games ({selection.length - visible} remaining)
         </button>
       )}
     </section>

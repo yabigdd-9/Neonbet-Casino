@@ -36,7 +36,15 @@ export default function GameCard({ game, onPlay, isFavorite, onToggleFavorite, a
         )}
       </div>
       <div className="flex flex-1 flex-col p-3 md:p-4">
-        <div className="mb-2 text-[11px] font-medium text-cyan-200">{game.type}</div>
+        <div className="mb-2 text-[11px] font-medium text-cyan-200">
+          {arcade
+            ? game.type
+            : game.mechanic === "line"
+              ? "Left-to-right slots"
+              : game.mechanic === "scatter"
+                ? "Star scatter slots"
+                : "Classic slots"}
+        </div>
         <h3 className="min-h-11 text-sm font-semibold leading-snug md:text-base">{game.title}</h3>
         {arcade && <p className="mb-4 mt-2 text-xs leading-5 text-slate-400">{game.rule}</p>}
         <button

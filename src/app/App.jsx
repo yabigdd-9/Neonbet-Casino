@@ -122,6 +122,7 @@ function AppContent() {
   const toast = useToast();
   const [open, setOpen] = useState(false);
   const [activeGame, setActiveGame] = useState(null);
+  const [openingBet, setOpeningBet] = useState(0.5);
   const [activeArcadeGame, setActiveArcadeGame] = useState(null);
   const [launchGame, setLaunchGame] = useState(null);
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
@@ -347,9 +348,10 @@ function AppContent() {
     setLaunchGame(game);
   }
 
-  function handleLaunchGame() {
+  function handleLaunchGame(stake = 0.5) {
     if (!launchGame) return;
     recordGame(launchGame);
+    setOpeningBet(stake);
     setActiveGame(launchGame);
     setLaunchGame(null);
   }
@@ -517,7 +519,14 @@ function AppContent() {
           }}
         />
       )}
-      {activeGame && <SlotGameModal game={activeGame} wallet={wallet} onClose={() => setActiveGame(null)} />}
+      {activeGame && (
+        <SlotGameModal
+          game={activeGame}
+          wallet={wallet}
+          initialBet={openingBet}
+          onClose={() => setActiveGame(null)}
+        />
+      )}
       {activeArcadeGame && (
         <ArcadeGameModal game={activeArcadeGame} wallet={wallet} onClose={() => setActiveArcadeGame(null)} />
       )}

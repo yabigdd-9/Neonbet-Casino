@@ -62,6 +62,7 @@ export function gameArtwork(game) {
   );
   return {
     src: `${import.meta.env.BASE_URL}game-covers/casino-atlas.png`,
+    fallback: `${import.meta.env.BASE_URL}game-covers/${theme}.svg`,
     column: tile % 6,
     row: Math.floor(tile / 6),
   };

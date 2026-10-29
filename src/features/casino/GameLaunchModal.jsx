@@ -1,5 +1,5 @@
 // Game launch modal: preview + favorite + launch into the simulated player.
-import React from "react";
+import React, { useState } from "react";
 import { Play, Star } from "lucide-react";
 import Modal from "../../components/ui/Modal";
 import { betOptions, slotRules } from "../../lib/gameEngine";
@@ -14,6 +14,7 @@ export default function GameLaunchModal({
   onLaunch,
   onPrepare,
 }) {
+  const [stake, setStake] = useState(0.5);
   if (!game) return null;
   const tags = game.tags || [game.tag].filter(Boolean);
 
@@ -56,23 +57,30 @@ export default function GameLaunchModal({
           <div className="text-sm text-slate-400">Bet presets</div>
           <div className="mt-3 grid grid-cols-3 gap-2">
             {betOptions.map((amount) => (
-              <div
+              <button
                 key={amount}
-                className="rounded-2xl border border-white/10 bg-black/20 px-3 py-3 text-center text-sm font-semibold"
+                type="button"
+                aria-label={`Opening bet ${formatMoney(amount)}`}
+                aria-pressed={stake === amount}
+                onClick={() => setStake(amount)}
+                className={`rounded-2xl border px-3 py-3 text-center text-sm font-semibold ${stake === amount ? "border-cyan-200 bg-cyan-200 text-slate-950" : "border-white/10 bg-black/20"}`}
               >
                 {formatMoney(amount)}
-              </div>
+              </button>
             ))}
           </div>
           <button
             type="button"
-            onClick={onLaunch}
+            onClick={() => onLaunch(stake)}
             onPointerEnter={onPrepare}
             onFocus={onPrepare}
             className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-cyan-400 px-5 py-4 font-semibold text-slate-950 shadow-neon transition hover:scale-[1.02]"
           >
             <Play size={18} /> Launch Game
           </button>
+          <p className="mt-2 text-center text-xs text-slate-400">
+            Opens at {formatMoney(stake)} per spin. No credits used until you spin.
+          </p>
           <button
             type="button"
             onClick={() => onToggleFavorite(game)}
