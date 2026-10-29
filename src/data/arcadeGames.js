@@ -65,4 +65,67 @@ export const arcadeGames = [
   },
 ];
 
+arcadeGames.push(
+  {
+    id: "high-card",
+    title: "High Card Orbit",
+    type: "Card duel",
+    emoji: "🃏",
+    artwork: "cards",
+    rule: "Your rank beats the house: 1.8x. Equal ranks return 1x; lower ranks pay zero.",
+  },
+  {
+    id: "meteor-six",
+    title: "Meteor Six",
+    type: "Single die",
+    emoji: "🎲",
+    artwork: "dice",
+    rule: "Roll one six-sided die. A six pays 5x; other faces pay zero.",
+  },
+  {
+    id: "color-pair",
+    title: "Prism Pairs",
+    type: "Color match",
+    emoji: "💠",
+    artwork: "gem",
+    rule: "Draw two colors from four equally likely colors. A matching pair pays 3x; others pay zero.",
+  },
+  {
+    id: "orbit-race",
+    title: "Orbit Sprint",
+    type: "Space race",
+    emoji: "🚀",
+    artwork: "racing",
+    rule: "Four racers have equal chances. You back racer 1: a win pays 3x; others pay zero.",
+  },
+  {
+    id: "treasure-chests",
+    title: "Treasure Chests",
+    type: "Treasure reveal",
+    emoji: "🪙",
+    artwork: "treasure",
+    rule: "Open the middle chest. Its equally likely prizes are 0x, 0.5x, 1x and 2x.",
+  },
+  {
+    id: "odd-orbit",
+    title: "Odd Orbit",
+    type: "Dice total",
+    emoji: "🎲",
+    artwork: "space",
+    rule: "Roll two dice. An odd total pays 1.8x; an even total pays zero.",
+  },
+  {
+    id: "orbit-keno",
+    title: "Orbit Keno",
+    type: "Number draw",
+    emoji: "🔢",
+    artwork: "plinko",
+    rule: "Your numbers are 1, 2 and 3. Draw three distinct numbers from 1–12. Match 1 / 2 / 3 for 0.5x / 2x / 8x; no matches pay zero.",
+  },
+);
+arcadeGames.forEach((game) => {
+  game.tag ||= "New";
+  game.gradient ||= "from-indigo-400 via-violet-600 to-slate-900";
+});
+
 export default arcadeGames;

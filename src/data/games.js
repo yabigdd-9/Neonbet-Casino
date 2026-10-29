@@ -1,3 +1,4 @@
+import { orbitCollections } from "./orbitCollections";
 // Featured lobby games (local simulated slot sessions).
 export const games = [
   {
@@ -177,7 +178,7 @@ const expandedGames = extraThemes.map(([title, emoji, accent], index) => ({
   gradient: themeGradients[index % themeGradients.length],
   symbols: [emoji, accent, "🪙", "🎁", "⭐", "💎", "7"],
 }));
-games.push(...expandedGames);
+games.push(...expandedGames, ...orbitCollections);
 games.forEach((game) => {
   game.provider = "Lucky Orbit Originals";
   game.tags = [game.tag, game.type];

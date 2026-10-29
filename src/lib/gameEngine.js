@@ -229,6 +229,81 @@ export default {
 
 export const PLINKO_MULTIPLIERS = [0, 0.4, 0.8, 1.5, 9, 1.5, 0.8, 0.4, 0];
 export function playArcade(id, target = 2, random = Math.random) {
+  const draw = (sides) => 1 + Math.floor(random() * sides);
+  if (id === "high-card") {
+    const visual = [draw(13), draw(13)];
+    const multiplier = visual[0] > visual[1] ? 1.8 : visual[0] === visual[1] ? 1 : 0;
+    return {
+      title: multiplier > 1 ? "Your card wins" : multiplier === 1 ? "Equal ranks" : "House card wins",
+      detail: `Your rank ${visual[0]} / house rank ${visual[1]}. Pays ${multiplier}x. Ace is rank 1; king is 13.`,
+      multiplier,
+      visual,
+    };
+  }
+  if (id === "meteor-six") {
+    const face = draw(6),
+      multiplier = face === 6 ? 5 : 0;
+    return {
+      title: face === 6 ? "Meteor six!" : "Another orbit",
+      detail: `Rolled ${face}. Pays ${multiplier}x.`,
+      multiplier,
+      visual: [face],
+    };
+  }
+  if (id === "color-pair") {
+    const colors = ["Coral", "Jade", "Gold", "Violet"];
+    const visual = [colors[draw(4) - 1], colors[draw(4) - 1]];
+    const multiplier = visual[0] === visual[1] ? 3 : 0;
+    return {
+      title: multiplier ? "Prism pair!" : "Different colors",
+      detail: `${visual.join(" + ")}. Pays ${multiplier}x.`,
+      multiplier,
+      visual,
+    };
+  }
+  if (id === "orbit-race") {
+    const winner = draw(4),
+      multiplier = winner === 1 ? 3 : 0;
+    return {
+      title: winner === 1 ? "Your racer wins!" : "Race complete",
+      detail: `Racer ${winner} finished first. You backed racer 1. Pays ${multiplier}x.`,
+      multiplier,
+      visual: [winner],
+    };
+  }
+  if (id === "treasure-chests") {
+    const visual = Array.from({ length: 3 }, () => [0, 0.5, 1, 2][draw(4) - 1]);
+    const multiplier = visual[1];
+    return {
+      title: "Middle chest opened",
+      detail: `Your chest pays ${multiplier}x. The other chests are shown for comparison only.`,
+      multiplier,
+      visual: visual.map((value) => `${value}x`),
+    };
+  }
+  if (id === "odd-orbit") {
+    const visual = [draw(6), draw(6)],
+      total = visual[0] + visual[1];
+    const multiplier = total % 2 ? 1.8 : 0;
+    return {
+      title: total % 2 ? "Odd total!" : "Even total",
+      detail: `Total ${total}. Pays ${multiplier}x.`,
+      multiplier,
+      visual,
+    };
+  }
+  if (id === "orbit-keno") {
+    const pool = Array.from({ length: 12 }, (_, i) => i + 1);
+    const visual = Array.from({ length: 3 }, () => pool.splice(Math.floor(random() * pool.length), 1)[0]);
+    const matches = visual.filter((value) => value <= 3).length;
+    const multiplier = [0, 0.5, 2, 8][matches];
+    return {
+      title: `${matches} number${matches === 1 ? "" : "s"} matched`,
+      detail: `Drew ${visual.join(", ")}. Your numbers: 1, 2, 3. Pays ${multiplier}x.`,
+      multiplier,
+      visual,
+    };
+  }
   if (id === "lucky-seven") {
     const visual = [1 + Math.floor(random() * 6), 1 + Math.floor(random() * 6)];
     const total = visual[0] + visual[1];

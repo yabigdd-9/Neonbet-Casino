@@ -11,10 +11,13 @@ import Modal from "../components/ui/Modal";
 import Hero from "../features/casino/Hero";
 import FeaturedGames from "../features/casino/FeaturedGames";
 import ArcadeGamesSection from "../features/casino/ArcadeGamesSection";
-import SlotProviderLibrary from "../features/casino/SlotProviderLibrary";
 // WebKit can retain a failed module fetch across a reload. The explicit recovery
 // path uses separately compiled module URLs; ordinary visits do not download both.
 const RETRY_MODULES = new window.URLSearchParams(window.location.search).get("retryModules") === "1";
+const SlotProviderLibrary = lazyPanel(
+  () => import("../features/casino/SlotProviderLibrary"),
+  () => import("../features/casino/SlotProviderLibrary.jsx?retry"),
+);
 const GameLaunchModal = lazyPanel(
   () => import("../features/casino/GameLaunchModal"),
   () => import("../features/casino/GameLaunchModal.jsx?retry"),
