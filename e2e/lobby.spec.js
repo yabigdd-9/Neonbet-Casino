@@ -488,3 +488,71 @@ test("new worlds, recent games and filter recovery stay usable", async ({ page }
   await expect(page.getByRole("textbox", { name: "Search games", exact: true })).toHaveValue("");
   await expect(library.locator(".game-card")).toHaveCount(48);
 });
+
+for (const destination of ["search", "home", "logo"]) {
+  test(`slow catalogue navigation follows ${destination}`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    let release;
+    const waiting = new Promise((resolve) => (release = resolve));
+    let requested = false;
+    await page.route("**/assets/SlotProviderLibrary-*.js", async (route) => {
+      requested = true;
+      await waiting;
+      await route.continue();
+    });
+    try {
+      await page.goto("./", { waitUntil: "domcontentloaded" });
+      await expect.poll(() => requested).toBe(true);
+      const nav = page.getByRole("navigation", { name: "Mobile navigation" });
+      await nav.getByRole("button", { name: "Search", exact: true }).click();
+      await expect(page.locator("#providers")).toHaveCount(0);
+      if (destination === "home") await nav.getByRole("button", { name: "Home", exact: true }).click();
+      if (destination === "logo") {
+        await page.locator("header").getByRole("link", { name: "Lucky Orbit", exact: true }).click();
+      }
+      release();
+      const search = page.getByRole("textbox", { name: "Search games", exact: true });
+      await expect(search).toBeVisible();
+      if (destination !== "search") {
+        await expect(search).not.toBeFocused();
+        await expect(page.getByRole("heading", { level: 1 })).toBeInViewport();
+      } else {
+        await expect(search).toBeFocused();
+        await expect(search).toBeInViewport();
+      }
+    } finally {
+      release();
+    }
+  });
+}
+
+test("session activity follows completed play and resets on reload", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("./");
+  const activity = page.getByRole("region", { name: "Your session", exact: true });
+  await expect(activity.getByText("No completed rounds yet", { exact: true })).toBeVisible();
+  await page
+    .locator("#featured-games")
+    .getByRole("button", { name: "Play game: Neon Fruits", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Launch Game", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "Neon Fruits", exact: true });
+  const spin = dialog.getByRole("button", { name: "Spin $0.50", exact: true });
+  await spin.click();
+  await expect(dialog.getByRole("status")).toContainText("Spinning");
+  await dialog.getByRole("button", { name: "Close dialog", exact: true }).click();
+  await expect(
+    activity.getByRole("list", { name: "Completed session rounds" }).getByRole("listitem"),
+  ).toHaveCount(1);
+  await page.getByRole("button", { name: "Open menu", exact: true }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Session activity", exact: true }).click();
+  await expect(activity.getByRole("heading", { name: "Your session", exact: true })).toBeInViewport();
+  await expect(activity.locator("dl > div").filter({ hasText: "Staked credits" })).toContainText("$0.50");
+  await expect(activity.getByRole("list", { name: "Completed session rounds" })).toContainText(
+    "Stake $0.50 · Returned",
+  );
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.reload();
+  await expect(activity.getByText("No completed rounds yet", { exact: true })).toBeVisible();
+});

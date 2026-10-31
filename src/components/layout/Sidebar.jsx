@@ -2,7 +2,7 @@ import React from "react";
 import { Gamepad2, Dice5, Gift, ShieldCheck, Wallet, ArrowUpRight } from "lucide-react";
 import { brand } from "../../config/brand";
 import { features } from "../../config/features";
-import { scrollToSection } from "../../lib/navigation";
+import { cancelPendingNavigation, scrollToSection } from "../../lib/navigation";
 import { useActiveSection } from "../../hooks/useActiveSection";
 import Modal from "../ui/Modal";
 function Navigation({ user, close }) {
@@ -12,6 +12,7 @@ function Navigation({ user, close }) {
     ["Featured games", Dice5, "featured-games"],
     ["Arcade", Gamepad2, "arcade-games"],
     ["All games", ArrowUpRight, "providers"],
+    ["Session activity", Wallet, "vip"],
     ...(features.promotions ? [["Promotions", Gift, "promotions"]] : []),
     ...(features.verification ? [["Verification", ShieldCheck, "verification"]] : []),
     ...(features.withdrawals && user ? [["Withdrawals", Wallet, "withdrawals"]] : []),
@@ -41,7 +42,7 @@ export default function Sidebar({ open, setOpen, user }) {
   return (
     <>
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col overflow-y-auto border-r border-white/10 bg-[#080f1e] p-5 lg:flex">
-        <a href="#lobby" className="mb-10 flex items-center gap-3">
+        <a href="#lobby" onClick={cancelPendingNavigation} className="mb-10 flex items-center gap-3">
           <img src={brand.logo} alt="" width="40" height="40" />
           <div>
             <span className="text-xl font-bold tracking-tight">{brand.name}</span>

@@ -8,6 +8,7 @@ import { catalogueEmptyState, discoverGames, indexCatalogue } from "./catalogueD
 const collections = [...new Set(searchIndex.map(({ game }) => game.provider))];
 const discoveryIndex = indexCatalogue(searchIndex.map(({ game }) => game));
 const filters = [...gameFilters, "Recent"];
+const filterLabels = { Megaways: "Mega themes", "Bonus Buy": "Bonus themes", Jackpot: "Jackpot themes" };
 
 export default function SlotProviderLibrary({
   onPlay,
@@ -94,7 +95,7 @@ export default function SlotProviderLibrary({
               }}
               className={`filter-chip ${filter === activeFilter ? "filter-active" : ""}`}
             >
-              {filter}
+              {filterLabels[filter] || filter}
             </button>
           ))}
         </div>

@@ -17,11 +17,13 @@ export default function ArcadeGameModal({ game, wallet, onClose }) {
   const [playError, setPlayError] = useState("");
   const [cashOutTarget, setCashOutTarget] = useState(2);
   const { balance, busy, start } = wallet;
-  const hasResult = wallet.round?.gameId === game?.id;
-  const round =
-    wallet.round?.gameId === game?.id
+  const hasResult = !busy && Boolean(game && wallet.round && wallet.round.gameId === game.id);
+  const round = busy
+    ? { title: "Playing…", detail: "Your result will appear when this round settles.", win: 0, visual: [] }
+    : hasResult
       ? wallet.round
       : { title: "Ready", detail: game?.rule || "", win: 0, visual: [4] };
+  const netCents = hasResult ? round.winCents - round.stakeCents : null;
   if (!game) return null;
   function playRound() {
     setPlayError("");
@@ -203,15 +205,30 @@ export default function ArcadeGameModal({ game, wallet, onClose }) {
               <div className="text-sm font-bold uppercase tracking-[0.18em] text-slate-400">
                 {round.title}
               </div>
-              <div
-                className={
-                  round.win > 0
-                    ? "mt-1 text-3xl font-semibold text-cyan-300"
-                    : "mt-1 text-3xl font-semibold text-slate-300"
-                }
-              >
-                {round.win > 0 ? `+${formatMoney(round.win)}` : formatMoney(0)}
-              </div>
+              {hasResult ? (
+                <>
+                  <div className="mt-3 text-xs font-semibold text-slate-400">Returned</div>
+                  <div
+                    className={
+                      round.win > 0
+                        ? "mt-1 text-3xl font-semibold text-cyan-300"
+                        : "mt-1 text-3xl font-semibold text-slate-300"
+                    }
+                  >
+                    {formatMoney(round.win)}
+                  </div>
+                  {Number.isSafeInteger(netCents) && (
+                    <p className="mt-2 text-sm text-slate-300">
+                      Net change {netCents > 0 ? "+" : netCents < 0 ? "−" : ""}
+                      {formatMoney(Math.abs(netCents) / 100)}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="mt-3 text-sm text-slate-300">
+                  {busy ? "Result pending" : "No round played yet"}
+                </p>
+              )}
               <p className="mt-2 text-sm text-slate-400">{round.detail}</p>
             </div>
           </div>

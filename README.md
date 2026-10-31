@@ -23,6 +23,8 @@ For optional Supabase accounts, select `VITE_APP_MODE=supabase`, set `VITE_SUPAB
 - Local slot simulations and arcade rounds with integer-cent balances. A started round settles once even if its modal closes. New arcade games include High Card Orbit, Meteor Six, Prism Pairs, Orbit Sprint, Treasure Chests, Odd Orbit and Orbit Keno.
 - Featured picks mix familiar titles with distinct new worlds. Catalogue search matches words across titles, providers, collections and slot styles, with accent-tolerant matching, recent-play order and full filter resets.
 - Opening-bet presets carry into the slot player without charging a preview. Failed cover downloads fall back to local SVGs. Support stays above phone/tablet navigation, scrolls on short screens and loads its request form on demand, with email available if that download fails.
+- Session activity replaces fixed leaderboard/VIP figures with stakes, returned credits, net results and the latest 10 completed rounds. Pending rounds appear after settlement, including when a player closes. Session history resets on reload; daily and referral credits are excluded from round totals.
+- Search navigation waits for a slow-loading catalogue and follows the latest destination. Players show an explicit pending state, then label returned credits and net change separately. Catalogue filters describe local themes rather than unsupported game mechanics.
 - Local demo identities and user-scoped manual records. Demo identities are browser fixtures, not secure authenticated accounts.
 - Supabase sign-in, registration, session restoration, recovery form and server-authorized admin review. These are tested with mocks and isolated SQL fixtures, not a live project.
 - Paginated admin data and withdrawal transitions: pending → approved/rejected; approved → paid. Marking a manual request paid does not transfer money.
@@ -46,7 +48,7 @@ npm run test:e2e
 
 `check` runs lint, strict type checks, Vitest component/unit/database tests, the redacting secret scanner, a production build, and the initial-JavaScript size budget. Browser tests run the production build under `/Neonbet-Casino/` in Chromium and WebKit at 360, 390, 768 and 1440px, including axe checks, account navigation, invalid storage, forms, and failed panel downloads.
 
-Playwright is pinned to 1.61.1 for the local macOS 14 WebKit runner. See [verification notes](docs/FULL_UPGRADE_REPORT.md) for limitations and dependency findings. GitHub validation and deployment use the same checks; the updated workflow has not been run remotely as part of this local implementation.
+Playwright is pinned to 1.61.1. GitHub validation runs Chromium and WebKit against the production build, including browser smoke tests and accessibility checks. See [verification notes](docs/FULL_UPGRADE_REPORT.md) for the original upgrade's limitations and dependency findings.
 
 ## Configure and extend
 
@@ -62,7 +64,7 @@ All game titles and provider names in the catalogue are themes for local simulat
 
 `npm run build` writes a relative-base static bundle to `dist/`. For the browser test mount, use `npm run build:e2e` and `npm run preview -- --base=/Neonbet-Casino/`.
 
-Pushes to `main` deploy through the existing GitHub Pages workflow. This upgrade is prepared on an isolated local branch; it does not merge or deploy changes. See [deployment](docs/DEPLOYMENT.md), [architecture](docs/ARCHITECTURE.md), [upgrade report](docs/FULL_UPGRADE_REPORT.md), and [integration activation checklist](docs/INTEGRATION_ACTIVATION.md).
+Pushes to `main` validate and deploy through the GitHub Pages workflow. The separate Vercel account preview retains access protection. See [deployment](docs/DEPLOYMENT.md), [architecture](docs/ARCHITECTURE.md), [upgrade report](docs/FULL_UPGRADE_REPORT.md), and [integration activation checklist](docs/INTEGRATION_ACTIVATION.md).
 
 ## Remaining product boundaries
 
