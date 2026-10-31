@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState } from "react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
 import { ToastProvider, useToast } from "../components/feedback/ToastProvider";
 import Sidebar from "../components/layout/Sidebar";
 import Header from "../components/layout/Header";
@@ -29,6 +29,10 @@ const SlotGameModal = lazyPanel(
 const ArcadeGameModal = lazyPanel(
   () => import("../features/casino/ArcadeGameModal"),
   () => import("../features/casino/ArcadeGameModal.jsx?retry"),
+);
+const SessionOverview = lazyPanel(
+  () => import("../features/session/SessionOverview"),
+  () => import("../features/session/SessionOverview.jsx?retry"),
 );
 
 const AuthModal = lazyPanel(
@@ -65,7 +69,7 @@ import ErrorBoundary from "../components/ui/ErrorBoundary";
 import { CONFIG_ERROR } from "../config/appMode";
 import { useDemoWallet } from "../hooks/useDemoWallet";
 import { useAccount } from "../hooks/useAccount";
-import { scrollToSection } from "../lib/navigation";
+import { cancelPendingNavigation, scrollToSection } from "../lib/navigation";
 
 const PolicyModalContent = lazyPanel(
   () => import("../features/promotions/PolicyModalContent"),
@@ -119,6 +123,7 @@ function lazyPanel(loader, freshLoader) {
 }
 
 function AppContent() {
+  useEffect(() => cancelPendingNavigation, []);
   const toast = useToast();
   const [open, setOpen] = useState(false);
   const [activeGame, setActiveGame] = useState(null);
@@ -465,7 +470,7 @@ function AppContent() {
 
         {features.promotions && <PromotionsSection onClaimDaily={wallet.claimDaily} />}
 
-        <VIPSection />
+        <SessionOverview wallet={wallet} onExplore={() => scrollToSection("featured-games")} />
 
         <TermsSection onOpenPolicy={setPolicyPage} />
 
@@ -555,37 +560,6 @@ function AppContent() {
         />
       )}
     </div>
-  );
-}
-
-// VIP / leaderboard section (static demo content).
-function VIPSection() {
-  return (
-    <section id="vip" className="scroll-mt-24 grid gap-5 xl:grid-cols-3">
-      <div className="xl:col-span-2 rounded-3xl border border-white/10 bg-white/[0.06] p-6">
-        <h2 className="mb-5 text-2xl font-semibold">Practice leaderboard</h2>
-        {["LuckyDion", "NeonWolf", "KiwiJackpot", "SpinQueen"].map((name, i) => (
-          <div key={name} className="flex items-center gap-4 border-b border-white/10 py-4 last:border-none">
-            <div className="grid h-10 w-10 place-items-center rounded-2xl bg-white/10 font-semibold">
-              #{i + 1}
-            </div>
-            <div className="flex-1 font-bold">{name}</div>
-            <div className="font-semibold text-cyan-300">{(98000 - i * 13750).toLocaleString()} pts</div>
-          </div>
-        ))}
-      </div>
-      <div className="rounded-3xl border border-amber-300/20 bg-gradient-to-br from-amber-300/15 to-orange-500/10 p-6">
-        <div className="flex items-center gap-2 font-semibold text-amber-200">
-          <span>★</span> VIP Progress
-        </div>
-        <h2 className="mt-5 text-4xl font-semibold">Gold II</h2>
-        <p className="mt-2 text-slate-300">Complete missions to unlock rewards and account perks.</p>
-        <div className="mt-6 h-4 overflow-hidden rounded-full bg-black/30">
-          <div className="h-full w-[62%] bg-amber-300" />
-        </div>
-        <p className="mt-3 text-sm text-slate-400">62% to Gold III</p>
-      </div>
-    </section>
   );
 }
 

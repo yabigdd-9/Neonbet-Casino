@@ -15,7 +15,8 @@ export default function SlotGameModal({ game, wallet, onClose, initialBet = 0.5 
   const { balance, busy: spinning, start } = wallet;
   const settled = wallet.round?.gameId === game?.title ? wallet.round : null;
   const reels = settled?.reels || game?.symbols?.slice(0, 5) || ["7", "7", "7", "7", "7"];
-  const result = settled || { label: "Ready", win: 0 };
+  const result = spinning ? null : settled;
+  const netCents = result ? result.winCents - result.stakeCents : null;
   if (!game) return null;
   function spin() {
     setPlayError("");
@@ -69,9 +70,9 @@ export default function SlotGameModal({ game, wallet, onClose, initialBet = 0.5 
               className="mt-4 rounded-2xl border border-white/10 bg-slate-950/80 p-4 text-center"
             >
               <div className="text-sm font-bold uppercase tracking-[0.18em] text-slate-400">
-                {result.label}
+                {spinning ? "Spinning…" : result?.label || "Ready"}
               </div>
-              {result.bonusRounds && (
+              {result?.bonusRounds && (
                 <div className="mt-3 space-y-2 text-sm text-slate-300">
                   <p>Base spin: {result.baseMultiplier}x · 3 bonus spins included at no extra cost</p>
                   {result.bonusRounds.map((bonus, index) => (
@@ -82,15 +83,30 @@ export default function SlotGameModal({ game, wallet, onClose, initialBet = 0.5 
                   <p>Total payout includes the base spin and all bonus spins.</p>
                 </div>
               )}
-              <div
-                className={
-                  result.win > 0
-                    ? "mt-1 text-3xl font-semibold text-cyan-300"
-                    : "mt-1 text-3xl font-semibold text-slate-300"
-                }
-              >
-                {result.win > 0 ? `+${formatMoney(result.win)}` : "$0.00"}
-              </div>
+              {result ? (
+                <>
+                  <div className="mt-3 text-xs font-semibold text-slate-400">Returned</div>
+                  <div
+                    className={
+                      result.win > 0
+                        ? "mt-1 text-3xl font-semibold text-cyan-300"
+                        : "mt-1 text-3xl font-semibold text-slate-300"
+                    }
+                  >
+                    {formatMoney(result.win)}
+                  </div>
+                  {Number.isSafeInteger(netCents) && (
+                    <p className="mt-2 text-sm text-slate-300">
+                      Net change {netCents > 0 ? "+" : netCents < 0 ? "−" : ""}
+                      {formatMoney(Math.abs(netCents) / 100)}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="mt-3 text-sm text-slate-300">
+                  {spinning ? "Result pending" : "No round played yet"}
+                </p>
+              )}
             </div>
           </div>
         </div>
